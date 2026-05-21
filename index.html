@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ironwood Handoff Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Zoho SDK for live CRM integration -->
+    <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
+    <style>
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .modal-enter {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        /* Ironwood Branding */
+        .bg-brand-dark { background-color: #1e293b; } 
+        .text-brand-dark { color: #1e293b; }
+        .bg-brand-accent { background-color: #0284c7; } 
+        .text-brand-accent { color: #0284c7; }
+        .border-brand-accent { border-color: #0284c7; }
+
+        /* Material Legend Colors */
+        .task-metal { color: #0284c7; font-weight: 700; } /* Blue */
+        .task-metal-spindle { color: #0d9488; font-weight: 700; } /* Teal */
+        .task-wood { color: #d97706; font-weight: 700; } /* Amber */
+        .task-curved { color: #ea580c; font-weight: 700; } /* Rust/Orange */
+        .task-wood-spindle { color: #e11d48; font-weight: 700; } /* Rose */
+        .task-glass { color: #4f46e5; font-weight: 700; } /* Indigo */
+        .task-framing { color: #059669; font-weight: 700; } /* Emerald */
+        .task-finished { color: #7c3aed; font-weight: 700; } /* Violet */
+        .task-standard { color: #64748b; } /* Slate */
+    </style>
+</head>
+<body class="bg-transparent h-screen flex flex-col items-center justify-center font-sans m-0">
+
+    <!-- Local Simulation Dashboard -->
+    <div id="localSimulator" class="bg-white p-8 rounded-xl shadow-md text-center max-w-lg w-full z-0">
+        <h1 class="text-2xl font-bold text-gray-800 mb-2">Zoho CRM Simulator</h1>
+        <p class="text-gray-600 mb-8">Test the custom branded widget locally on Render.</p>
+        <button id="triggerBtn" class="bg-brand-dark hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-sm w-full">
+            Simulate "Closed Won"
+        </button>
+    </div>
+
+    <!-- The Custom Pop-up Modal -->
+    <div id="handoffModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm p-0 md:p-4">
+        <div class="bg-white md:rounded-xl shadow-2xl max-w-6xl w-full h-full md:h-auto md:max-h-[95vh] flex flex-col modal-enter overflow-hidden relative">
+            
+            <!-- Branded Header -->
+            <div class="px-6 py-4 bg-brand-dark flex justify-between items-center text-white shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white rounded flex items-center justify-center text-brand-dark font-bold text-xl">
+                        IS
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold tracking-wide">Ironwood Stair & Rail</h2>
+                        <p class="text-xs text-slate-300 uppercase tracking-wider">Production Handoff Protocol</p>
+                    </div>
+                </div>
+                <button id="closeModalBtn" class="text-slate-300 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+
+            <!-- Two Column Layout Body -->
+            <div class="flex flex-col md:flex-row flex-grow overflow-hidden bg-white">
+                
+                <!-- Left Column: Form Inputs -->
+                <div class="w-full md:w-1/2 lg:w-3/5 px-6 py-6 overflow-y-auto border-r border-gray-100">
+                    <form id="handoffForm" class="space-y-6">
+                        
+                        <!-- Project Context -->
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider border-b pb-2">Project Context</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="radio" name="projectType" value="NewBuild" checked class="w-4 h-4 text-brand-accent border-gray-300 focus:ring-brand-accent form-radio">
+                                    <div class="ml-3">
+                                        <p class="text-sm font-bold text-gray-800">New Build</p>
+                                        <p class="text-[10px] text-gray-500 leading-tight">Standard supply/install flow.</p>
+                                    </div>
+                                </label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="radio" id="projectReno" name="projectType" value="Renovation" class="w-4 h-4 text-brand-accent border-gray-300 focus:ring-brand-accent form-radio">
+                                    <div class="ml-3">
+                                        <p class="text-sm font-bold text-gray-800">Renovation</p>
+                                        <p class="text-[10px] text-gray-500 leading-tight">Includes Full Service (Removal/QA).</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Railing Configuration -->
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider border-b pb-2">Railing Shape & Style</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="checkbox" id="railStraight" name="railingType" value="Straight" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Straight Railing</span>
+                                </label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="checkbox" id="railCurved" name="railingType" value="Curved" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Curved Railing</span>
+                                </label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50 col-span-2">
+                                    <input type="checkbox" id="railFullMetal" name="railingType" value="FullMetal" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Full Metal Railing (Welded Structure)</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Spindle / Infill Configuration -->
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider border-b pb-2">Spindle / Infill Type</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50 col-span-2">
+                                    <input type="checkbox" name="spindleType" value="WallMount" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Wall Mount Handrail</span>
+                                </label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="checkbox" name="spindleType" value="Wood" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Wood Spindles</span>
+                                </label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="checkbox" name="spindleType" value="Metal" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Metal Spindles</span>
+                                </label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="checkbox" name="spindleType" value="CustomMetal" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Custom Metal</span>
+                                </label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="checkbox" name="spindleType" value="Glass" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Glass Panels</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Stair Configuration -->
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider border-b pb-2">Stair Structure</h3>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="checkbox" name="stairType" value="Construction" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Construction Grade</span>
+                                </label>
+                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                    <input type="checkbox" name="stairType" value="Finished" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                    <span class="ml-3 text-sm font-medium text-gray-800">Finished Stairs</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Additional Notes -->
+                        <div>
+                            <label for="handoffNotes" class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Production Notes</label>
+                            <textarea id="handoffNotes" name="notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent outline-none bg-gray-50 placeholder-gray-400" placeholder="Special requirements, site access details, urgent timelines..."></textarea>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Right Column: Project Scope Preview -->
+                <div class="w-full md:w-1/2 lg:w-2/5 bg-slate-50 px-4 py-6 flex flex-col border-l border-gray-200">
+                    <div class="flex justify-between items-center mb-4 px-2">
+                        <div>
+                            <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider text-brand-accent">Project Blueprint Preview</h3>
+                            <p class="text-[10px] text-gray-500 uppercase tracking-tighter">Dynamic Material Logic Applied</p>
+                        </div>
+                        <div class="flex flex-wrap gap-1 justify-end max-w-[120px]">
+                            <div class="w-2 h-2 rounded-full bg-blue-500" title="Full Metal Railing"></div>
+                            <div class="w-2 h-2 rounded-full bg-teal-600" title="Metal/Custom Spindles"></div>
+                            <div class="w-2 h-2 rounded-full bg-amber-500" title="Straight Railing"></div>
+                            <div class="w-2 h-2 rounded-full bg-orange-600" title="Curved Railing"></div>
+                            <div class="w-2 h-2 rounded-full bg-rose-600" title="Wood Spindles"></div>
+                            <div class="w-2 h-2 rounded-full bg-indigo-500" title="Glass"></div>
+                            <div class="w-2 h-2 rounded-full bg-violet-500" title="Finished Stairs"></div>
+                            <div class="w-2 h-2 rounded-full bg-emerald-500" title="Framing"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyStatePreview" class="flex flex-col items-center justify-center flex-grow opacity-60 mt-10">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 mb-4"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                        <p class="text-sm font-semibold text-slate-600">No Requirements Selected</p>
+                        <p class="text-xs text-slate-500 text-center mt-2 max-w-[200px]">Select a requirement to generate the blueprint.</p>
+                    </div>
+
+                    <div class="space-y-3 flex-grow overflow-y-auto pr-2 px-2 hidden" id="projectPreviewList">
+                        
+                        <!-- Railing Installer Sheet -->
+                        <div id="block-railing-installer-sheet" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-[10px]">RI</div>
+                                <p class="text-sm font-bold text-gray-800">Railing Installer Sheet</p>
+                            </div>
+                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                                <li id="task-standard-measure" class="task-standard">Railing Site Measure</li>
+                                <li id="task-metal-measure" class="task-metal hidden">Metal Template Measure</li>
+                                <li id="task-railing-drawing" class="task-standard">Create Railing Site Drawing</li>
+                                <li id="task-railing-takeoff" class="task-standard">Create Railing Take Off Sheet</li>
+                            </ul>
+                        </div>
+
+                        <!-- Stair Installer Sheet -->
+                        <div id="block-stair-installer-sheet" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded bg-blue-50 flex items-center justify-center text-blue-400 font-bold text-[10px]">SI</div>
+                                <p class="text-sm font-bold text-gray-800">Stair Installer Sheet</p>
+                            </div>
+                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                                <li id="task-const-stair-measure" class="task-framing hidden transition-all">Stair Measure (Framing Stage)</li>
+                                <li id="task-reno-stair-measure" class="task-standard hidden transition-all">Stair Site Measure</li>
+                                <li id="task-stair-spec" class="task-standard hidden transition-all">Fill Out Stair Spec Sheet</li>
+                                <li id="task-stair-drawing" class="task-standard hidden transition-all">Create Stair Drawing</li>
+                                <li id="task-stair-takeoff" class="task-standard hidden transition-all">Create Stair Take Off Sheet</li>
+                            </ul>
+                        </div>
+
+                        <!-- Railing Scheduling -->
+                        <div id="block-railing-scheduling" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-[10px]">RS</div>
+                                <p class="text-sm font-bold text-gray-800">Railing Scheduling</p>
+                            </div>
+                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                                <li id="task-reno-railing-removal-schedule" class="task-standard hidden transition-all">Schedule Existing Railing Removal & Disposal</li>
+                                <li id="task-schedule-generic-mfg" class="task-standard">Schedule Manufacturing</li>
+                                <li id="task-schedule-metal-fab" class="task-standard hidden transition-all">Schedule Metal Fabrication</li>
+                                <li id="task-glass-schedule" class="task-standard hidden transition-all">Schedule Glass Templating Measure</li>
+                                <li id="task-dryfit-schedule" class="task-standard hidden transition-all">Schedule Onsite Metal Dry Fit</li>
+                                <li id="task-powder-schedule" class="task-standard hidden transition-all">Schedule Powder Coating (Drop/Pick)</li>
+                                <li id="task-railing-install-date" class="task-standard">Schedule Railing Installation Date</li>
+                                <li id="task-railing-installer" class="task-standard">Schedule Railing Installer</li>
+                            </ul>
+                        </div>
+
+                        <!-- Stair Scheduling -->
+                        <div id="block-stair-scheduling" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded bg-indigo-50 flex items-center justify-center text-indigo-400 font-bold text-[10px]">SS</div>
+                                <p class="text-sm font-bold text-gray-800">Stair Scheduling</p>
+                            </div>
+                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                                <li id="task-reno-stair-removal-schedule" class="task-standard hidden transition-all">Schedule Existing Stair Removal & Disposal</li>
+                                <li id="task-const-stair-schedule" class="task-framing hidden transition-all">Schedule Const. Stair Drop Off</li>
+                                <li id="task-finished-stair-schedule" class="task-finished hidden transition-all">Schedule Finished Stair Install</li>
+                            </ul>
+                        </div>
+
+                        <!-- Materials Ordering -->
+                        <div id="block-materials-ordering" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-[10px]">MO</div>
+                                <p class="text-sm font-bold text-gray-800">Materials Ordering</p>
+                            </div>
+                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                                <li id="task-customMetal-order" class="task-standard hidden transition-all">Order Custom Metal / Raw Steel</li>
+                                <li id="task-order-materials-generic" class="task-standard">Order Materials</li>
+                                <li id="task-wall-brackets" class="task-standard hidden transition-all">Order Metal Wall Brackets</li>
+                                <li id="task-wood-order" class="task-standard hidden transition-all">Order Wood Spindles</li>
+                                <li id="task-metal-order" class="task-standard hidden transition-all">Order Metal Spindles</li>
+                                <li id="task-glass-order" class="task-standard hidden transition-all">Order Glass Panels</li>
+                                <li id="task-finished-stair-order" class="task-standard hidden transition-all">Order Finished Stair Materials</li>
+                                <li id="task-receive-materials" class="task-standard">Receive Materials (QA)</li>
+                            </ul>
+                        </div>
+
+                        <!-- Manufacturing & Fabrication -->
+                        <div id="block-manufacturing-fabrication" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-[10px]">MF</div>
+                                <p id="mfg-block-title" class="text-sm font-bold text-gray-800">Manufacturing & Fabrication</p>
+                            </div>
+                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                                <li id="task-slice" class="task-standard hidden transition-all">Generate Slice Package (Curved)</li>
+                                <li id="task-mfg-package-generic" class="task-standard">Manufacture Job Package & QA</li>
+                                <li id="task-fullMetal-mfg" class="task-standard hidden transition-all">Fabricate Welded Railing Structure</li>
+                                <li id="task-wood-mfg" class="task-standard hidden transition-all">Manufacture Wood Spindles</li>
+                                <li id="task-metal-mfg" class="task-standard hidden transition-all">Manufacture Metal Spindles</li>
+                                <li id="task-customMetal-mfg" class="task-standard hidden transition-all">Manufacture Custom Metal Parts</li>
+                                <li id="task-finished-stair-mfg" class="task-standard hidden transition-all">Manufacture Finished Stair Components</li>
+                            </ul>
+                        </div>
+
+                        <!-- Assembly & Wrap Up -->
+                        <div id="block-assembly-wrapup" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded bg-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-[10px]">AW</div>
+                                <p class="text-sm font-bold text-gray-800">Assembly & Wrap Up</p>
+                            </div>
+                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                                <li id="task-qa-check" class="task-standard">Quality Assurance Check</li>
+                                <li id="task-wrap-generic" class="task-standard">Materials Wrap Up</li>
+                            </ul>
+                        </div>
+
+                        <!-- Install & QA -->
+                        <div id="block-install-qa" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                            <div class="flex items-center gap-2 mb-1">
+                                <div class="w-6 h-6 rounded bg-green-100 flex items-center justify-center text-green-600 font-bold text-[10px]">IQ</div>
+                                <p class="text-sm font-bold text-gray-800">Install & QA</p>
+                            </div>
+                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                                <li id="task-reno-stair-removal" class="task-standard hidden transition-all">Existing Stair Removal & Disposal</li>
+                                <li id="task-reno-railing-removal" class="task-standard hidden transition-all">Existing Railing Removal & Disposal</li>
+                                <li id="task-const-stair-drop" class="task-framing hidden">Const. Stair Drop Off</li>
+                                <li id="task-const-stair-install" class="task-framing hidden">Const. Stair Installation</li>
+                                <li id="task-dryfit-task" class="task-metal hidden">Onsite Metal Dry Fit</li>
+                                <li id="task-finished-stair-install" class="task-finished hidden transition-all">Finished Stair Installation</li>
+                                <li id="task-railing-install" class="task-standard hidden">Railing Installation</li>
+                                <li id="task-glass-install" class="task-glass hidden transition-all">Glass Panel Installation</li>
+                                <li id="task-qa-turnover" class="task-standard hidden">Quality Assurance & Turnover</li>
+                            </ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="px-6 py-4 bg-slate-50 border-t border-gray-200 flex justify-between items-center z-10 shrink-0">
+                <div class="text-xs text-gray-500 flex items-center gap-2">
+                    <svg class="animate-pulse w-2 h-2 text-green-500 fill-current" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"/></svg>
+                    Zoho CRM Link Active
+                </div>
+                <div class="flex gap-3">
+                    <button id="cancelBtn" class="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-gray-300 rounded-lg hover:bg-slate-50 transition-colors">
+                        Cancel
+                    </button>
+                    <button id="saveBtn" disabled class="px-6 py-2 text-sm font-bold text-white bg-brand-accent rounded-lg hover:bg-blue-700 shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-brand-accent">
+                        Confirm & Generate Project
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 19"></polyline></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Success Message Overlay -->
+            <div id="successOverlay" class="absolute inset-0 bg-brand-dark bg-opacity-95 flex flex-col items-center justify-center hidden z-20 text-white backdrop-blur-md">
+                <svg class="w-16 h-16 text-green-400 mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h3 class="text-3xl font-bold mb-2">Handoff Complete!</h3>
+                <p class="text-slate-300 text-center max-w-md">Data saved to CRM. Project blueprint is generating in Zoho Projects.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isZohoEnvironment = false;
+        
+        // SAFE INITIALIZATION: Check if ZOHO exists before calling it
+        if (typeof ZOHO !== 'undefined') {
+            ZOHO.embeddedApp.on("PageLoad", function(data){
+                isZohoEnvironment = true;
+                // Automatically open the modal if we are inside Zoho CRM
+                document.getElementById('localSimulator').style.display = 'none';
+                document.getElementById('handoffModal').classList.remove('hidden', 'items-center', 'justify-center', 'p-4', 'bg-opacity-70', 'fixed');
+                document.getElementById('handoffModal').classList.add('w-full', 'h-full', 'bg-white', 'block');
+            });
+            ZOHO.embeddedApp.init();
+        } else {
+            console.warn("ZOHO SDK not loaded. Running in local/Render preview mode.");
+        }
+
+        const form = document.getElementById('handoffForm');
+        const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
+        const projectRadios = document.querySelectorAll('input[name="projectType"]');
+
+        const setTaskColor = (id, colorClass) => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('task-metal', 'task-metal-spindle', 'task-wood', 'task-curved', 'task-wood-spindle', 'task-glass', 'task-framing', 'task-finished', 'task-standard');
+                el.classList.add(colorClass);
+            }
+        };
+
+        const updateBlueprintPreview = () => {
+            const anyRequirementChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+            const projectPreviewList = document.getElementById('projectPreviewList');
+            const emptyStatePreview = document.getElementById('emptyStatePreview');
+            const saveBtn = document.getElementById('saveBtn');
+
+            if (!anyRequirementChecked) {
+                emptyStatePreview.classList.remove('hidden');
+                projectPreviewList.classList.add('hidden');
+                saveBtn.disabled = true;
+                return;
+            } else {
+                emptyStatePreview.classList.add('hidden');
+                projectPreviewList.classList.remove('hidden');
+                saveBtn.disabled = false;
+            }
+
+            // Context (Reno vs New Build)
+            const isReno = document.querySelector('input[name="projectType"][value="Renovation"]').checked;
+
+            // Railing States
+            const railStraight = document.getElementById('railStraight').checked;
+            const railCurved = document.getElementById('railCurved').checked;
+            const railFullMetal = document.getElementById('railFullMetal').checked;
+            const woodRailingAny = railStraight || railCurved;
+            const railingAny = woodRailingAny || railFullMetal;
+
+            // Spindle States
+            const spindleWood = document.querySelector('input[name="spindleType"][value="Wood"]').checked;
+            const spindleMetal = document.querySelector('input[name="spindleType"][value="Metal"]').checked;
+            const spindleCustom = document.querySelector('input[name="spindleType"][value="CustomMetal"]').checked;
+            const spindleGlass = document.querySelector('input[name="spindleType"][value="Glass"]').checked;
+            const spindleWall = document.querySelector('input[name="spindleType"][value="WallMount"]').checked;
+            const spindleAny = spindleWood || spindleMetal || spindleCustom || spindleGlass || spindleWall;
+
+            // Stair States
+            const stairConst = document.querySelector('input[name="stairType"][value="Construction"]').checked;
+            const stairFinished = document.querySelector('input[name="stairType"][value="Finished"]').checked;
+            const stairAny = stairConst || stairFinished;
+
+            // --- SUPER HIERARCHY LOGIC FOR DYNAMIC COLORS ---
+            
+            // 1. Stair Specific Priority
+            let stairColor = 'task-standard';
+            if (stairConst && stairFinished) stairColor = 'task-standard';
+            else if (stairFinished) stairColor = 'task-finished';
+            else if (stairConst) stairColor = 'task-framing';
+
+            // 2. Railing Specific Priority
+            let railingColor = 'task-standard';
+            if (railFullMetal) railingColor = 'task-metal';
+            else if (railStraight && railCurved) railingColor = 'task-standard';
+            else if (railCurved) railingColor = 'task-curved';
+            else if (spindleGlass) railingColor = 'task-glass';
+            else if (railStraight) railingColor = 'task-wood';
+            else if (spindleMetal || spindleCustom || spindleWall) railingColor = 'task-metal-spindle';
+            else if (spindleWood) railingColor = 'task-wood-spindle';
+
+            // 3. Dominant Global Priority (Lead Role for the entire package)
+            let dominantColor = 'task-standard';
+            
+            let activeSystemsArray = [];
+            if (railFullMetal) activeSystemsArray.push('metalRailing');
+            if (railStraight) activeSystemsArray.push('straightRailing');
+            if (railCurved) activeSystemsArray.push('curvedRailing');
+            if (spindleMetal || spindleCustom || spindleWall) activeSystemsArray.push('metalSpindle');
+            if (spindleWood) activeSystemsArray.push('woodSpindle');
+            if (spindleGlass) activeSystemsArray.push('glass');
+            if (stairFinished) activeSystemsArray.push('finishedStair');
+            if (stairConst) activeSystemsArray.push('constStair');
+
+            if (activeSystemsArray.length > 1) {
+                dominantColor = 'task-standard'; 
+            } else if (activeSystemsArray.length === 1) {
+                const sys = activeSystemsArray[0];
+                if (sys === 'metalRailing') dominantColor = 'task-metal';
+                else if (sys === 'straightRailing') dominantColor = 'task-wood';
+                else if (sys === 'curvedRailing') dominantColor = 'task-curved';
+                else if (sys === 'metalSpindle') dominantColor = 'task-metal-spindle';
+                else if (sys === 'woodSpindle') dominantColor = 'task-wood-spindle';
+                else if (sys === 'glass') dominantColor = 'task-glass';
+                else if (sys === 'finishedStair') dominantColor = 'task-finished';
+                else if (sys === 'constStair') dominantColor = 'task-framing';
+            }
+
+            // Apply System Specific Colors
+            setTaskColor('task-stair-measure', stairColor);
+            setTaskColor('task-stair-spec', stairColor);
+            setTaskColor('task-stair-drawing', stairColor);
+            setTaskColor('task-stair-takeoff', stairColor);
+            setTaskColor('task-reno-stair-removal-schedule', stairColor);
+            setTaskColor('task-reno-stair-removal', stairColor);
+
+            setTaskColor('task-reno-railing-removal-schedule', railingColor);
+            setTaskColor('task-reno-railing-removal', railingColor);
+            setTaskColor('task-standard-measure', railingColor);
+            setTaskColor('task-railing-drawing', railingColor);
+            setTaskColor('task-railing-takeoff', railingColor);
+            setTaskColor('task-railing-install-date', railingColor);
+            setTaskColor('task-railing-installer', railingColor);
+            setTaskColor('task-schedule-generic-mfg', railingColor);
+            setTaskColor('task-railing-install', railingColor);
+
+            // Apply Dominant Global Colors
+            setTaskColor('task-order-materials-generic', dominantColor);
+            setTaskColor('task-receive-materials', dominantColor);
+            setTaskColor('task-mfg-package-generic', dominantColor);
+            setTaskColor('task-qa-check', dominantColor);
+            setTaskColor('task-wrap-generic', dominantColor);
+            setTaskColor('task-qa-turnover', dominantColor);
+
+            // Apply Highly Specific Edge-Case Colors
+            setTaskColor('task-slice', 'task-curved'); 
+            
+            // Unify all metal tasks to either Blue (Full Metal) or Teal (Sub-components)
+            const activeMetalColor = railFullMetal ? 'task-metal' : 'task-metal-spindle';
+            setTaskColor('task-schedule-metal-fab', activeMetalColor);
+            setTaskColor('task-powder-schedule', activeMetalColor);
+            setTaskColor('task-customMetal-order', activeMetalColor);
+            setTaskColor('task-customMetal-mfg', activeMetalColor);
+            setTaskColor('task-metal-order', activeMetalColor);
+            setTaskColor('task-metal-mfg', activeMetalColor);
+            setTaskColor('task-wall-brackets', activeMetalColor);
+            
+            setTaskColor('task-dryfit-schedule', 'task-metal');
+            setTaskColor('task-dryfit-task', 'task-metal');
+            setTaskColor('task-fullMetal-mfg', 'task-metal');
+            setTaskColor('task-metal-measure', 'task-metal');
+            
+            setTaskColor('task-wood-order', 'task-wood-spindle');
+            setTaskColor('task-wood-mfg', 'task-wood-spindle');
+            setTaskColor('task-glass-order', 'task-glass');
+            setTaskColor('task-glass-schedule', 'task-glass');
+            setTaskColor('task-glass-install', 'task-glass');
+            setTaskColor('task-finished-stair-order', 'task-finished');
+            setTaskColor('task-finished-stair-mfg', 'task-finished');
+
+            // --- BLOCK VISIBILITY ---
+            document.getElementById('block-railing-installer-sheet').classList.toggle('hidden', !railingAny && !spindleAny);
+            document.getElementById('block-railing-scheduling').classList.toggle('hidden', !railingAny && !spindleAny);
+            document.getElementById('block-stair-installer-sheet').classList.toggle('hidden', !stairAny);
+            document.getElementById('block-stair-scheduling').classList.toggle('hidden', !stairAny);
+            
+            const showMaterialsOrdering = railingAny || stairFinished || spindleAny;
+            document.getElementById('block-materials-ordering').classList.toggle('hidden', !showMaterialsOrdering);
+            
+            const showProduction = railingAny || stairAny || spindleAny;
+            document.getElementById('block-manufacturing-fabrication').classList.toggle('hidden', !showProduction);
+            document.getElementById('block-assembly-wrapup').classList.toggle('hidden', !showProduction);
+            document.getElementById('block-install-qa').classList.remove('hidden');
+
+            // --- TASK LEVEL LOGIC ---
+            
+            // 1. Installer Sheet
+            document.getElementById('task-metal-measure').classList.toggle('hidden', !railFullMetal);
+            document.getElementById('task-standard-measure').classList.toggle('hidden', railFullMetal);
+
+            // 2. Materials Ordering
+            const needsWoodMaterials = woodRailingAny || spindleWood || stairFinished;
+            document.getElementById('task-order-materials-generic').classList.toggle('hidden', !needsWoodMaterials);
+            document.getElementById('task-customMetal-order').classList.toggle('hidden', !railFullMetal && !spindleCustom);
+
+            // 3. Manufacturing Title & Package
+            const mfgTitle = document.getElementById('mfg-block-title');
+            const mfgGenericTask = document.getElementById('task-mfg-package-generic');
+            const fullMetalMfgTask = document.getElementById('task-fullMetal-mfg');
+            const needsGenericMfg = woodRailingAny || spindleWood || stairFinished || stairConst;
+
+            if (railFullMetal && !needsGenericMfg) {
+                mfgTitle.textContent = "Metal Fabrication (MetalCraft)";
+                mfgGenericTask.classList.add('hidden');
+                fullMetalMfgTask.classList.remove('hidden');
+            } else {
+                mfgTitle.textContent = "Manufacturing & Fabrication";
+                mfgGenericTask.classList.toggle('hidden', !needsGenericMfg);
+                fullMetalMfgTask.classList.toggle('hidden', !railFullMetal);
+            }
+
+            // 4. Scheduling
+            document.getElementById('task-dryfit-schedule').classList.toggle('hidden', !railFullMetal);
+            const needsCoating = railFullMetal || spindleCustom;
+            document.getElementById('task-powder-schedule').classList.toggle('hidden', !needsCoating);
+            document.getElementById('task-schedule-metal-fab').classList.toggle('hidden', !railFullMetal && !spindleCustom);
+            document.getElementById('task-schedule-generic-mfg').classList.toggle('hidden', railFullMetal && !woodRailingAny && !stairFinished);
+
+            // 5. Install & QA General
+            const taskRailingInstall = document.getElementById('task-railing-install');
+            taskRailingInstall.classList.toggle('hidden', !railingAny && !spindleAny);
+            taskRailingInstall.textContent = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
+
+            document.getElementById('task-dryfit-task').classList.toggle('hidden', !railFullMetal);
+            document.getElementById('task-const-stair-drop').classList.toggle('hidden', !(stairConst && !isReno));
+            document.getElementById('task-const-stair-install').classList.toggle('hidden', !(stairConst && isReno));
+            document.getElementById('task-finished-stair-install').classList.toggle('hidden', !stairFinished);
+
+            // 6. Sub-Tasks (Glass, Stairs, Spindles, Reno)
+            document.getElementById('task-glass-schedule').classList.toggle('hidden', !spindleGlass);
+            document.getElementById('task-glass-install').classList.toggle('hidden', !spindleGlass);
+            
+            document.getElementById('task-stair-measure').classList.toggle('hidden', !(stairConst && !isReno));
+            document.getElementById('task-reno-stair-measure').classList.toggle('hidden', !(stairAny && isReno));
+            document.getElementById('task-stair-spec').classList.toggle('hidden', !stairAny);
+            document.getElementById('task-stair-drawing').classList.toggle('hidden', !stairAny);
+            document.getElementById('task-stair-takeoff').classList.toggle('hidden', !stairAny);
+            
+            document.getElementById('task-reno-stair-removal-schedule').classList.toggle('hidden', !(stairAny && isReno));
+            document.getElementById('task-reno-stair-removal').classList.toggle('hidden', !(stairAny && isReno));
+            
+            const needsRailingRemoval = (railingAny || spindleAny) && isReno;
+            document.getElementById('task-reno-railing-removal-schedule').classList.toggle('hidden', !needsRailingRemoval);
+            document.getElementById('task-reno-railing-removal').classList.toggle('hidden', !needsRailingRemoval);
+            
+            const taskConstStairSchedule = document.getElementById('task-const-stair-schedule');
+            taskConstStairSchedule.classList.toggle('hidden', !stairConst);
+            taskConstStairSchedule.textContent = isReno ? "Schedule Const. Stair Installation" : "Schedule Const. Stair Drop Off";
+            
+            document.getElementById('task-finished-stair-schedule').classList.toggle('hidden', !stairFinished);
+            
+            document.getElementById('task-wood-order').classList.toggle('hidden', !spindleWood);
+            document.getElementById('task-wood-mfg').classList.toggle('hidden', !spindleWood);
+            document.getElementById('task-metal-order').classList.toggle('hidden', !spindleMetal);
+            document.getElementById('task-metal-mfg').classList.toggle('hidden', !spindleMetal);
+            document.getElementById('task-customMetal-mfg').classList.toggle('hidden', !spindleCustom);
+            document.getElementById('task-glass-order').classList.toggle('hidden', !spindleGlass);
+            document.getElementById('task-wall-brackets').classList.toggle('hidden', !spindleWall);
+            document.getElementById('task-slice').classList.toggle('hidden', !railCurved);
+        };
+
+        allCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateBlueprintPreview));
+        projectRadios.forEach(radio => radio.addEventListener('change', updateBlueprintPreview));
+
+        const triggerBtn = document.getElementById('triggerBtn');
+        const modal = document.getElementById('handoffModal');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Logic to simulate opening the app if outside Zoho
+        triggerBtn.addEventListener('click', () => { 
+            modal.classList.remove('hidden'); 
+            modal.classList.add('flex'); 
+        });
+
+        // Protected close logic
+        const safelyCloseApp = () => {
+            if (isZohoEnvironment && typeof ZOHO !== 'undefined') {
+                ZOHO.CRM.UI.Popup.close(); 
+            } else {
+                modal.classList.add('hidden'); 
+                modal.classList.remove('flex');
+            }
+        };
+
+        closeModalBtn.addEventListener('click', safelyCloseApp);
+        cancelBtn.addEventListener('click', safelyCloseApp);
+
+        // THE FINAL ZOHO API SAVE FUNCTION
+        saveBtn.addEventListener('click', async () => {
+            const formData = new FormData(form);
+            const capturedData = {
+                projectContext: formData.get('projectType'),
+                railings: formData.getAll('railingType'),
+                spindles: formData.getAll('spindleType'),
+                stairs: formData.getAll('stairType'),
+                notes: formData.get('notes')
+            };
+            console.log("Payload ready for Zoho CRM:", capturedData);
+
+            const originalHTML = saveBtn.innerHTML;
+            saveBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            saveBtn.disabled = true;
+
+            if (isZohoEnvironment) {
+                try {
+                    const pageInfo = await ZOHO.CRM.INTERACTION.getPageInfo();
+                    const dealId = pageInfo.recordID;
+                    
+                    var config = {
+                        Entity: "Deals",
+                        APIData: {
+                            "id": dealId,
+                            "Handoff_Payload": JSON.stringify(capturedData) 
+                        },
+                        Trigger: ["workflow"]
+                    };
+                    
+                    await ZOHO.CRM.API.updateRecord(config);
+                    
+                    document.getElementById('successOverlay').classList.remove('hidden');
+                    setTimeout(() => { ZOHO.CRM.UI.Popup.close(); }, 2000);
+                } catch (error) {
+                    console.error("Error saving to CRM:", error);
+                    alert("Failed to save data to CRM. Check console.");
+                    saveBtn.innerHTML = originalHTML;
+                    saveBtn.disabled = false;
+                }
+            } else {
+                // MOCK SAVING FOR RENDER / LOCAL PREVIEW
+                setTimeout(() => {
+                    document.getElementById('successOverlay').classList.remove('hidden');
+                    setTimeout(() => {
+                        document.getElementById('successOverlay').classList.add('hidden');
+                        modal.classList.add('hidden');
+                        modal.classList.remove('flex');
+                        saveBtn.innerHTML = originalHTML;
+                        saveBtn.disabled = false;
+                        form.reset();
+                        updateBlueprintPreview();
+                    }, 2000);
+                }, 1200);
+            }
+        });
+    </script>
+</body>
+</html>
