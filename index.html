@@ -8,18 +8,27 @@
     <!-- Zoho SDK for live CRM integration -->
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <style>
+        /* Hide scrollbars for a cleaner app feel, but keep functionality */
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Prevent body scrolling, let internal divs scroll */
+        }
+
         .modal-enter {
             animation: modalFadeIn 0.3s ease-out forwards;
         }
         
         @keyframes modalFadeIn {
-            from { opacity: 0; transform: scale(0.95) translateY(-10px); }
-            to { opacity: 1; transform: scale(1) translateY(0); }
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
         }
 
         /* Ironwood Branding */
@@ -41,10 +50,10 @@
         .task-standard { color: #64748b; } /* Slate */
     </style>
 </head>
-<body class="bg-transparent h-screen flex flex-col items-center justify-center font-sans m-0">
+<body class="bg-transparent flex flex-col items-center justify-center font-sans">
 
     <!-- Local Simulation Dashboard -->
-    <div id="localSimulator" class="bg-white p-8 rounded-xl shadow-md text-center max-w-lg w-full z-0">
+    <div id="localSimulator" class="bg-white p-8 rounded-xl shadow-md text-center max-w-lg w-full z-0 absolute">
         <h1 class="text-2xl font-bold text-gray-800 mb-2">Zoho CRM Simulator</h1>
         <p class="text-gray-600 mb-8">Test the custom branded widget locally on Render.</p>
         <button id="triggerBtn" class="bg-brand-dark hover:bg-slate-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-sm w-full">
@@ -52,9 +61,9 @@
         </button>
     </div>
 
-    <!-- The Custom Pop-up Modal -->
-    <div id="handoffModal" class="fixed inset-0 bg-slate-900 bg-opacity-70 hidden items-center justify-center z-50 backdrop-blur-sm p-0 md:p-4">
-        <div class="bg-white md:rounded-xl shadow-2xl max-w-6xl w-full h-full md:h-auto md:max-h-[95vh] flex flex-col modal-enter overflow-hidden relative">
+    <!-- The Custom Pop-up Modal (Now locked to 100% of the iframe height/width) -->
+    <div id="handoffModal" class="absolute inset-0 bg-slate-900 bg-opacity-70 hidden items-center justify-center z-50 p-0">
+        <div class="bg-white w-full h-full flex flex-col modal-enter relative">
             
             <!-- Branded Header -->
             <div class="px-6 py-4 bg-brand-dark flex justify-between items-center text-white shrink-0">
@@ -72,11 +81,12 @@
                 </button>
             </div>
 
-            <!-- Two Column Layout Body -->
-            <div class="flex flex-col md:flex-row flex-grow overflow-hidden bg-white">
+            <!-- HARD LOCKED Two Column Layout Body -->
+            <!-- Changed from flex-col md:flex-row to strictly flex-row to prevent stacking -->
+            <div class="flex flex-row flex-grow overflow-hidden bg-white">
                 
-                <!-- Left Column: Form Inputs -->
-                <div class="w-full md:w-1/2 lg:w-3/5 px-6 py-6 overflow-y-auto border-r border-gray-100">
+                <!-- Left Column: Form Inputs (Locked to 55% width) -->
+                <div class="w-[55%] px-6 py-6 overflow-y-auto border-r border-gray-100 relative">
                     <form id="handoffForm" class="space-y-6">
                         
                         <!-- Project Context -->
@@ -162,16 +172,16 @@
                         </div>
 
                         <!-- Additional Notes -->
-                        <div>
+                        <div class="pb-6">
                             <label for="handoffNotes" class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Production Notes</label>
                             <textarea id="handoffNotes" name="notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent outline-none bg-gray-50 placeholder-gray-400" placeholder="Special requirements, site access details, urgent timelines..."></textarea>
                         </div>
                     </form>
                 </div>
 
-                <!-- Right Column: Project Scope Preview -->
-                <div class="w-full md:w-1/2 lg:w-2/5 bg-slate-50 px-4 py-6 flex flex-col border-l border-gray-200">
-                    <div class="flex justify-between items-center mb-4 px-2">
+                <!-- Right Column: Project Scope Preview (Locked to 45% width) -->
+                <div class="w-[45%] bg-slate-50 px-4 py-6 flex flex-col border-l border-gray-200 relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-4 px-2 shrink-0">
                         <div>
                             <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider text-brand-accent">Project Blueprint Preview</h3>
                             <p class="text-[10px] text-gray-500 uppercase tracking-tighter">Dynamic Material Logic Applied</p>
@@ -195,7 +205,7 @@
                         <p class="text-xs text-slate-500 text-center mt-2 max-w-[200px]">Select a requirement to generate the blueprint.</p>
                     </div>
 
-                    <div class="space-y-3 flex-grow overflow-y-auto pr-2 px-2 hidden" id="projectPreviewList">
+                    <div class="space-y-3 flex-grow overflow-y-auto pr-2 px-2 hidden pb-6" id="projectPreviewList">
                         
                         <!-- Railing Installer Sheet -->
                         <div id="block-railing-installer-sheet" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
@@ -356,14 +366,13 @@
     <script>
         let isZohoEnvironment = false;
         
-        // SAFE INITIALIZATION: Check if ZOHO exists before calling it
         if (typeof ZOHO !== 'undefined') {
             ZOHO.embeddedApp.on("PageLoad", function(data){
                 isZohoEnvironment = true;
                 // Automatically open the modal if we are inside Zoho CRM
                 document.getElementById('localSimulator').style.display = 'none';
-                document.getElementById('handoffModal').classList.remove('hidden', 'items-center', 'justify-center', 'p-4', 'bg-opacity-70', 'fixed');
-                document.getElementById('handoffModal').classList.add('w-full', 'h-full', 'bg-white', 'block');
+                document.getElementById('handoffModal').classList.remove('hidden');
+                document.getElementById('handoffModal').classList.add('flex');
             });
             ZOHO.embeddedApp.init();
         } else {
@@ -399,17 +408,13 @@
                 saveBtn.disabled = false;
             }
 
-            // Context (Reno vs New Build)
             const isReno = document.querySelector('input[name="projectType"][value="Renovation"]').checked;
-
-            // Railing States
             const railStraight = document.getElementById('railStraight').checked;
             const railCurved = document.getElementById('railCurved').checked;
             const railFullMetal = document.getElementById('railFullMetal').checked;
             const woodRailingAny = railStraight || railCurved;
             const railingAny = woodRailingAny || railFullMetal;
 
-            // Spindle States
             const spindleWood = document.querySelector('input[name="spindleType"][value="Wood"]').checked;
             const spindleMetal = document.querySelector('input[name="spindleType"][value="Metal"]').checked;
             const spindleCustom = document.querySelector('input[name="spindleType"][value="CustomMetal"]').checked;
@@ -417,20 +422,15 @@
             const spindleWall = document.querySelector('input[name="spindleType"][value="WallMount"]').checked;
             const spindleAny = spindleWood || spindleMetal || spindleCustom || spindleGlass || spindleWall;
 
-            // Stair States
             const stairConst = document.querySelector('input[name="stairType"][value="Construction"]').checked;
             const stairFinished = document.querySelector('input[name="stairType"][value="Finished"]').checked;
             const stairAny = stairConst || stairFinished;
 
-            // --- SUPER HIERARCHY LOGIC FOR DYNAMIC COLORS ---
-            
-            // 1. Stair Specific Priority
             let stairColor = 'task-standard';
             if (stairConst && stairFinished) stairColor = 'task-standard';
             else if (stairFinished) stairColor = 'task-finished';
             else if (stairConst) stairColor = 'task-framing';
 
-            // 2. Railing Specific Priority
             let railingColor = 'task-standard';
             if (railFullMetal) railingColor = 'task-metal';
             else if (railStraight && railCurved) railingColor = 'task-standard';
@@ -440,9 +440,7 @@
             else if (spindleMetal || spindleCustom || spindleWall) railingColor = 'task-metal-spindle';
             else if (spindleWood) railingColor = 'task-wood-spindle';
 
-            // 3. Dominant Global Priority (Lead Role for the entire package)
             let dominantColor = 'task-standard';
-            
             let activeSystemsArray = [];
             if (railFullMetal) activeSystemsArray.push('metalRailing');
             if (railStraight) activeSystemsArray.push('straightRailing');
@@ -467,8 +465,7 @@
                 else if (sys === 'constStair') dominantColor = 'task-framing';
             }
 
-            // Apply System Specific Colors
-            setTaskColor('task-stair-measure', stairColor);
+            setTaskColor('task-const-stair-measure', stairColor);
             setTaskColor('task-stair-spec', stairColor);
             setTaskColor('task-stair-drawing', stairColor);
             setTaskColor('task-stair-takeoff', stairColor);
@@ -485,7 +482,6 @@
             setTaskColor('task-schedule-generic-mfg', railingColor);
             setTaskColor('task-railing-install', railingColor);
 
-            // Apply Dominant Global Colors
             setTaskColor('task-order-materials-generic', dominantColor);
             setTaskColor('task-receive-materials', dominantColor);
             setTaskColor('task-mfg-package-generic', dominantColor);
@@ -493,10 +489,8 @@
             setTaskColor('task-wrap-generic', dominantColor);
             setTaskColor('task-qa-turnover', dominantColor);
 
-            // Apply Highly Specific Edge-Case Colors
             setTaskColor('task-slice', 'task-curved'); 
             
-            // Unify all metal tasks to either Blue (Full Metal) or Teal (Sub-components)
             const activeMetalColor = railFullMetal ? 'task-metal' : 'task-metal-spindle';
             setTaskColor('task-schedule-metal-fab', activeMetalColor);
             setTaskColor('task-powder-schedule', activeMetalColor);
@@ -519,7 +513,6 @@
             setTaskColor('task-finished-stair-order', 'task-finished');
             setTaskColor('task-finished-stair-mfg', 'task-finished');
 
-            // --- BLOCK VISIBILITY ---
             document.getElementById('block-railing-installer-sheet').classList.toggle('hidden', !railingAny && !spindleAny);
             document.getElementById('block-railing-scheduling').classList.toggle('hidden', !railingAny && !spindleAny);
             document.getElementById('block-stair-installer-sheet').classList.toggle('hidden', !stairAny);
@@ -533,18 +526,13 @@
             document.getElementById('block-assembly-wrapup').classList.toggle('hidden', !showProduction);
             document.getElementById('block-install-qa').classList.remove('hidden');
 
-            // --- TASK LEVEL LOGIC ---
-            
-            // 1. Installer Sheet
             document.getElementById('task-metal-measure').classList.toggle('hidden', !railFullMetal);
             document.getElementById('task-standard-measure').classList.toggle('hidden', railFullMetal);
 
-            // 2. Materials Ordering
             const needsWoodMaterials = woodRailingAny || spindleWood || stairFinished;
             document.getElementById('task-order-materials-generic').classList.toggle('hidden', !needsWoodMaterials);
             document.getElementById('task-customMetal-order').classList.toggle('hidden', !railFullMetal && !spindleCustom);
 
-            // 3. Manufacturing Title & Package
             const mfgTitle = document.getElementById('mfg-block-title');
             const mfgGenericTask = document.getElementById('task-mfg-package-generic');
             const fullMetalMfgTask = document.getElementById('task-fullMetal-mfg');
@@ -560,14 +548,12 @@
                 fullMetalMfgTask.classList.toggle('hidden', !railFullMetal);
             }
 
-            // 4. Scheduling
             document.getElementById('task-dryfit-schedule').classList.toggle('hidden', !railFullMetal);
             const needsCoating = railFullMetal || spindleCustom;
             document.getElementById('task-powder-schedule').classList.toggle('hidden', !needsCoating);
             document.getElementById('task-schedule-metal-fab').classList.toggle('hidden', !railFullMetal && !spindleCustom);
             document.getElementById('task-schedule-generic-mfg').classList.toggle('hidden', railFullMetal && !woodRailingAny && !stairFinished);
 
-            // 5. Install & QA General
             const taskRailingInstall = document.getElementById('task-railing-install');
             taskRailingInstall.classList.toggle('hidden', !railingAny && !spindleAny);
             taskRailingInstall.textContent = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
@@ -577,11 +563,10 @@
             document.getElementById('task-const-stair-install').classList.toggle('hidden', !(stairConst && isReno));
             document.getElementById('task-finished-stair-install').classList.toggle('hidden', !stairFinished);
 
-            // 6. Sub-Tasks (Glass, Stairs, Spindles, Reno)
             document.getElementById('task-glass-schedule').classList.toggle('hidden', !spindleGlass);
             document.getElementById('task-glass-install').classList.toggle('hidden', !spindleGlass);
             
-            document.getElementById('task-stair-measure').classList.toggle('hidden', !(stairConst && !isReno));
+            document.getElementById('task-const-stair-measure').classList.toggle('hidden', !(stairConst && !isReno));
             document.getElementById('task-reno-stair-measure').classList.toggle('hidden', !(stairAny && isReno));
             document.getElementById('task-stair-spec').classList.toggle('hidden', !stairAny);
             document.getElementById('task-stair-drawing').classList.toggle('hidden', !stairAny);
@@ -619,13 +604,11 @@
         const cancelBtn = document.getElementById('cancelBtn');
         const saveBtn = document.getElementById('saveBtn');
 
-        // Logic to simulate opening the app if outside Zoho
         triggerBtn.addEventListener('click', () => { 
             modal.classList.remove('hidden'); 
             modal.classList.add('flex'); 
         });
 
-        // Protected close logic
         const safelyCloseApp = () => {
             if (isZohoEnvironment && typeof ZOHO !== 'undefined') {
                 ZOHO.CRM.UI.Popup.close(); 
@@ -638,7 +621,6 @@
         closeModalBtn.addEventListener('click', safelyCloseApp);
         cancelBtn.addEventListener('click', safelyCloseApp);
 
-        // THE FINAL ZOHO API SAVE FUNCTION
         saveBtn.addEventListener('click', async () => {
             const formData = new FormData(form);
             const capturedData = {
@@ -648,8 +630,7 @@
                 stairs: formData.getAll('stairType'),
                 notes: formData.get('notes')
             };
-            console.log("Payload ready for Zoho CRM:", capturedData);
-
+            
             const originalHTML = saveBtn.innerHTML;
             saveBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
             saveBtn.disabled = true;
@@ -671,7 +652,7 @@
                     await ZOHO.CRM.API.updateRecord(config);
                     
                     document.getElementById('successOverlay').classList.remove('hidden');
-                    setTimeout(() => { ZOHO.CRM.UI.Popup.close(); }, 2000);
+                    setTimeout(() => { ZOHO.CRM.UI.Popup.closeReload(); }, 2000);
                 } catch (error) {
                     console.error("Error saving to CRM:", error);
                     alert("Failed to save data to CRM. Check console.");
@@ -679,7 +660,6 @@
                     saveBtn.disabled = false;
                 }
             } else {
-                // MOCK SAVING FOR RENDER / LOCAL PREVIEW
                 setTimeout(() => {
                     document.getElementById('successOverlay').classList.remove('hidden');
                     setTimeout(() => {
