@@ -345,7 +345,7 @@
                     Zoho CRM Link Active
                 </div>
                 <!-- VERSION BADGE MOVED HERE -->
-                <div class="text-[10px] text-slate-400 font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200">v1.3</div>
+                <div class="text-[10px] text-slate-400 font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200">v1.4</div>
             </div>
             
             <div class="flex gap-2">
@@ -428,46 +428,35 @@
             const stairFinished = document.querySelector('input[name="stairType"][value="Finished"]').checked;
             const stairAny = stairConst || stairFinished;
 
+            // --- SUPER HIERARCHY LOGIC FOR DYNAMIC COLORS ---
+            
+            // 1. Stair Dominant Color
             let stairColor = 'task-standard';
-            if (stairConst && stairFinished) stairColor = 'task-standard';
-            else if (stairFinished) stairColor = 'task-finished';
+            if (stairFinished) stairColor = 'task-finished';
             else if (stairConst) stairColor = 'task-framing';
 
+            // 2. Railing Dominant Color
             let railingColor = 'task-standard';
             if (railFullMetal) railingColor = 'task-metal';
-            else if (railStraight && railCurved) railingColor = 'task-standard';
             else if (railCurved) railingColor = 'task-curved';
             else if (spindleGlass) railingColor = 'task-glass';
             else if (railStraight) railingColor = 'task-wood';
             else if (spindleMetal || spindleCustom || spindleWall) railingColor = 'task-metal-spindle';
             else if (spindleWood) railingColor = 'task-wood-spindle';
 
+            // 3. Global Dominant Color (Highest Complexity Wins - No Graying Out!)
             let dominantColor = 'task-standard';
-            let activeSystemsArray = [];
-            if (railFullMetal) activeSystemsArray.push('metalRailing');
-            if (railStraight) activeSystemsArray.push('straightRailing');
-            if (railCurved) activeSystemsArray.push('curvedRailing');
-            if (spindleMetal || spindleCustom || spindleWall) activeSystemsArray.push('metalSpindle');
-            if (spindleWood) activeSystemsArray.push('woodSpindle');
-            if (spindleGlass) activeSystemsArray.push('glass');
-            if (stairFinished) activeSystemsArray.push('finishedStair');
-            if (stairConst) activeSystemsArray.push('constStair');
+            if (railFullMetal) dominantColor = 'task-metal';
+            else if (railCurved) dominantColor = 'task-curved';
+            else if (spindleGlass) dominantColor = 'task-glass';
+            else if (stairFinished) dominantColor = 'task-finished';
+            else if (railStraight) dominantColor = 'task-wood';
+            else if (spindleMetal || spindleCustom || spindleWall) dominantColor = 'task-metal-spindle';
+            else if (spindleWood) dominantColor = 'task-wood-spindle';
+            else if (stairConst) dominantColor = 'task-framing';
 
-            if (activeSystemsArray.length > 1) {
-                dominantColor = 'task-standard'; 
-            } else if (activeSystemsArray.length === 1) {
-                const sys = activeSystemsArray[0];
-                if (sys === 'metalRailing') dominantColor = 'task-metal';
-                else if (sys === 'straightRailing') dominantColor = 'task-wood';
-                else if (sys === 'curvedRailing') dominantColor = 'task-curved';
-                else if (sys === 'metalSpindle') dominantColor = 'task-metal-spindle';
-                else if (sys === 'woodSpindle') dominantColor = 'task-wood-spindle';
-                else if (sys === 'glass') dominantColor = 'task-glass';
-                else if (sys === 'finishedStair') dominantColor = 'task-finished';
-                else if (sys === 'constStair') dominantColor = 'task-framing';
-            }
-
-            setTaskColor('task-const-stair-measure', stairColor);
+            // --- APPLY GENERAL COLORS ---
+            setTaskColor('task-reno-stair-measure', stairColor);
             setTaskColor('task-stair-spec', stairColor);
             setTaskColor('task-stair-drawing', stairColor);
             setTaskColor('task-stair-takeoff', stairColor);
@@ -491,6 +480,7 @@
             setTaskColor('task-wrap-generic', dominantColor);
             setTaskColor('task-qa-turnover', dominantColor);
 
+            // --- APPLY STRICT COMPONENT COLORS (These never change) ---
             setTaskColor('task-slice', 'task-curved'); 
             
             const activeMetalColor = railFullMetal ? 'task-metal' : 'task-metal-spindle';
@@ -498,9 +488,10 @@
             setTaskColor('task-powder-schedule', activeMetalColor);
             setTaskColor('task-customMetal-order', activeMetalColor);
             setTaskColor('task-customMetal-mfg', activeMetalColor);
-            setTaskColor('task-metal-order', activeMetalColor);
-            setTaskColor('task-metal-mfg', activeMetalColor);
-            setTaskColor('task-wall-brackets', activeMetalColor);
+            
+            setTaskColor('task-metal-order', 'task-metal-spindle');
+            setTaskColor('task-metal-mfg', 'task-metal-spindle');
+            setTaskColor('task-wall-brackets', 'task-metal-spindle');
             
             setTaskColor('task-dryfit-schedule', 'task-metal');
             setTaskColor('task-dryfit-task', 'task-metal');
@@ -509,12 +500,22 @@
             
             setTaskColor('task-wood-order', 'task-wood-spindle');
             setTaskColor('task-wood-mfg', 'task-wood-spindle');
+            
             setTaskColor('task-glass-order', 'task-glass');
             setTaskColor('task-glass-schedule', 'task-glass');
             setTaskColor('task-glass-install', 'task-glass');
+            
             setTaskColor('task-finished-stair-order', 'task-finished');
             setTaskColor('task-finished-stair-mfg', 'task-finished');
+            setTaskColor('task-finished-stair-install', 'task-finished');
+            setTaskColor('task-finished-stair-schedule', 'task-finished');
 
+            setTaskColor('task-const-stair-measure', 'task-framing');
+            setTaskColor('task-const-stair-drop', 'task-framing');
+            setTaskColor('task-const-stair-install', 'task-framing');
+            setTaskColor('task-const-stair-schedule', 'task-framing');
+
+            // --- BLOCK VISIBILITY ---
             document.getElementById('block-railing-installer-sheet').classList.toggle('hidden', !railingAny && !spindleAny);
             document.getElementById('block-railing-scheduling').classList.toggle('hidden', !railingAny && !spindleAny);
             document.getElementById('block-stair-installer-sheet').classList.toggle('hidden', !stairAny);
