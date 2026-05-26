@@ -42,8 +42,8 @@
         /* Material Legend Colors */
         .task-metal { color: #0284c7; font-weight: 700; } /* Blue */
         .task-metal-spindle { color: #0d9488; font-weight: 700; } /* Teal */
-        .task-wood { color: #d97706; font-weight: 700; } /* Amber */
-        .task-curved { color: #ea580c; font-weight: 700; } /* Rust/Orange */
+        .task-straight { color: #d97706; font-weight: 700; } /* Amber */
+        .task-curved { color: #dc2626; font-weight: 700; } /* Red */
         .task-wood-spindle { color: #e11d48; font-weight: 700; } /* Rose */
         .task-glass { color: #4f46e5; font-weight: 700; } /* Indigo */
         .task-framing { color: #059669; font-weight: 700; } /* Emerald */
@@ -77,10 +77,9 @@
         </div>
 
         <!-- STRICT SIDE-BY-SIDE BODY -->
-        <!-- min-h-0 prevents flexbox from infinitely expanding and crushing scrollable areas -->
         <div class="flex flex-row flex-grow w-full overflow-hidden min-h-0">
             
-            <!-- LEFT COLUMN: FORM INPUTS (Strictly 55% width, independent scrolling, reduced padding) -->
+            <!-- LEFT COLUMN: FORM INPUTS -->
             <div class="w-[55%] h-full overflow-y-auto px-4 py-4 border-r border-gray-200">
                 <form id="handoffForm" class="space-y-4">
                     
@@ -101,6 +100,21 @@
                                     <p class="text-xs font-bold text-gray-800">Renovation</p>
                                     <p class="text-[9px] text-gray-500 leading-tight">Includes Full Service (Removal/QA).</p>
                                 </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Stair Configuration (Moved Up) -->
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider border-b pb-1">Stair Structure</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                <input type="checkbox" name="stairType" value="Construction" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                <span class="ml-2 text-xs font-medium text-gray-800">Construction Grade</span>
+                            </label>
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                                <input type="checkbox" name="stairType" value="Finished" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
+                                <span class="ml-2 text-xs font-medium text-gray-800">Finished Stairs</span>
                             </label>
                         </div>
                     </div>
@@ -151,21 +165,6 @@
                         </div>
                     </div>
 
-                    <!-- Stair Configuration -->
-                    <div>
-                        <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider border-b pb-1">Stair Structure</h3>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
-                                <input type="checkbox" name="stairType" value="Construction" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-2 text-xs font-medium text-gray-800">Construction Grade</span>
-                            </label>
-                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
-                                <input type="checkbox" name="stairType" value="Finished" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-2 text-xs font-medium text-gray-800">Finished Stairs</span>
-                            </label>
-                        </div>
-                    </div>
-
                     <!-- Additional Notes -->
                     <div class="pb-4">
                         <label for="handoffNotes" class="block text-sm font-bold text-gray-700 mb-1 uppercase tracking-wider">Production Notes</label>
@@ -174,7 +173,7 @@
                 </form>
             </div>
 
-            <!-- RIGHT COLUMN: PREVIEW (Strictly 45% width, independent scrolling) -->
+            <!-- RIGHT COLUMN: PREVIEW -->
             <div class="w-[45%] h-full bg-slate-50 flex flex-col">
                 
                 <!-- Fixed Preview Header -->
@@ -185,7 +184,7 @@
                         <div class="w-2 h-2 rounded-full bg-blue-500" title="Full Metal Railing"></div>
                         <div class="w-2 h-2 rounded-full bg-teal-600" title="Metal/Custom Spindles"></div>
                         <div class="w-2 h-2 rounded-full bg-amber-500" title="Straight Railing"></div>
-                        <div class="w-2 h-2 rounded-full bg-orange-600" title="Curved Railing"></div>
+                        <div class="w-2 h-2 rounded-full bg-red-600" title="Curved Railing"></div>
                         <div class="w-2 h-2 rounded-full bg-rose-600" title="Wood Spindles"></div>
                         <div class="w-2 h-2 rounded-full bg-indigo-500" title="Glass"></div>
                         <div class="w-2 h-2 rounded-full bg-violet-500" title="Finished Stairs"></div>
@@ -344,8 +343,8 @@
                     <svg class="animate-pulse w-2 h-2 text-green-500 fill-current" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"/></svg>
                     Zoho CRM Link Active
                 </div>
-                <!-- VERSION BADGE MOVED HERE -->
-                <div class="text-[10px] text-slate-400 font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200">v1.4</div>
+                <!-- VERSION BADGE -->
+                <div class="text-[10px] text-slate-400 font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200">v1.6</div>
             </div>
             
             <div class="flex gap-2">
@@ -369,7 +368,8 @@
 
     <script>
         let isZohoEnvironment = false;
-        
+
+        // Initialize Zoho SDK
         if (typeof ZOHO !== 'undefined') {
             ZOHO.embeddedApp.on("PageLoad", function(data){
                 isZohoEnvironment = true;
@@ -388,7 +388,7 @@
         const setTaskColor = (id, colorClass) => {
             const el = document.getElementById(id);
             if (el) {
-                el.classList.remove('task-metal', 'task-metal-spindle', 'task-wood', 'task-curved', 'task-wood-spindle', 'task-glass', 'task-framing', 'task-finished', 'task-standard');
+                el.classList.remove('task-metal', 'task-metal-spindle', 'task-straight', 'task-curved', 'task-wood-spindle', 'task-glass', 'task-framing', 'task-finished', 'task-standard');
                 el.classList.add(colorClass);
             }
         };
@@ -428,34 +428,33 @@
             const stairFinished = document.querySelector('input[name="stairType"][value="Finished"]').checked;
             const stairAny = stairConst || stairFinished;
 
-            // --- SUPER HIERARCHY LOGIC FOR DYNAMIC COLORS ---
+            // --- REFINED BASE + ACCENT LOGIC ---
             
-            // 1. Stair Dominant Color
+            // 1. Stair Category Color
             let stairColor = 'task-standard';
             if (stairFinished) stairColor = 'task-finished';
             else if (stairConst) stairColor = 'task-framing';
 
-            // 2. Railing Dominant Color
+            // 2. Railing Category Color
             let railingColor = 'task-standard';
             if (railFullMetal) railingColor = 'task-metal';
             else if (railCurved) railingColor = 'task-curved';
-            else if (spindleGlass) railingColor = 'task-glass';
-            else if (railStraight) railingColor = 'task-wood';
-            else if (spindleMetal || spindleCustom || spindleWall) railingColor = 'task-metal-spindle';
-            else if (spindleWood) railingColor = 'task-wood-spindle';
+            else if (railStraight) railingColor = 'task-straight';
 
-            // 3. Global Dominant Color (Highest Complexity Wins - No Graying Out!)
-            let dominantColor = 'task-standard';
-            if (railFullMetal) dominantColor = 'task-metal';
-            else if (railCurved) dominantColor = 'task-curved';
-            else if (spindleGlass) dominantColor = 'task-glass';
-            else if (stairFinished) dominantColor = 'task-finished';
-            else if (railStraight) dominantColor = 'task-wood';
-            else if (spindleMetal || spindleCustom || spindleWall) dominantColor = 'task-metal-spindle';
-            else if (spindleWood) dominantColor = 'task-wood-spindle';
-            else if (stairConst) dominantColor = 'task-framing';
+            // 3. Base Project Color (The "Canvas" of the project - defines generic tasks)
+            let baseColor = 'task-standard';
+            // Heavy structures take priority for the base color
+            if (railFullMetal) baseColor = 'task-metal';
+            else if (railCurved) baseColor = 'task-curved';
+            else if (stairFinished) baseColor = 'task-finished';
+            else if (railStraight) baseColor = 'task-straight';
+            else if (stairConst) baseColor = 'task-framing';
+            // If no heavy structure is picked, fall back to spindle colors
+            else if (spindleGlass) baseColor = 'task-glass';
+            else if (spindleMetal || spindleCustom || spindleWall) baseColor = 'task-metal-spindle';
+            else if (spindleWood) baseColor = 'task-wood-spindle';
 
-            // --- APPLY GENERAL COLORS ---
+            // --- APPLY GENERAL SHARED CATEGORY COLORS ---
             setTaskColor('task-reno-stair-measure', stairColor);
             setTaskColor('task-stair-spec', stairColor);
             setTaskColor('task-stair-drawing', stairColor);
@@ -473,14 +472,15 @@
             setTaskColor('task-schedule-generic-mfg', railingColor);
             setTaskColor('task-railing-install', railingColor);
 
-            setTaskColor('task-order-materials-generic', dominantColor);
-            setTaskColor('task-receive-materials', dominantColor);
-            setTaskColor('task-mfg-package-generic', dominantColor);
-            setTaskColor('task-qa-check', dominantColor);
-            setTaskColor('task-wrap-generic', dominantColor);
-            setTaskColor('task-qa-turnover', dominantColor);
+            // --- APPLY BASE COLOR TO GENERIC TASKS (No longer locked to Slate Gray!) ---
+            setTaskColor('task-order-materials-generic', baseColor);
+            setTaskColor('task-receive-materials', baseColor);
+            setTaskColor('task-mfg-package-generic', baseColor);
+            setTaskColor('task-qa-check', baseColor);
+            setTaskColor('task-wrap-generic', baseColor);
+            setTaskColor('task-qa-turnover', baseColor);
 
-            // --- APPLY STRICT COMPONENT COLORS (These never change) ---
+            // --- APPLY STRICT INDIVIDUAL COMPONENT COLORS (These accents NEVER change) ---
             setTaskColor('task-slice', 'task-curved'); 
             
             const activeMetalColor = railFullMetal ? 'task-metal' : 'task-metal-spindle';
@@ -529,6 +529,7 @@
             document.getElementById('block-assembly-wrapup').classList.toggle('hidden', !showProduction);
             document.getElementById('block-install-qa').classList.remove('hidden');
 
+            // --- SPECIFIC TASK VISIBILITY ---
             document.getElementById('task-metal-measure').classList.toggle('hidden', !railFullMetal);
             document.getElementById('task-standard-measure').classList.toggle('hidden', railFullMetal);
 
