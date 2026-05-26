@@ -23,6 +23,15 @@
             overflow: hidden; 
         }
 
+        .modal-enter {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+        
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.98); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
         /* Ironwood Branding */
         .bg-brand-dark { background-color: #1e293b; } 
         .text-brand-dark { color: #1e293b; }
@@ -56,47 +65,32 @@
     </div>
 
     <!-- MAIN FLAT APP CONTAINER -->
-    <div id="appContainer" class="flex flex-col h-full w-full hidden relative">
-        
-        <!-- FLAT BRANDED HEADER (Removed custom X button) -->
-        <div class="px-5 py-3 bg-brand-dark flex justify-between items-center text-white shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-white rounded flex items-center justify-center text-brand-dark font-bold text-lg">
-                    IS
-                </div>
-                <div>
-                    <h2 class="text-lg font-bold tracking-wide leading-tight">Ironwood Stair & Rail</h2>
-                    <p class="text-[10px] text-slate-300 uppercase tracking-wider">Production Handoff Protocol</p>
-                </div>
-            </div>
-            <!-- Version Number (Replaced empty div) -->
-            <div class="text-xs text-slate-400 font-mono bg-slate-800 px-2 py-1 rounded border border-slate-700">v1.1</div> 
-        </div>
+    <div id="appContainer" class="flex flex-col h-full w-full hidden relative modal-enter">
 
         <!-- STRICT SIDE-BY-SIDE BODY -->
         <!-- min-h-0 prevents flexbox from infinitely expanding and crushing scrollable areas -->
         <div class="flex flex-row flex-grow w-full overflow-hidden min-h-0">
             
-            <!-- LEFT COLUMN: FORM INPUTS (Strictly 55% width, independent scrolling) -->
-            <div class="w-[55%] h-full overflow-y-auto px-6 py-6 border-r border-gray-200">
-                <form id="handoffForm" class="space-y-6">
+            <!-- LEFT COLUMN: FORM INPUTS (Strictly 55% width, independent scrolling, reduced padding) -->
+            <div class="w-[55%] h-full overflow-y-auto px-4 py-4 border-r border-gray-200">
+                <form id="handoffForm" class="space-y-4">
                     
                     <!-- Project Context -->
                     <div>
-                        <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider border-b pb-2">Project Context</h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider border-b pb-1">Project Context</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="radio" name="projectType" value="NewBuild" checked class="w-4 h-4 text-brand-accent border-gray-300 focus:ring-brand-accent form-radio">
-                                <div class="ml-3">
-                                    <p class="text-sm font-bold text-gray-800">New Build</p>
-                                    <p class="text-[10px] text-gray-500 leading-tight">Standard supply/install flow.</p>
+                                <div class="ml-2">
+                                    <p class="text-xs font-bold text-gray-800">New Build</p>
+                                    <p class="text-[9px] text-gray-500 leading-tight">Standard supply/install flow.</p>
                                 </div>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="radio" id="projectReno" name="projectType" value="Renovation" class="w-4 h-4 text-brand-accent border-gray-300 focus:ring-brand-accent form-radio">
-                                <div class="ml-3">
-                                    <p class="text-sm font-bold text-gray-800">Renovation</p>
-                                    <p class="text-[10px] text-gray-500 leading-tight">Includes Full Service (Removal/QA).</p>
+                                <div class="ml-2">
+                                    <p class="text-xs font-bold text-gray-800">Renovation</p>
+                                    <p class="text-[9px] text-gray-500 leading-tight">Includes Full Service (Removal/QA).</p>
                                 </div>
                             </label>
                         </div>
@@ -104,69 +98,69 @@
 
                     <!-- Railing Configuration -->
                     <div>
-                        <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider border-b pb-2">Railing Shape & Style</h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider border-b pb-1">Railing Shape & Style</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="checkbox" id="railStraight" name="railingType" value="Straight" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Straight Railing</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Straight Railing</span>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="checkbox" id="railCurved" name="railingType" value="Curved" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Curved Railing</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Curved Railing</span>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50 col-span-2">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50 col-span-2">
                                 <input type="checkbox" id="railFullMetal" name="railingType" value="FullMetal" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Full Metal Railing (Welded Structure)</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Full Metal Railing (Welded Structure)</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Spindle / Infill Configuration -->
                     <div>
-                        <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider border-b pb-2">Spindle / Infill Type</h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50 col-span-2">
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider border-b pb-1">Spindle / Infill Type</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50 col-span-2">
                                 <input type="checkbox" name="spindleType" value="WallMount" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Wall Mount Handrail</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Wall Mount Handrail</span>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="checkbox" name="spindleType" value="Wood" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Wood Spindles</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Wood Spindles</span>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="checkbox" name="spindleType" value="Metal" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Metal Spindles</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Metal Spindles</span>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="checkbox" name="spindleType" value="CustomMetal" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Custom Metal</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Custom Metal</span>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="checkbox" name="spindleType" value="Glass" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Glass Panels</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Glass Panels</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Stair Configuration -->
                     <div>
-                        <h3 class="text-sm font-bold text-gray-700 mb-3 uppercase tracking-wider border-b pb-2">Stair Structure</h3>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider border-b pb-1">Stair Structure</h3>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="checkbox" name="stairType" value="Construction" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Construction Grade</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Construction Grade</span>
                             </label>
-                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
+                            <label class="flex items-center p-2.5 border rounded-lg cursor-pointer hover:bg-slate-50 transition-colors group has-[:checked]:border-brand-accent has-[:checked]:bg-blue-50">
                                 <input type="checkbox" name="stairType" value="Finished" class="w-4 h-4 text-brand-accent border-gray-300 rounded focus:ring-brand-accent form-checkbox">
-                                <span class="ml-3 text-sm font-medium text-gray-800">Finished Stairs</span>
+                                <span class="ml-2 text-xs font-medium text-gray-800">Finished Stairs</span>
                             </label>
                         </div>
                     </div>
 
                     <!-- Additional Notes -->
-                    <div class="pb-6">
-                        <label for="handoffNotes" class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider">Production Notes</label>
-                        <textarea id="handoffNotes" name="notes" rows="3" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent outline-none bg-white placeholder-gray-400" placeholder="Special requirements, site access details, urgent timelines..."></textarea>
+                    <div class="pb-4">
+                        <label for="handoffNotes" class="block text-sm font-bold text-gray-700 mb-1 uppercase tracking-wider">Production Notes</label>
+                        <textarea id="handoffNotes" name="notes" rows="2" class="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-accent outline-none bg-white placeholder-gray-400 text-sm" placeholder="Special requirements, site access details, urgent timelines..."></textarea>
                     </div>
                 </form>
             </div>
@@ -175,9 +169,9 @@
             <div class="w-[45%] h-full bg-slate-50 flex flex-col">
                 
                 <!-- Fixed Preview Header -->
-                <div class="px-4 py-4 shrink-0 border-b border-gray-200">
+                <div class="px-3 py-3 shrink-0 border-b border-gray-200">
                     <h3 class="text-sm font-bold text-gray-700 uppercase tracking-wider text-brand-accent">Project Blueprint Preview</h3>
-                    <p class="text-[10px] text-gray-500 uppercase tracking-tighter mb-2">Dynamic Material Logic Applied</p>
+                    <p class="text-[9px] text-gray-500 uppercase tracking-tighter mb-2">Dynamic Material Logic Applied</p>
                     <div class="flex flex-wrap gap-1">
                         <div class="w-2 h-2 rounded-full bg-blue-500" title="Full Metal Railing"></div>
                         <div class="w-2 h-2 rounded-full bg-teal-600" title="Metal/Custom Spindles"></div>
@@ -191,25 +185,25 @@
                 </div>
                 
                 <!-- Scrollable Preview Content -->
-                <div class="flex-grow overflow-y-auto p-4 relative">
+                <div class="flex-grow overflow-y-auto p-3 relative">
                     
                     <!-- Empty State -->
                     <div id="emptyStatePreview" class="absolute inset-0 flex flex-col items-center justify-center opacity-60">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 mb-4"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-slate-400 mb-3"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
                         <p class="text-sm font-semibold text-slate-600">No Requirements Selected</p>
-                        <p class="text-xs text-slate-500 text-center mt-2 max-w-[200px]">Select a requirement to generate the blueprint.</p>
+                        <p class="text-[10px] text-slate-500 text-center mt-1 max-w-[180px]">Select a requirement to generate the blueprint.</p>
                     </div>
 
                     <!-- Dynamic List -->
-                    <div class="space-y-3 hidden pb-4" id="projectPreviewList">
+                    <div class="space-y-2 hidden pb-4" id="projectPreviewList">
                         
                         <!-- Railing Installer Sheet -->
-                        <div id="block-railing-installer-sheet" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                        <div id="block-railing-installer-sheet" class="bg-white p-2.5 border border-gray-200 rounded-md shadow-sm hidden">
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-6 h-6 rounded bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-[10px]">RI</div>
-                                <p class="text-sm font-bold text-gray-800">Railing Installer Sheet</p>
+                                <div class="w-5 h-5 rounded bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-[9px]">RI</div>
+                                <p class="text-xs font-bold text-gray-800">Railing Installer Sheet</p>
                             </div>
-                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                            <ul class="text-[11px] text-gray-500 ml-7 list-disc">
                                 <li id="task-standard-measure" class="task-standard">Railing Site Measure</li>
                                 <li id="task-metal-measure" class="task-metal hidden">Metal Template Measure</li>
                                 <li id="task-railing-drawing" class="task-standard">Create Railing Site Drawing</li>
@@ -218,12 +212,12 @@
                         </div>
 
                         <!-- Stair Installer Sheet -->
-                        <div id="block-stair-installer-sheet" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                        <div id="block-stair-installer-sheet" class="bg-white p-2.5 border border-gray-200 rounded-md shadow-sm hidden">
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-6 h-6 rounded bg-blue-50 flex items-center justify-center text-blue-400 font-bold text-[10px]">SI</div>
-                                <p class="text-sm font-bold text-gray-800">Stair Installer Sheet</p>
+                                <div class="w-5 h-5 rounded bg-blue-50 flex items-center justify-center text-blue-400 font-bold text-[9px]">SI</div>
+                                <p class="text-xs font-bold text-gray-800">Stair Installer Sheet</p>
                             </div>
-                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                            <ul class="text-[11px] text-gray-500 ml-7 list-disc">
                                 <li id="task-const-stair-measure" class="task-framing hidden transition-all">Stair Measure (Framing Stage)</li>
                                 <li id="task-reno-stair-measure" class="task-standard hidden transition-all">Stair Site Measure</li>
                                 <li id="task-stair-spec" class="task-standard hidden transition-all">Fill Out Stair Spec Sheet</li>
@@ -233,12 +227,12 @@
                         </div>
 
                         <!-- Railing Scheduling -->
-                        <div id="block-railing-scheduling" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                        <div id="block-railing-scheduling" class="bg-white p-2.5 border border-gray-200 rounded-md shadow-sm hidden">
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-6 h-6 rounded bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-[10px]">RS</div>
-                                <p class="text-sm font-bold text-gray-800">Railing Scheduling</p>
+                                <div class="w-5 h-5 rounded bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-[9px]">RS</div>
+                                <p class="text-xs font-bold text-gray-800">Railing Scheduling</p>
                             </div>
-                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                            <ul class="text-[11px] text-gray-500 ml-7 list-disc">
                                 <li id="task-reno-railing-removal-schedule" class="task-standard hidden transition-all">Schedule Existing Railing Removal & Disposal</li>
                                 <li id="task-schedule-generic-mfg" class="task-standard">Schedule Manufacturing</li>
                                 <li id="task-schedule-metal-fab" class="task-standard hidden transition-all">Schedule Metal Fabrication</li>
@@ -251,12 +245,12 @@
                         </div>
 
                         <!-- Stair Scheduling -->
-                        <div id="block-stair-scheduling" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                        <div id="block-stair-scheduling" class="bg-white p-2.5 border border-gray-200 rounded-md shadow-sm hidden">
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-6 h-6 rounded bg-indigo-50 flex items-center justify-center text-indigo-400 font-bold text-[10px]">SS</div>
-                                <p class="text-sm font-bold text-gray-800">Stair Scheduling</p>
+                                <div class="w-5 h-5 rounded bg-indigo-50 flex items-center justify-center text-indigo-400 font-bold text-[9px]">SS</div>
+                                <p class="text-xs font-bold text-gray-800">Stair Scheduling</p>
                             </div>
-                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                            <ul class="text-[11px] text-gray-500 ml-7 list-disc">
                                 <li id="task-reno-stair-removal-schedule" class="task-standard hidden transition-all">Schedule Existing Stair Removal & Disposal</li>
                                 <li id="task-const-stair-schedule" class="task-framing hidden transition-all">Schedule Const. Stair Drop Off</li>
                                 <li id="task-finished-stair-schedule" class="task-finished hidden transition-all">Schedule Finished Stair Install</li>
@@ -264,12 +258,12 @@
                         </div>
 
                         <!-- Materials Ordering -->
-                        <div id="block-materials-ordering" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                        <div id="block-materials-ordering" class="bg-white p-2.5 border border-gray-200 rounded-md shadow-sm hidden">
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-6 h-6 rounded bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-[10px]">MO</div>
-                                <p class="text-sm font-bold text-gray-800">Materials Ordering</p>
+                                <div class="w-5 h-5 rounded bg-purple-100 flex items-center justify-center text-purple-600 font-bold text-[9px]">MO</div>
+                                <p class="text-xs font-bold text-gray-800">Materials Ordering</p>
                             </div>
-                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                            <ul class="text-[11px] text-gray-500 ml-7 list-disc">
                                 <li id="task-customMetal-order" class="task-standard hidden transition-all">Order Custom Metal / Raw Steel</li>
                                 <li id="task-order-materials-generic" class="task-standard">Order Materials</li>
                                 <li id="task-wall-brackets" class="task-standard hidden transition-all">Order Metal Wall Brackets</li>
@@ -282,12 +276,12 @@
                         </div>
 
                         <!-- Manufacturing & Fabrication -->
-                        <div id="block-manufacturing-fabrication" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                        <div id="block-manufacturing-fabrication" class="bg-white p-2.5 border border-gray-200 rounded-md shadow-sm hidden">
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-6 h-6 rounded bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-[10px]">MF</div>
-                                <p id="mfg-block-title" class="text-sm font-bold text-gray-800">Manufacturing & Fabrication</p>
+                                <div class="w-5 h-5 rounded bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-[9px]">MF</div>
+                                <p id="mfg-block-title" class="text-xs font-bold text-gray-800">Manufacturing & Fabrication</p>
                             </div>
-                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                            <ul class="text-[11px] text-gray-500 ml-7 list-disc">
                                 <li id="task-slice" class="task-standard hidden transition-all">Generate Slice Package (Curved)</li>
                                 <li id="task-mfg-package-generic" class="task-standard">Manufacture Job Package & QA</li>
                                 <li id="task-fullMetal-mfg" class="task-standard hidden transition-all">Fabricate Welded Railing Structure</li>
@@ -299,24 +293,24 @@
                         </div>
 
                         <!-- Assembly & Wrap Up -->
-                        <div id="block-assembly-wrapup" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                        <div id="block-assembly-wrapup" class="bg-white p-2.5 border border-gray-200 rounded-md shadow-sm hidden">
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-6 h-6 rounded bg-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-[10px]">AW</div>
-                                <p class="text-sm font-bold text-gray-800">Assembly & Wrap Up</p>
+                                <div class="w-5 h-5 rounded bg-yellow-100 flex items-center justify-center text-yellow-600 font-bold text-[9px]">AW</div>
+                                <p class="text-xs font-bold text-gray-800">Assembly & Wrap Up</p>
                             </div>
-                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                            <ul class="text-[11px] text-gray-500 ml-7 list-disc">
                                 <li id="task-qa-check" class="task-standard">Quality Assurance Check</li>
                                 <li id="task-wrap-generic" class="task-standard">Materials Wrap Up</li>
                             </ul>
                         </div>
 
                         <!-- Install & QA -->
-                        <div id="block-install-qa" class="bg-white p-3 border border-gray-200 rounded-md shadow-sm hidden">
+                        <div id="block-install-qa" class="bg-white p-2.5 border border-gray-200 rounded-md shadow-sm hidden">
                             <div class="flex items-center gap-2 mb-1">
-                                <div class="w-6 h-6 rounded bg-green-100 flex items-center justify-center text-green-600 font-bold text-[10px]">IQ</div>
-                                <p class="text-sm font-bold text-gray-800">Install & QA</p>
+                                <div class="w-5 h-5 rounded bg-green-100 flex items-center justify-center text-green-600 font-bold text-[9px]">IQ</div>
+                                <p class="text-xs font-bold text-gray-800">Install & QA</p>
                             </div>
-                            <ul class="text-xs text-gray-500 ml-8 list-disc">
+                            <ul class="text-[11px] text-gray-500 ml-7 list-disc">
                                 <li id="task-reno-stair-removal" class="task-standard hidden transition-all">Existing Stair Removal & Disposal</li>
                                 <li id="task-reno-railing-removal" class="task-standard hidden transition-all">Existing Railing Removal & Disposal</li>
                                 <li id="task-const-stair-drop" class="task-framing hidden">Const. Stair Drop Off</li>
@@ -334,19 +328,24 @@
             </div>
         </div>
 
-        <!-- FLAT FOOTER -->
-        <div class="px-6 py-4 bg-white border-t border-gray-200 flex justify-between items-center shrink-0">
-            <div class="text-xs text-gray-500 flex items-center gap-2">
-                <svg class="animate-pulse w-2 h-2 text-green-500 fill-current" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"/></svg>
-                Zoho CRM Link Active
+        <!-- FLAT FOOTER (With Version Number) -->
+        <div class="px-5 py-3 bg-white border-t border-gray-200 flex justify-between items-center shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="text-[10px] text-gray-500 flex items-center gap-2">
+                    <svg class="animate-pulse w-2 h-2 text-green-500 fill-current" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50"/></svg>
+                    Zoho CRM Link Active
+                </div>
+                <!-- VERSION BADGE MOVED HERE -->
+                <div class="text-[10px] text-slate-400 font-mono bg-slate-50 px-2 py-0.5 rounded border border-slate-200">v1.2</div>
             </div>
-            <div class="flex gap-3">
-                <button id="cancelBtn" class="px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-gray-300 rounded-lg hover:bg-slate-50 transition-colors">
+            
+            <div class="flex gap-2">
+                <button id="cancelBtn" class="px-3 py-1.5 text-xs font-bold text-slate-600 bg-white border border-gray-300 rounded-md hover:bg-slate-50 transition-colors">
                     Cancel
                 </button>
-                <button id="saveBtn" disabled class="px-6 py-2 text-sm font-bold text-white bg-brand-accent rounded-lg hover:bg-blue-700 shadow-md transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-brand-accent">
+                <button id="saveBtn" disabled class="px-4 py-1.5 text-xs font-bold text-white bg-brand-accent rounded-md hover:bg-blue-700 shadow-sm transition-colors flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-brand-accent">
                     Confirm & Generate Project
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
                 </button>
             </div>
         </div>
@@ -621,7 +620,7 @@
             console.log("Payload ready for Zoho CRM:", capturedData);
 
             const originalHTML = saveBtn.innerHTML;
-            saveBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+            saveBtn.innerHTML = `<svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
             saveBtn.disabled = true;
 
             if (isZohoEnvironment) {
