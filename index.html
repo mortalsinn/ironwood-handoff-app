@@ -674,14 +674,14 @@
             document.getElementById('task-metal-measure').classList.toggle('hidden', !railFullMetal);
             document.getElementById('task-standard-measure').classList.toggle('hidden', railFullMetal);
 
-            const needsWoodMaterials = woodRailingAny || spindleWood || stairFinished;
+            const needsWoodMaterials = woodRailingAny || spindleWood || stairFinished || spindleWall;
             document.getElementById('task-order-materials-generic').classList.toggle('hidden', !needsWoodMaterials);
             document.getElementById('task-customMetal-order').classList.toggle('hidden', !railFullMetal && !spindleCustom);
 
             const mfgTitle = document.getElementById('mfg-block-title');
             const mfgGenericTask = document.getElementById('task-mfg-package-generic');
             const fullMetalMfgTask = document.getElementById('task-fullMetal-mfg');
-            const needsGenericMfg = woodRailingAny || spindleWood || stairFinished || stairConst;
+            const needsGenericMfg = woodRailingAny || spindleWood || stairFinished || stairConst || spindleWall;
 
             if (railFullMetal && !needsGenericMfg) {
                 mfgTitle.textContent = "Metal Fabrication (MetalCraft)";
