@@ -165,6 +165,37 @@
                         </div>
                     </div>
 
+                    <!-- Task Assignments -->
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-700 mb-2 uppercase tracking-wider border-b pb-1">Task Assignments</h3>
+                        <div class="grid grid-cols-1 gap-3 mb-4">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Stair Shop Lead</label>
+                                <select name="stairAssignee" class="w-full p-2 border border-gray-300 rounded focus:ring-brand-accent outline-none text-sm bg-white">
+                                    <option value="">-- Auto-Assign --</option>
+                                    <option value="6001234567890">Bob Builder (Stairs)</option>
+                                    <option value="6001234567891">Sarah Stairs</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Railing Shop Lead</label>
+                                <select name="railingAssignee" class="w-full p-2 border border-gray-300 rounded focus:ring-brand-accent outline-none text-sm bg-white">
+                                    <option value="">-- Auto-Assign --</option>
+                                    <option value="6001234567892">Mike Metals</option>
+                                    <option value="6001234567893">Jane Welder</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 mb-1">Installation Lead</label>
+                                <select name="installAssignee" class="w-full p-2 border border-gray-300 rounded focus:ring-brand-accent outline-none text-sm bg-white">
+                                    <option value="">-- Auto-Assign --</option>
+                                    <option value="6001234567894">Tom Tools</option>
+                                    <option value="6001234567895">Lisa Levels</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Additional Notes -->
                     <div class="pb-4">
                         <label for="handoffNotes" class="block text-sm font-bold text-gray-700 mb-1 uppercase tracking-wider">Production Notes</label>
@@ -626,6 +657,9 @@
                 railings: formData.getAll('railingType'),
                 spindles: formData.getAll('spindleType'),
                 stairs: formData.getAll('stairType'),
+                stairAssignee: formData.get('stairAssignee'),
+                railingAssignee: formData.get('railingAssignee'),
+                installAssignee: formData.get('installAssignee'),
                 notes: formData.get('notes')
             };
             console.log("Payload ready for Zoho CRM:", capturedData);
@@ -639,22 +673,22 @@
                     const pageInfo = await ZOHO.CRM.INTERACTION.getPageInfo();
                     const dealId = pageInfo.recordID;
                     
-                    var config = {
-                        Entity: "Deals",
-                        APIData: {
-                            "id": dealId,
-                            "Handoff_Payload": JSON.stringify(capturedData) 
-                        },
-                        Trigger: ["workflow"]
+                    // Call standalone custom function "create_handoff_tasks"
+                    var func_name = "create_handoff_tasks";
+                    var req_data = {
+                        "arguments": JSON.stringify({
+                            "dealId": dealId,
+                            "payload": capturedData
+                        })
                     };
                     
-                    await ZOHO.CRM.API.updateRecord(config);
+                    await ZOHO.CRM.FUNCTIONS.execute(func_name, req_data);
                     
                     document.getElementById('successOverlay').classList.remove('hidden');
                     setTimeout(() => { ZOHO.CRM.UI.Popup.close(); }, 2000);
                 } catch (error) {
-                    console.error("Error saving to CRM:", error);
-                    alert("Failed to save data to CRM. Check console.");
+                    console.error("Error calling CRM function:", error);
+                    alert("Failed to run task creation function. Check console.");
                     saveBtn.innerHTML = originalHTML;
                     saveBtn.disabled = false;
                 }
