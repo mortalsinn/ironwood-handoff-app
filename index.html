@@ -87,6 +87,7 @@
                     <!-- Hidden inputs to store Assignee State -->
                     <input type="hidden" id="stairAssigneeInput" name="stairAssignee" value="">
                     <input type="hidden" id="railingAssigneeInput" name="railingAssignee" value="">
+                    <input type="hidden" id="spindleAssigneeInput" name="spindleAssignee" value="">
                     <input type="hidden" id="installAssigneeInput" name="installAssignee" value="">
 
                     <!-- Project Context -->
@@ -172,7 +173,13 @@
                         
                         <!-- Spindles Sub-Grid -->
                         <div class="pt-3 mt-1 border-t border-slate-700/50">
-                            <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Spindle / Infill Material</h4>
+                            <div class="flex items-center justify-between mb-3">
+                                <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Spindle / Infill Material</h4>
+                                <button type="button" id="btn-spindleAssigneeInput" onclick="openUserModal('spindleAssigneeInput', 'Spindle/Infill Assembly')" class="text-[10px] font-medium px-2.5 py-1 rounded-md bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-all flex items-center gap-1.5 group">
+                                    <svg class="w-3 h-3 text-slate-400 group-hover:text-brand-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                    <span class="btn-text">Assign Specific User</span>
+                                </button>
+                            </div>
                             <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center p-2.5 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative overflow-hidden col-span-2">
                                 <input type="checkbox" name="spindleType" value="WallMount" class="w-3.5 h-3.5 text-teal-400 bg-slate-900 border-slate-600 rounded focus:ring-teal-400 form-checkbox relative z-10">
@@ -782,6 +789,7 @@
                 stairs: formData.getAll('stairType'),
                 stairAssignee: formData.get('stairAssignee'),
                 railingAssignee: formData.get('railingAssignee'),
+                spindleAssignee: formData.get('spindleAssignee'),
                 installAssignee: formData.get('installAssignee'),
                 notes: formData.get('notes')
             };
@@ -827,7 +835,7 @@
                         
                         // Reset Modal Buttons
                         selectUser('', ''); // Resets whatever is currently targeted
-                        ['stairAssigneeInput','railingAssigneeInput','installAssigneeInput'].forEach(id => {
+                        ['stairAssigneeInput','railingAssigneeInput','spindleAssigneeInput','installAssigneeInput'].forEach(id => {
                             currentTargetInputId = id;
                             selectUser('', '');
                         });
