@@ -42,7 +42,7 @@ if (newProjectId != null) {
     defaultStairManager = "6001234567890";
     defaultRailingManager = "6001234567892";
     defaultSpindleManager = "6001234567892"; // Defaulting to Railing Mgr for Spindles
-    defaultInstallManager = "6001234567894";
+    defaultScheduler = "6001234567894"; // Scheduler who handles Install assignment later
 
     // Helper map for assignees. Check if the frontend passed an Override Assignee. If not, use Default.
     stairAssignee = payload.get("stairAssignee");
@@ -53,9 +53,6 @@ if (newProjectId != null) {
 
     spindleAssignee = payload.get("spindleAssignee");
     if (spindleAssignee == null || spindleAssignee == "") { spindleAssignee = defaultSpindleManager; }
-
-    installAssignee = payload.get("installAssignee");
-    if (installAssignee == null || installAssignee == "") { installAssignee = defaultInstallManager; }
 
     // --- CREATE TASK LISTS & TASKS ---
     
@@ -79,7 +76,7 @@ if (newProjectId != null) {
             zoho.projects.createTask(portalId, newProjectId, {
                 "name": "Construction Stair Drop-off",
                 "tasklist_id": stairTaskListId,
-                "person_responsible": installAssignee
+                "person_responsible": defaultScheduler
             }, "zoho_projects_connection");
         }
         
@@ -93,7 +90,7 @@ if (newProjectId != null) {
             zoho.projects.createTask(portalId, newProjectId, {
                 "name": "Finished Stair Installation",
                 "tasklist_id": stairTaskListId,
-                "person_responsible": installAssignee
+                "person_responsible": defaultScheduler
             }, "zoho_projects_connection");
         }
     }
@@ -142,7 +139,7 @@ if (newProjectId != null) {
         zoho.projects.createTask(portalId, newProjectId, {
             "name": "Railing / Spindle Installation",
             "tasklist_id": railingTaskListId,
-            "person_responsible": installAssignee
+            "person_responsible": defaultScheduler
         }, "zoho_projects_connection");
     }
     
