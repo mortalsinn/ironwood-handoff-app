@@ -35,13 +35,23 @@ newProjectId = createResponse.get("projects").get(0).get("id_string");
 
 if (newProjectId != null) {
     
-    // --- HELPERS ---
+    // --- HELPERS & ASSIGNEES ---
     
-    // Helper map for assignees. If a user didn't select an assignee in the dropdown, this falls back to null.
-    // The dropdowns passed IDs like "6001234567890".
+    // Default Assignee IDs (The Shop Managers / Leads)
+    // IMPORTANT: Replace these with your actual default Zoho Projects User IDs!
+    defaultStairManager = "6001234567890";
+    defaultRailingManager = "6001234567892";
+    defaultInstallManager = "6001234567894";
+
+    // Helper map for assignees. Check if the frontend passed an Override Assignee. If not, use Default.
     stairAssignee = payload.get("stairAssignee");
+    if (stairAssignee == null || stairAssignee == "") { stairAssignee = defaultStairManager; }
+
     railingAssignee = payload.get("railingAssignee");
+    if (railingAssignee == null || railingAssignee == "") { railingAssignee = defaultRailingManager; }
+
     installAssignee = payload.get("installAssignee");
+    if (installAssignee == null || installAssignee == "") { installAssignee = defaultInstallManager; }
 
     // --- CREATE TASK LISTS & TASKS ---
     
