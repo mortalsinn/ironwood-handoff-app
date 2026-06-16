@@ -171,7 +171,9 @@
                         </div>
                         
                         <!-- Spindles Sub-Grid -->
-                        <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div class="pt-3 mt-1 border-t border-slate-700/50">
+                            <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Spindle / Infill Material</h4>
+                            <div class="grid grid-cols-2 gap-2">
                             <label class="flex items-center p-2.5 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative overflow-hidden col-span-2">
                                 <input type="checkbox" name="spindleType" value="WallMount" class="w-3.5 h-3.5 text-teal-400 bg-slate-900 border-slate-600 rounded focus:ring-teal-400 form-checkbox relative z-10">
                                 <span class="ml-2.5 text-xs font-medium text-slate-400 group-has-[:checked]:text-slate-200 transition-colors relative z-10">Wall Mount Handrail Only</span>
@@ -192,6 +194,7 @@
                                 <input type="checkbox" name="spindleType" value="Glass" class="w-3.5 h-3.5 text-indigo-400 bg-slate-900 border-slate-600 rounded focus:ring-indigo-400 form-checkbox relative z-10">
                                 <span class="ml-2.5 text-xs font-medium text-slate-400 group-has-[:checked]:text-slate-200 transition-colors relative z-10">Glass Panels</span>
                             </label>
+                            </div>
                         </div>
                     </div>
 
@@ -205,6 +208,12 @@
                                 <svg class="w-3 h-3 text-slate-400 group-hover:text-brand-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                 <span class="btn-text">Assign Specific User</span>
                             </button>
+                        </div>
+                        
+                        <div class="p-4 bg-slate-800/20 border border-slate-700/30 rounded-xl">
+                            <p class="text-[11px] text-slate-400 leading-relaxed text-center">
+                                Installation workflows are automatically generated based on your Stair and Railing selections. Only assign a specific user if this job requires specialized oversight.
+                            </p>
                         </div>
                     </div>
 
