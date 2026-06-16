@@ -16,7 +16,6 @@ dealName = dealInfo.get("Deal_Name");
 projectName = dealName + " - Production";
 
 // 2. IMPORTANT: Replace this with your actual Zoho Projects Portal ID
-// You can find this in Zoho Projects -> Setup -> Developer Space -> Portal ID
 portalId = "123456789"; 
 
 // 3. Create a New Project in Zoho Projects
@@ -24,123 +23,123 @@ projectData = Map();
 projectData.put("name", projectName);
 projectData.put("description", "Auto-generated from Ironwood Handoff Widget. Notes: " + payload.get("notes"));
 
-// Note: To link to CRM, you need a Projects connection setup.
-// If you have the standard Zoho CRM -> Projects integration active, 
-// using zoho.projects.createProject is standard:
 createResponse = zoho.projects.createProject(portalId, projectData, "zoho_projects_connection");
 info "Project Create Response: " + createResponse;
 
-// Extract the new Project ID
 newProjectId = createResponse.get("projects").get(0).get("id_string");
 
 if (newProjectId != null) {
     
     // --- HELPERS & ASSIGNEES ---
-    
-    // Default Assignee IDs (The Shop Managers / Leads)
-    // IMPORTANT: Replace these with your actual default Zoho Projects User IDs!
-    defaultStairManager = "6001234567890";
-    defaultRailingManager = "6001234567892";
-    defaultSpindleManager = "6001234567892"; // Defaulting to Railing Mgr for Spindles
-    defaultScheduler = "6001234567894"; // Scheduler who handles Install assignment later
+    // Default Assignees for Production Stages
+    // IMPORTANT: Replace these with your actual Zoho Projects User IDs
+    defaultRailingSheetTech = "6001234567892";
+    defaultStairSheetTech   = "6001234567890";
+    defaultScheduler        = "6001234567894";
+    defaultPurchaser        = "6001234567890";
+    defaultRailingMfg       = "6001234567892";
+    defaultStairMfg         = "6001234567890";
+    defaultQaLead           = "6001234567891";
+    defaultInstallManager   = "6001234567895";
 
-    // Helper map for assignees. Check if the frontend passed an Override Assignee. If not, use Default.
-    stairAssignee = payload.get("stairAssignee");
-    if (stairAssignee == null || stairAssignee == "") { stairAssignee = defaultStairManager; }
+    // Extract overrides from payload or fallback to defaults
+    railingSheetAssignee = payload.get("railingSheetAssignee");
+    if (railingSheetAssignee == null || railingSheetAssignee == "") { railingSheetAssignee = defaultRailingSheetTech; }
 
-    railingAssignee = payload.get("railingAssignee");
-    if (railingAssignee == null || railingAssignee == "") { railingAssignee = defaultRailingManager; }
+    stairSheetAssignee = payload.get("stairSheetAssignee");
+    if (stairSheetAssignee == null || stairSheetAssignee == "") { stairSheetAssignee = defaultStairSheetTech; }
 
-    spindleAssignee = payload.get("spindleAssignee");
-    if (spindleAssignee == null || spindleAssignee == "") { spindleAssignee = defaultSpindleManager; }
+    schedulingAssignee = payload.get("schedulingAssignee");
+    if (schedulingAssignee == null || schedulingAssignee == "") { schedulingAssignee = defaultScheduler; }
+
+    materialsAssignee = payload.get("materialsAssignee");
+    if (materialsAssignee == null || materialsAssignee == "") { materialsAssignee = defaultPurchaser; }
+
+    railingMfgAssignee = payload.get("railingMfgAssignee");
+    if (railingMfgAssignee == null || railingMfgAssignee == "") { railingMfgAssignee = defaultRailingMfg; }
+
+    stairMfgAssignee = payload.get("stairMfgAssignee");
+    if (stairMfgAssignee == null || stairMfgAssignee == "") { stairMfgAssignee = defaultStairMfg; }
+
+    qaAssignee = payload.get("qaAssignee");
+    if (qaAssignee == null || qaAssignee == "") { qaAssignee = defaultQaLead; }
+
+    installAssignee = payload.get("installAssignee");
+    if (installAssignee == null || installAssignee == "") { installAssignee = defaultInstallManager; }
+
 
     // --- CREATE TASK LISTS & TASKS ---
     
     // Check if we need to build Stair Tasks
     stairsList = payload.get("stairs");
     if (stairsList != null && stairsList.size() > 0) {
-        
-        // 1. Create a Task List for Stairs
         stairTaskListData = {"name": "Stair Production & Install"};
         stairTaskListResponse = zoho.projects.createTaskList(portalId, newProjectId, stairTaskListData, "zoho_projects_connection");
         stairTaskListId = stairTaskListResponse.get("tasklists").get(0).get("id_string");
         
-        // 2. Add tasks to this list based on the selections
+        // Setup Sheet (Stair Sheet Assignee)
+        zoho.projects.createTask(portalId, newProjectId, { "name": "Stair Measure & Drawing", "tasklist_id": stairTaskListId, "person_responsible": stairSheetAssignee }, "zoho_projects_connection");
+        
+        // Scheduling
+        zoho.projects.createTask(portalId, newProjectId, { "name": "Schedule Stair Delivery/Install", "tasklist_id": stairTaskListId, "person_responsible": schedulingAssignee }, "zoho_projects_connection");
+
         if (stairsList.contains("Construction")) {
-            zoho.projects.createTask(portalId, newProjectId, {
-                "name": "Construction Grade Stair Measure",
-                "tasklist_id": stairTaskListId,
-                "person_responsible": stairAssignee
-            }, "zoho_projects_connection");
-            
             zoho.projects.createTask(portalId, newProjectId, {
                 "name": "Construction Stair Drop-off",
                 "tasklist_id": stairTaskListId,
-                "person_responsible": defaultScheduler
+                "person_responsible": installAssignee
             }, "zoho_projects_connection");
         }
         
         if (stairsList.contains("Finished")) {
-            zoho.projects.createTask(portalId, newProjectId, {
-                "name": "Order Finished Stair Materials",
-                "tasklist_id": stairTaskListId,
-                "person_responsible": stairAssignee
-            }, "zoho_projects_connection");
-            
-            zoho.projects.createTask(portalId, newProjectId, {
-                "name": "Finished Stair Installation",
-                "tasklist_id": stairTaskListId,
-                "person_responsible": defaultScheduler
-            }, "zoho_projects_connection");
+            // Materials Ordering
+            zoho.projects.createTask(portalId, newProjectId, { "name": "Order Finished Stair Materials", "tasklist_id": stairTaskListId, "person_responsible": materialsAssignee }, "zoho_projects_connection");
+            // Manufacturing
+            zoho.projects.createTask(portalId, newProjectId, { "name": "Manufacture Finished Stair Components", "tasklist_id": stairTaskListId, "person_responsible": stairMfgAssignee }, "zoho_projects_connection");
+            // Install
+            zoho.projects.createTask(portalId, newProjectId, { "name": "Finished Stair Installation", "tasklist_id": stairTaskListId, "person_responsible": installAssignee }, "zoho_projects_connection");
         }
     }
     
     // Check if we need to build Railing/Spindle Tasks
     railingsList = payload.get("railings");
     spindlesList = payload.get("spindles");
-    
     needsRailingTasks = (railingsList != null && railingsList.size() > 0) || (spindlesList != null && spindlesList.size() > 0);
     
     if (needsRailingTasks) {
-        // 1. Create a Task List for Railings
         railingTaskListData = {"name": "Railing Production & Install"};
         railingTaskListResponse = zoho.projects.createTaskList(portalId, newProjectId, railingTaskListData, "zoho_projects_connection");
         railingTaskListId = railingTaskListResponse.get("tasklists").get(0).get("id_string");
         
-        zoho.projects.createTask(portalId, newProjectId, {
-            "name": "Railing Site Measure & Drawing",
-            "tasklist_id": railingTaskListId,
-            "person_responsible": railingAssignee
-        }, "zoho_projects_connection");
+        // Setup Sheet (Railing Sheet Assignee)
+        zoho.projects.createTask(portalId, newProjectId, { "name": "Railing Site Measure & Drawing", "tasklist_id": railingTaskListId, "person_responsible": railingSheetAssignee }, "zoho_projects_connection");
         
+        // Scheduling
+        zoho.projects.createTask(portalId, newProjectId, { "name": "Schedule Railing Installation", "tasklist_id": railingTaskListId, "person_responsible": schedulingAssignee }, "zoho_projects_connection");
+
         if (railingsList != null && railingsList.contains("FullMetal")) {
-            zoho.projects.createTask(portalId, newProjectId, {
-                "name": "Fabricate Welded Railing Structure",
-                "tasklist_id": railingTaskListId,
-                "person_responsible": railingAssignee
-            }, "zoho_projects_connection");
-            
-            zoho.projects.createTask(portalId, newProjectId, {
-                "name": "Schedule Powder Coating",
-                "tasklist_id": railingTaskListId,
-                "person_responsible": railingAssignee
-            }, "zoho_projects_connection");
+            // Mfg Assignee
+            zoho.projects.createTask(portalId, newProjectId, { "name": "Fabricate Welded Railing Structure", "tasklist_id": railingTaskListId, "person_responsible": railingMfgAssignee }, "zoho_projects_connection");
+            // Scheduling Assignee
+            zoho.projects.createTask(portalId, newProjectId, { "name": "Schedule Powder Coating", "tasklist_id": railingTaskListId, "person_responsible": schedulingAssignee }, "zoho_projects_connection");
+        } else {
+            // Standard wood/custom mfg
+            zoho.projects.createTask(portalId, newProjectId, { "name": "Manufacture Railing / Spindles", "tasklist_id": railingTaskListId, "person_responsible": railingMfgAssignee }, "zoho_projects_connection");
         }
         
         if (spindlesList != null && spindlesList.contains("Glass")) {
-             zoho.projects.createTask(portalId, newProjectId, {
-                "name": "Order Glass Panels",
-                "tasklist_id": railingTaskListId,
-                "person_responsible": spindleAssignee
-            }, "zoho_projects_connection");
+             // Materials Assignee
+             zoho.projects.createTask(portalId, newProjectId, { "name": "Order Glass Panels", "tasklist_id": railingTaskListId, "person_responsible": materialsAssignee }, "zoho_projects_connection");
+        } else {
+             // Generic Order
+             zoho.projects.createTask(portalId, newProjectId, { "name": "Order Spindle / Infill Materials", "tasklist_id": railingTaskListId, "person_responsible": materialsAssignee }, "zoho_projects_connection");
         }
         
-        // General Install
-        zoho.projects.createTask(portalId, newProjectId, {
-            "name": "Railing / Spindle Installation",
-            "tasklist_id": railingTaskListId,
-            "person_responsible": defaultScheduler
-        }, "zoho_projects_connection");
+        // Assembly & QA
+        zoho.projects.createTask(portalId, newProjectId, { "name": "Quality Assurance Check", "tasklist_id": railingTaskListId, "person_responsible": qaAssignee }, "zoho_projects_connection");
+
+        // Install
+        zoho.projects.createTask(portalId, newProjectId, { "name": "Railing / Spindle Installation", "tasklist_id": railingTaskListId, "person_responsible": installAssignee }, "zoho_projects_connection");
     }
     
     return "Success: Project and Tasks created in Zoho Projects.";
