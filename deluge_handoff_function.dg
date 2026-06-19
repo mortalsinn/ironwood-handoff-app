@@ -73,8 +73,15 @@ if (newProjectId != null) {
     // Check if we need to build Stair Tasks
     stairsList = payload.get("stairs");
     if (stairsList != null && stairsList.size() > 0) {
-        stairTaskListData = {"name": "Stair Production & Install"};
-        stairTaskListResponse = zoho.projects.createTaskList(portalId, newProjectId, stairTaskListData, "zoho_projects_connection");
+        stairTaskListParams = Map();
+        stairTaskListParams.put("name", "Stair Production & Install");
+        stairTaskListResponse = invokeurl
+        [
+            url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+            type : POST
+            parameters : stairTaskListParams
+            connection : "zoho_projects_connection"
+        ];
         stairTaskListId = stairTaskListResponse.get("tasklists").get(0).get("id_string");
         
         // Setup Sheet (Stair Sheet Assignee)
@@ -107,8 +114,15 @@ if (newProjectId != null) {
     needsRailingTasks = (railingsList != null && railingsList.size() > 0) || (spindlesList != null && spindlesList.size() > 0);
     
     if (needsRailingTasks) {
-        railingTaskListData = {"name": "Railing Production & Install"};
-        railingTaskListResponse = zoho.projects.createTaskList(portalId, newProjectId, railingTaskListData, "zoho_projects_connection");
+        railingTaskListParams = Map();
+        railingTaskListParams.put("name", "Railing Production & Install");
+        railingTaskListResponse = invokeurl
+        [
+            url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+            type : POST
+            parameters : railingTaskListParams
+            connection : "zoho_projects_connection"
+        ];
         railingTaskListId = railingTaskListResponse.get("tasklists").get(0).get("id_string");
         
         // Setup Sheet (Railing Sheet Assignee)
