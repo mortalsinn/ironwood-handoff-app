@@ -495,7 +495,7 @@
                 ZOHO.embeddedApp.on("PageLoad", function (data) {
                     currentDealId = data.EntityId[0];
                     isZohoEnvironment = true;
-                    ZOHO.CRM.UI.Resize({height: 850, width: 1000});
+                    ZOHO.CRM.UI.Resize({height: 950, width: 1400});
                 });
                 ZOHO.embeddedApp.init();
             }
@@ -534,7 +534,7 @@
                         label.innerHTML = `
                             <input type="checkbox" name="customOpt" value="${val}" class="w-3.5 h-3.5 text-sky-400 bg-slate-900 border-slate-600 rounded form-checkbox custom-option-cb" data-block-target="${blockId}">
                             <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">${val}</span>
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 font-bold hidden group-hover:block px-2 cursor-pointer hover:scale-125 transition-transform" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('${blockId}').remove(); const inpId = '${blockId}'.replace('block-custom-', 'customAssignee') + 'Input'; const hiddenInp = document.getElementById(inpId); if(hiddenInp) hiddenInp.remove(); this.parentElement.remove();">&times;</span>
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 font-black text-lg hidden group-hover:block px-2 cursor-pointer hover:scale-125 transition-transform" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('${blockId}').remove(); const inpId = '${blockId}'.replace('block-custom-', 'customAssignee') + 'Input'; const hiddenInp = document.getElementById(inpId); if(hiddenInp) hiddenInp.remove(); this.parentElement.remove();" title="Delete Custom Item">&times;</span>
                         `;
                         grid.appendChild(label);
                         
@@ -550,6 +550,9 @@
                                     <div class="w-5 h-5 rounded bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-[9px]">CU</div>
                                     <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">${val}</p>
                                 </div>
+                                <button type="button" id="btn-customAssignee${customBlockCounter}Input" onclick="openUserModal('customAssignee${customBlockCounter}Input', '${val.replace(/'/g, "\\'")}')" class="override-btn">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
+                                </button>
                             </div>
                             <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
                                 <li class="task-standard" data-list="${targetList}">Custom Task 1 <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span></li>
