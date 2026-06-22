@@ -425,6 +425,15 @@
             <h3 class="text-3xl font-black mb-2 tracking-tight">Handoff Complete</h3>
             <p class="text-slate-400 text-center max-w-md text-sm">Data synchronized to CRM. The production blueprint is generating in Zoho Projects.</p>
         </div>
+        
+        <div id="errorOverlay" class="absolute inset-0 bg-slate-900/95 backdrop-blur-md flex flex-col items-center justify-center hidden z-50 text-white">
+            <div class="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(225,29,72,0.3)]">
+                <svg class="w-10 h-10 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            </div>
+            <h3 class="text-3xl font-black mb-2 tracking-tight">Handoff Failed</h3>
+            <p id="errorMessageDetails" class="text-slate-400 text-center max-w-md text-sm mb-6 break-words px-8">An error occurred while connecting to Zoho Projects.</p>
+            <button type="button" onclick="document.getElementById('errorOverlay').classList.add('hidden')" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-bold transition-colors border border-slate-700">Dismiss</button>
+        </div>
     </div>
 
     <script>
@@ -724,13 +733,34 @@
                     var func_name = "create_handoff_tasks";
                     var req_data = { "arguments": JSON.stringify({ "dealId": dealId, "payload": JSON.stringify(capturedData) }) };
                     
-                    await ZOHO.CRM.FUNCTIONS.execute(func_name, req_data);
+                    const response = await ZOHO.CRM.FUNCTIONS.execute(func_name, req_data);
+                    
+                    let hasError = false;
+                    let errorMsg = "";
+                    
+                    if (response && response.code && response.code !== "SUCCESS") {
+                        hasError = true;
+                        errorMsg = response.message || JSON.stringify(response);
+                    } else if (response && response.details && response.details.output && response.details.output.startsWith("Error")) {
+                        hasError = true;
+                        errorMsg = response.details.output;
+                    }
+                    
+                    if (hasError) {
+                        console.error("Function returned error:", response);
+                        document.getElementById('errorMessageDetails').innerText = errorMsg;
+                        document.getElementById('errorOverlay').classList.remove('hidden');
+                        saveBtn.innerHTML = originalHTML;
+                        saveBtn.disabled = false;
+                        return;
+                    }
                     
                     document.getElementById('successOverlay').classList.remove('hidden');
                     setTimeout(() => { ZOHO.CRM.UI.Popup.close(); }, 2000);
                 } catch (error) {
-                    console.error("Error calling CRM function:", error);
-                    alert("Failed to run task creation function. Check console.");
+                    console.error("Fatal exception calling CRM function:", error);
+                    document.getElementById('errorMessageDetails').innerText = error.message || JSON.stringify(error);
+                    document.getElementById('errorOverlay').classList.remove('hidden');
                     saveBtn.innerHTML = originalHTML;
                     saveBtn.disabled = false;
                 }
