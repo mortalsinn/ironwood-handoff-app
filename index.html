@@ -438,10 +438,16 @@
 
     <script>
         let isZohoEnvironment = false;
+        let currentDealId = null;
 
         if (typeof ZOHO !== 'undefined') {
             ZOHO.embeddedApp.on("PageLoad", function(data){
                 isZohoEnvironment = true;
+                if (data && data.EntityId) {
+                    currentDealId = data.EntityId[0];
+                } else if (data && data.recordId) {
+                    currentDealId = data.recordId;
+                }
                 document.getElementById('localSimulator').classList.add('hidden');
                 document.getElementById('appContainer').classList.remove('hidden');
             });
@@ -727,8 +733,8 @@
 
             if (isZohoEnvironment) {
                 try {
-                    const pageInfo = await ZOHO.CRM.INTERACTION.getPageInfo();
-                    const dealId = pageInfo.recordID;
+                    const dealId = currentDealId;
+                    if (!dealId) throw new Error("Missing Context: Please make sure you are clicking this button from inside a Deal record.");
                     
                     var func_name = "create_handoff_tasks";
                     var req_data = { "arguments": JSON.stringify({ "dealId": dealId, "payload": JSON.stringify(capturedData) }) };
