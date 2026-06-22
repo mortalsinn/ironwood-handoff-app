@@ -6,7 +6,12 @@
     <title>Ironwood Handoff Form v4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
+        .sortable-list li { cursor: grab; position: relative; padding-right: 20px; }
+        .sortable-list li:active { cursor: grabbing; }
+        .delete-btn { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: none; cursor: pointer; color: #ef4444; font-weight: bold; font-size: 14px; }
+        .sortable-list li:hover .delete-btn { display: inline-block; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
@@ -188,7 +193,7 @@
                     <div class="space-y-3 hidden pb-4" id="projectPreviewList">
                         
                         <!-- Block 1: Railing Sheet -->
-                        <div id="block-railing-installer-sheet" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
+                        <div id="block-railing-installer-sheet" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-[9px]">RI</div>
@@ -198,16 +203,20 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                 </button>
                             </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1">
+                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
                                 <li id="task-standard-measure" class="task-standard">Railing Site Measure</li>
                                 <li id="task-metal-measure" class="task-metal hidden">Metal Template Measure</li>
                                 <li id="task-railing-drawing" class="task-standard">Create Railing Site Drawing</li>
                                 <li id="task-railing-takeoff" class="task-standard">Create Railing Take Off Sheet</li>
                             </ul>
+                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
+                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
+                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
                         </div>
 
                         <!-- Block 2: Stair Sheet -->
-                        <div id="block-stair-installer-sheet" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
+                        <div id="block-stair-installer-sheet" data-default-list="Stair Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-[9px]">SI</div>
@@ -217,17 +226,21 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                 </button>
                             </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1">
+                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
                                 <li id="task-const-stair-measure" class="task-framing hidden">Stair Measure (Framing Stage)</li>
                                 <li id="task-reno-stair-measure" class="task-standard hidden">Stair Site Measure</li>
                                 <li id="task-stair-spec" class="task-standard hidden">Fill Out Stair Spec Sheet</li>
                                 <li id="task-stair-drawing" class="task-standard hidden">Create Stair Drawing</li>
                                 <li id="task-stair-takeoff" class="task-standard hidden">Create Stair Take Off Sheet</li>
                             </ul>
+                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
+                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
+                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
                         </div>
 
                         <!-- Block 3: Scheduling -->
-                        <div id="block-scheduling" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
+                        <div id="block-scheduling" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-[9px]">SC</div>
@@ -237,10 +250,10 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                 </button>
                             </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1">
-                                <li id="task-reno-stair-removal-schedule" class="task-standard hidden">Schedule Stair Removal</li>
-                                <li id="task-const-stair-schedule" class="task-framing hidden">Schedule Const. Stair Drop</li>
-                                <li id="task-finished-stair-schedule" class="task-finished hidden">Schedule Finished Stair Install</li>
+                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
+                                <li id="task-reno-stair-removal-schedule" class="task-standard hidden" data-list="Stair Production & Install">Schedule Stair Removal</li>
+                                <li id="task-const-stair-schedule" class="task-framing hidden" data-list="Stair Production & Install">Schedule Const. Stair Drop</li>
+                                <li id="task-finished-stair-schedule" class="task-finished hidden" data-list="Stair Production & Install">Schedule Finished Stair Install</li>
                                 <li id="task-reno-railing-removal-schedule" class="task-standard hidden">Schedule Railing Removal</li>
                                 <li id="task-schedule-generic-mfg" class="task-standard hidden">Schedule Manufacturing</li>
                                 <li id="task-schedule-metal-fab" class="task-metal hidden">Schedule Metal Fabrication</li>
@@ -249,10 +262,14 @@
                                 <li id="task-powder-schedule" class="task-metal hidden">Schedule Powder Coating</li>
                                 <li id="task-railing-install-date" class="task-standard hidden">Schedule Railing Install Date</li>
                             </ul>
+                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
+                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
+                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
                         </div>
 
                         <!-- Block 4: Materials -->
-                        <div id="block-materials-ordering" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
+                        <div id="block-materials-ordering" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold text-[9px]">MO</div>
@@ -262,20 +279,24 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                 </button>
                             </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1">
+                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
                                 <li id="task-customMetal-order" class="task-metal hidden">Order Custom Metal / Steel</li>
                                 <li id="task-order-materials-generic" class="task-standard hidden">Order Standard Railing Materials</li>
                                 <li id="task-wall-brackets" class="task-metal-spindle hidden">Order Metal Wall Brackets</li>
                                 <li id="task-wood-order" class="task-wood-spindle hidden">Order Wood Spindles</li>
                                 <li id="task-metal-order" class="task-metal-spindle hidden">Order Metal Spindles</li>
                                 <li id="task-glass-order" class="task-glass hidden">Order Glass Panels</li>
-                                <li id="task-finished-stair-order" class="task-finished hidden">Order Finished Stair Materials</li>
+                                <li id="task-finished-stair-order" class="task-finished hidden" data-list="Stair Production & Install">Order Finished Stair Materials</li>
                                 <li id="task-receive-materials" class="task-standard">Receive Materials (QA)</li>
                             </ul>
+                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
+                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
+                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
                         </div>
 
                         <!-- Block 5: Railing Mfg -->
-                        <div id="block-railing-mfg" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
+                        <div id="block-railing-mfg" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-[9px]">RM</div>
@@ -285,7 +306,7 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                 </button>
                             </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1">
+                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
                                 <li id="task-slice" class="task-curved hidden">Generate Slice Package (Curved)</li>
                                 <li id="task-mfg-package-railing" class="task-standard hidden">Manufacture Railing Package</li>
                                 <li id="task-fullMetal-mfg" class="task-metal hidden">Fabricate Welded Structure</li>
@@ -293,10 +314,14 @@
                                 <li id="task-metal-mfg" class="task-metal-spindle hidden">Cut Metal Spindles</li>
                                 <li id="task-customMetal-mfg" class="task-metal hidden">Fabricate Custom Metal Parts</li>
                             </ul>
+                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
+                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
+                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
                         </div>
 
                         <!-- Block 6: Stair Mfg -->
-                        <div id="block-stair-mfg" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
+                        <div id="block-stair-mfg" data-default-list="Stair Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-[9px]">SM</div>
@@ -306,14 +331,18 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                 </button>
                             </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1">
+                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
                                 <li id="task-mfg-package-stair" class="task-finished hidden">Manufacture Stair Package</li>
                                 <li id="task-finished-stair-mfg" class="task-finished hidden">Manufacture Finished Stair Parts</li>
                             </ul>
+                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
+                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
+                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
                         </div>
 
                         <!-- Block 7: QA Wrapup -->
-                        <div id="block-assembly-wrapup" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
+                        <div id="block-assembly-wrapup" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-[9px]">QA</div>
@@ -323,14 +352,18 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                 </button>
                             </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1">
+                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
                                 <li id="task-qa-check" class="task-standard">Quality Assurance Check</li>
                                 <li id="task-wrap-generic" class="task-standard">Materials Wrap Up</li>
                             </ul>
+                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
+                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
+                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
                         </div>
 
                         <!-- Block 8: Install -->
-                        <div id="block-install-qa" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
+                        <div id="block-install-qa" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 font-bold text-[9px]">IN</div>
@@ -340,17 +373,21 @@
                                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                 </button>
                             </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1">
-                                <li id="task-reno-stair-removal" class="task-standard hidden">Existing Stair Removal</li>
+                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
+                                <li id="task-reno-stair-removal" class="task-standard hidden" data-list="Stair Production & Install">Existing Stair Removal</li>
                                 <li id="task-reno-railing-removal" class="task-standard hidden">Existing Railing Removal</li>
-                                <li id="task-const-stair-drop" class="task-framing hidden">Const. Stair Drop Off</li>
-                                <li id="task-const-stair-install" class="task-framing hidden">Const. Stair Installation</li>
+                                <li id="task-const-stair-drop" class="task-framing hidden" data-list="Stair Production & Install">Const. Stair Drop Off</li>
+                                <li id="task-const-stair-install" class="task-framing hidden" data-list="Stair Production & Install">Const. Stair Installation</li>
                                 <li id="task-dryfit-task" class="task-metal hidden">Onsite Metal Dry Fit</li>
-                                <li id="task-finished-stair-install" class="task-finished hidden">Finished Stair Installation</li>
+                                <li id="task-finished-stair-install" class="task-finished hidden" data-list="Stair Production & Install">Finished Stair Installation</li>
                                 <li id="task-railing-install" class="task-standard hidden">Railing Installation</li>
                                 <li id="task-glass-install" class="task-glass hidden">Glass Panel Installation</li>
                                 <li id="task-qa-turnover" class="task-standard hidden">QA & Turnover</li>
                             </ul>
+                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
+                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
+                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
                         </div>
 
                     </div>
@@ -441,6 +478,38 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.sortable-list').forEach(el => {
+                new Sortable(el, {
+                    animation: 150,
+                    ghostClass: 'opacity-50'
+                });
+            });
+
+            document.querySelectorAll('.add-task-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const input = e.target.previousElementSibling;
+                    const val = input.value.trim();
+                    if (val) {
+                        const ul = e.target.closest('div[id^="block-"]').querySelector('ul');
+                        const li = document.createElement('li');
+                        li.className = "task-standard";
+                        li.innerHTML = `${val} <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>`;
+                        ul.appendChild(li);
+                        input.value = "";
+                    }
+                });
+            });
+
+            document.querySelectorAll('.sortable-list li').forEach(li => {
+                const span = document.createElement('span');
+                span.className = "delete-btn";
+                span.innerHTML = "&times;";
+                span.onclick = function() { this.parentElement.remove(); };
+                li.appendChild(span);
+            });
+        });
+
         let isZohoEnvironment = false;
         let currentDealId = null;
 
@@ -712,22 +781,43 @@
 
         saveBtn.addEventListener('click', async () => {
             const formData = new FormData(form);
+            const task_lists = {
+                "Stair Production & Install": [],
+                "Railing Production & Install": []
+            };
+
+            const blocks = document.querySelectorAll('#projectPreviewList > div');
+            blocks.forEach(block => {
+                if (!block.classList.contains('hidden')) {
+                    const blockDefaultList = block.getAttribute('data-default-list') || "Railing Production & Install";
+                    
+                    const assignBtn = block.querySelector('button[onclick^="openUserModal"]');
+                    let blockAssigneeId = "1768463000000036003";
+                    if (assignBtn) {
+                        const match = assignBtn.getAttribute('onclick').match(/'([^']+)'/);
+                        if (match && match[1]) {
+                            const inputId = match[1].replace('Input', '');
+                            blockAssigneeId = formData.get(inputId) || blockAssigneeId;
+                        }
+                    }
+
+                    const items = block.querySelectorAll('li');
+                    items.forEach(item => {
+                        if (!item.classList.contains('hidden')) {
+                            const taskName = item.firstChild.textContent.trim();
+                            const targetList = item.getAttribute('data-list') || blockDefaultList;
+                            task_lists[targetList].push({
+                                "name": taskName,
+                                "person_responsible": blockAssigneeId
+                            });
+                        }
+                    });
+                }
+            });
+
             const capturedData = {
-                projectContext: formData.get('projectType'),
-                railings: formData.getAll('railingType'),
-                spindles: formData.getAll('spindleType'),
-                stairs: formData.getAll('stairType'),
                 notes: formData.get('notes'),
-                
-                // Stage Based Assignees
-                railingSheetAssignee: formData.get('railingSheetAssignee'),
-                stairSheetAssignee: formData.get('stairSheetAssignee'),
-                schedulingAssignee: formData.get('schedulingAssignee'),
-                materialsAssignee: formData.get('materialsAssignee'),
-                railingMfgAssignee: formData.get('railingMfgAssignee'),
-                stairMfgAssignee: formData.get('stairMfgAssignee'),
-                qaAssignee: formData.get('qaAssignee'),
-                installAssignee: formData.get('installAssignee')
+                task_lists: task_lists
             };
             console.log("Payload ready for Zoho CRM:", capturedData);
 
@@ -815,7 +905,7 @@
                     items.forEach((item) => {
                         if (!item.classList.contains('hidden')) {
                             const nodeName = `N${nodeIndex++}`;
-                            const taskName = item.innerText.trim();
+                            const taskName = item.firstChild.textContent.trim();
                             mermaidText += `        ${nodeName}["${taskName}"]\n`;
                             blockNodes.push(nodeName);
                         }

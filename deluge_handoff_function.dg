@@ -1,247 +1,63 @@
-/*
- * FUNCTION NAME: create_handoff_tasks
- * MODULE: Standalone / Functions
- * 
- * ARGUMENTS:
- * - dealId (String)
- * - payload (Map)
- */
+string standalone.create_handoff_tasks(string dealId, string payload)
+{
+    payloadData = payload.toMap();
+    info "Handoff Triggered for Deal ID: " + dealId;
+    info "Payload: " + payloadData;
 
-info "Handoff Triggered for Deal ID: " + dealId;
-info "Payload: " + payload;
+    dealInfo = zoho.crm.getRecordById("Deals", dealId.toLong());
+    dealName = dealInfo.get("Deal_Name");
+    projectName = dealName + " - Production";
 
-// 1. Fetch the Deal Info to name the Project
-dealInfo = zoho.crm.getRecordById("Deals", dealId.toLong());
-dealName = dealInfo.get("Deal_Name");
-projectName = dealName + " - Production";
+    portalId = "ironwoodstairs"; 
 
-// 2. IMPORTANT: Replace this with your actual Zoho Projects Portal ID
-portalId = "123456789"; 
+    projectData = Map();
+    projectData.put("name", projectName);
+    projectData.put("template_id", "1768463000007543025");
+    projectData.put("description", "Auto-generated from Ironwood Handoff Widget. Notes: " + payloadData.get("notes"));
 
-// 3. Create a New Project in Zoho Projects
-projectData = Map();
-projectData.put("name", projectName);
-projectData.put("description", "Auto-generated from Ironwood Handoff Widget. Notes: " + payload.get("notes"));
-
-createResponse = zoho.projects.createProject(portalId, projectData, "zoho_projects_connection");
-info "Project Create Response: " + createResponse;
-
-if (createResponse.get("projects") == null) {
-    return "Error creating project in Zoho: " + createResponse;
-}
-
-newProjectId = createResponse.get("projects").get(0).get("id_string");
-
-if (newProjectId != null) {
-    
-    // --- HELPERS & ASSIGNEES ---
-    // Default Assignees for Production Stages
-    // IMPORTANT: Replace these with your actual Zoho Projects User IDs
-    defaultRailingSheetTech = "6001234567892";
-    defaultStairSheetTech   = "6001234567890";
-    defaultScheduler        = "6001234567894";
-    defaultPurchaser        = "6001234567890";
-    defaultRailingMfg       = "6001234567892";
-    defaultStairMfg         = "6001234567890";
-    defaultQaLead           = "6001234567891";
-    defaultInstallManager   = "6001234567895";
-
-    // Extract overrides from payload or fallback to defaults
-    railingSheetAssignee = payload.get("railingSheetAssignee");
-    if (railingSheetAssignee == null || railingSheetAssignee == "") { railingSheetAssignee = defaultRailingSheetTech; }
-
-    stairSheetAssignee = payload.get("stairSheetAssignee");
-    if (stairSheetAssignee == null || stairSheetAssignee == "") { stairSheetAssignee = defaultStairSheetTech; }
-
-    schedulingAssignee = payload.get("schedulingAssignee");
-    if (schedulingAssignee == null || schedulingAssignee == "") { schedulingAssignee = defaultScheduler; }
-
-    materialsAssignee = payload.get("materialsAssignee");
-    if (materialsAssignee == null || materialsAssignee == "") { materialsAssignee = defaultPurchaser; }
-
-    railingMfgAssignee = payload.get("railingMfgAssignee");
-    if (railingMfgAssignee == null || railingMfgAssignee == "") { railingMfgAssignee = defaultRailingMfg; }
-
-    stairMfgAssignee = payload.get("stairMfgAssignee");
-    if (stairMfgAssignee == null || stairMfgAssignee == "") { stairMfgAssignee = defaultStairMfg; }
-
-    qaAssignee = payload.get("qaAssignee");
-    if (qaAssignee == null || qaAssignee == "") { qaAssignee = defaultQaLead; }
-
-    installAssignee = payload.get("installAssignee");
-    if (installAssignee == null || installAssignee == "") { installAssignee = defaultInstallManager; }
-
-
-    // --- CREATE TASK LISTS & TASKS ---
-    
-    // Check if we need to build Stair Tasks
-    // --- STAIR TASKS ---
-    stairsList = payload.get("stairs");
-    if (stairsList != null && stairsList.size() > 0) {
-        stairTaskListParams = Map();
-        stairTaskListParams.put("name", "Stair Production & Install");
-        stairTaskListResponse = invokeurl
-        [
-            url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
-            type : POST
-            parameters : stairTaskListParams
-            connection : "zoho_projects_connection"
-        ];
-        stairTaskListId = stairTaskListResponse.get("tasklists").get(0).get("id_string");
-        stairTaskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
-        
-        // 1. Measure
-        sp1 = {"name": "Stair Site Measure", "person_responsible": stairSheetAssignee, "tasklist_id": stairTaskListId};
-        st1Res = invokeurl [ url: stairTaskUrl type: POST parameters: sp1 connection: "zoho_projects_connection" ];
-        if (st1Res.get("error") != null) { return "Error creating stair task: " + st1Res; }
-        
-        // 2. Drawing
-        sp2 = {"name": "Create Stair Drawing/Spec", "person_responsible": stairSheetAssignee, "tasklist_id": stairTaskListId};
-        invokeurl [ url: stairTaskUrl type: POST parameters: sp2 connection: "zoho_projects_connection" ];
-
-        // 3. Takeoff
-        sp3 = {"name": "Create Stair Take Off Sheet", "person_responsible": stairSheetAssignee, "tasklist_id": stairTaskListId};
-        invokeurl [ url: stairTaskUrl type: POST parameters: sp3 connection: "zoho_projects_connection" ];
-
-        if (stairsList.contains("Construction")) {
-            sp4 = {"name": "Schedule Framing/Construction Drop", "person_responsible": schedulingAssignee, "tasklist_id": stairTaskListId};
-            invokeurl [ url: stairTaskUrl type: POST parameters: sp4 connection: "zoho_projects_connection" ];
-            
-            sp5 = {"name": "Construction Stair Drop-off", "person_responsible": installAssignee, "tasklist_id": stairTaskListId};
-            invokeurl [ url: stairTaskUrl type: POST parameters: sp5 connection: "zoho_projects_connection" ];
-        }
-        
-        if (stairsList.contains("Finished")) {
-            sp6 = {"name": "Order Finished Stair Materials", "person_responsible": materialsAssignee, "tasklist_id": stairTaskListId};
-            invokeurl [ url: stairTaskUrl type: POST parameters: sp6 connection: "zoho_projects_connection" ];
-            
-            sp7 = {"name": "Manufacture Finished Stair Components", "person_responsible": stairMfgAssignee, "tasklist_id": stairTaskListId};
-            invokeurl [ url: stairTaskUrl type: POST parameters: sp7 connection: "zoho_projects_connection" ];
-
-            sp8 = {"name": "Package Finished Stairs", "person_responsible": stairMfgAssignee, "tasklist_id": stairTaskListId};
-            invokeurl [ url: stairTaskUrl type: POST parameters: sp8 connection: "zoho_projects_connection" ];
-            
-            sp9 = {"name": "Schedule Finished Stair Install", "person_responsible": schedulingAssignee, "tasklist_id": stairTaskListId};
-            invokeurl [ url: stairTaskUrl type: POST parameters: sp9 connection: "zoho_projects_connection" ];
-            
-            sp10 = {"name": "Finished Stair Installation", "person_responsible": installAssignee, "tasklist_id": stairTaskListId};
-            invokeurl [ url: stairTaskUrl type: POST parameters: sp10 connection: "zoho_projects_connection" ];
-        }
+    createResponse = zoho.projects.createProject(portalId, projectData, "zoho_projects_connection");
+    if (createResponse.get("projects") == null) {
+        return "Error creating project in Zoho: " + createResponse;
     }
-    
-    // Check if we need to build Railing/Spindle Tasks
-    railingsList = payload.get("railings");
-    spindlesList = payload.get("spindles");
-    
-    hasStraight = railingsList != null && railingsList.contains("Straight");
-    hasCurved = railingsList != null && railingsList.contains("Curved");
-    hasFullMetal = railingsList != null && railingsList.contains("FullMetal");
-    woodRailingAny = hasStraight || hasCurved;
-    railingAny = woodRailingAny || hasFullMetal;
-    
-    hasWoodSpindle = spindlesList != null && spindlesList.contains("Wood");
-    hasMetalSpindle = spindlesList != null && spindlesList.contains("Metal");
-    hasGlass = spindlesList != null && spindlesList.contains("Glass");
-    hasCustomMetal = spindlesList != null && spindlesList.contains("CustomMetal");
-    hasWallMount = spindlesList != null && spindlesList.contains("WallMount");
-    spindleAny = hasWoodSpindle || hasMetalSpindle || hasGlass || hasCustomMetal || hasWallMount;
-    
-    needsRailingTasks = railingAny || spindleAny;
-    
-    if (needsRailingTasks) {
-        railingTaskListParams = Map();
-        railingTaskListParams.put("name", "Railing Production & Install");
-        railingTaskListResponse = invokeurl
-        [
-            url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
-            type : POST
-            parameters : railingTaskListParams
-            connection : "zoho_projects_connection"
-        ];
-        railingTaskListId = railingTaskListResponse.get("tasklists").get(0).get("id_string");
-        railingTaskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
-        
-        // --- RAILING SETUP & DESIGN ---
-        // 1. Measure
-        rp1 = {"name": "Railing Site Measure", "person_responsible": railingSheetAssignee, "tasklist_id": railingTaskListId};
-        rt1Res = invokeurl [ url: railingTaskUrl type: POST parameters: rp1 connection: "zoho_projects_connection" ];
-        if (rt1Res.get("error") != null) { return "Error creating railing task: " + rt1Res; }
-        
-        // 2. Drawing
-        rp2 = {"name": "Create Railing Site Drawing", "person_responsible": railingSheetAssignee, "tasklist_id": railingTaskListId};
-        rt2Res = invokeurl [ url: railingTaskUrl type: POST parameters: rp2 connection: "zoho_projects_connection" ];
-        
-        // 3. Take Off Sheet
-        rp3 = {"name": "Create Railing Take Off Sheet", "person_responsible": railingSheetAssignee, "tasklist_id": railingTaskListId};
-        rt3Res = invokeurl [ url: railingTaskUrl type: POST parameters: rp3 connection: "zoho_projects_connection" ];
 
-        // --- PROJECT SCHEDULING ---
-        rp4 = {"name": "Schedule Manufacturing", "person_responsible": schedulingAssignee, "tasklist_id": railingTaskListId};
-        rt4Res = invokeurl [ url: railingTaskUrl type: POST parameters: rp4 connection: "zoho_projects_connection" ];
-        if (rt4Res.get("error") != null) { return "Error creating scheduling task: " + rt4Res; }
-        
-        if (spindlesList != null && spindlesList.contains("Glass")) {
-            rp5 = {"name": "Schedule Glass Templating", "person_responsible": schedulingAssignee, "tasklist_id": railingTaskListId};
-            invokeurl [ url: railingTaskUrl type: POST parameters: rp5 connection: "zoho_projects_connection" ];
-        }
-        
-        rp6 = {"name": "Schedule Railing Install Date", "person_responsible": schedulingAssignee, "tasklist_id": railingTaskListId};
-        invokeurl [ url: railingTaskUrl type: POST parameters: rp6 connection: "zoho_projects_connection" ];
+    newProjectId = createResponse.get("projects").get(0).get("id_string");
 
-            // --- MATERIALS ORDERING ---
-            needsWoodMaterials = woodRailingAny || hasWoodSpindle || hasWallMount;
-            if (needsWoodMaterials) {
-                rp7 = {"name": "Order Standard Railing Materials", "person_responsible": materialsAssignee, "tasklist_id": railingTaskListId};
-                invokeurl [ url: railingTaskUrl type: POST parameters: rp7 connection: "zoho_projects_connection" ];
+    if (newProjectId != null) {
+        taskListsMap = payloadData.get("task_lists");
+        
+        if (taskListsMap != null) {
+            keys = taskListsMap.keys();
+            for each listName in keys {
+                tasksInList = taskListsMap.get(listName);
+                if (tasksInList != null && tasksInList.size() > 0) {
+                    taskListParams = Map();
+                    taskListParams.put("name", listName);
+                    taskListResponse = invokeurl
+                    [
+                        url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+                        type : POST
+                        parameters : taskListParams
+                        connection : "zoho_projects_connection"
+                    ];
+                    
+                    if (taskListResponse.get("tasklists") != null) {
+                        createdTaskListId = taskListResponse.get("tasklists").get(0).get("id_string");
+                        taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
+                        
+                        for each taskObj in tasksInList {
+                            taskParams = Map();
+                            taskParams.put("name", taskObj.get("name"));
+                            taskParams.put("person_responsible", taskObj.get("person_responsible"));
+                            taskParams.put("tasklist_id", createdTaskListId);
+                            
+                            invokeurl [ url: taskUrl type: POST parameters: taskParams connection: "zoho_projects_connection" ];
+                        }
+                    }
+                }
             }
-            
-            if (hasWoodSpindle) {
-                rp8 = {"name": "Order Wood Spindles", "person_responsible": materialsAssignee, "tasklist_id": railingTaskListId};
-                invokeurl [ url: railingTaskUrl type: POST parameters: rp8 connection: "zoho_projects_connection" ];
-            }
-            
-            if (hasMetalSpindle) {
-                rp9 = {"name": "Order Metal Spindles", "person_responsible": materialsAssignee, "tasklist_id": railingTaskListId};
-                invokeurl [ url: railingTaskUrl type: POST parameters: rp9 connection: "zoho_projects_connection" ];
-            }
-
-        if (hasGlass) {
-            rp10 = {"name": "Order Glass Panels", "person_responsible": materialsAssignee, "tasklist_id": railingTaskListId};
-            invokeurl [ url: railingTaskUrl type: POST parameters: rp10 connection: "zoho_projects_connection" ];
         }
-        
-        rp11 = {"name": "Receive Materials (QA)", "person_responsible": materialsAssignee, "tasklist_id": railingTaskListId};
-        invokeurl [ url: railingTaskUrl type: POST parameters: rp11 connection: "zoho_projects_connection" ];
-
-        // --- RAILING FABRICATION ---
-        if (woodRailingAny || hasWoodSpindle || hasWallMount) {
-            rp12 = {"name": "Manufacture Railing Package", "person_responsible": railingMfgAssignee, "tasklist_id": railingTaskListId};
-            invokeurl [ url: railingTaskUrl type: POST parameters: rp12 connection: "zoho_projects_connection" ];
-        } 
-        
-        if (hasFullMetal) {
-            rp13 = {"name": "Fabricate Welded Railing Structure", "person_responsible": railingMfgAssignee, "tasklist_id": railingTaskListId};
-            invokeurl [ url: railingTaskUrl type: POST parameters: rp13 connection: "zoho_projects_connection" ];
-        }
-
-        if (spindlesList != null && spindlesList.contains("Wood")) {
-            rp14 = {"name": "Manufacture Wood Spindles", "person_responsible": railingMfgAssignee, "tasklist_id": railingTaskListId};
-            invokeurl [ url: railingTaskUrl type: POST parameters: rp14 connection: "zoho_projects_connection" ];
-        }
-
-        // --- ASSEMBLY & WRAP UP ---
-        rp15 = {"name": "Quality Assurance Check", "person_responsible": qaAssignee, "tasklist_id": railingTaskListId};
-        invokeurl [ url: railingTaskUrl type: POST parameters: rp15 connection: "zoho_projects_connection" ];
-        
-        rp16 = {"name": "Materials Wrap Up", "person_responsible": qaAssignee, "tasklist_id": railingTaskListId};
-        invokeurl [ url: railingTaskUrl type: POST parameters: rp16 connection: "zoho_projects_connection" ];
-
-        // --- INSTALLATION ---
-        rp17 = {"name": "Railing / Spindle Installation", "person_responsible": installAssignee, "tasklist_id": railingTaskListId};
-        invokeurl [ url: railingTaskUrl type: POST parameters: rp17 connection: "zoho_projects_connection" ];
+        return "Success: Project and Tasks created in Zoho Projects.";
+    } else {
+        return "Error: Could not create Zoho Project.";
     }
-    
-    return "Success: Project and Tasks created in Zoho Projects.";
-} else {
-    return "Error: Could not create Zoho Project.";
 }
