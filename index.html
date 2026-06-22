@@ -70,14 +70,14 @@
                 <form id="handoffForm" class="space-y-6">
                     
                     <!-- Hidden inputs to store Stage-Based Assignee States -->
-                    <input type="hidden" id="railingSheetAssigneeInput" name="railingSheetAssignee" value="">
-                    <input type="hidden" id="stairSheetAssigneeInput" name="stairSheetAssignee" value="">
-                    <input type="hidden" id="schedulingAssigneeInput" name="schedulingAssignee" value="">
-                    <input type="hidden" id="materialsAssigneeInput" name="materialsAssignee" value="">
-                    <input type="hidden" id="railingMfgAssigneeInput" name="railingMfgAssignee" value="">
-                    <input type="hidden" id="stairMfgAssigneeInput" name="stairMfgAssignee" value="">
-                    <input type="hidden" id="qaAssigneeInput" name="qaAssignee" value="">
-                    <input type="hidden" id="installAssigneeInput" name="installAssignee" value="">
+                    <input type="hidden" id="railingSheetAssigneeInput" name="railingSheetAssignee" value="UNASSIGNED">
+                    <input type="hidden" id="stairSheetAssigneeInput" name="stairSheetAssignee" value="UNASSIGNED">
+                    <input type="hidden" id="schedulingAssigneeInput" name="schedulingAssignee" value="UNASSIGNED">
+                    <input type="hidden" id="materialsAssigneeInput" name="materialsAssignee" value="UNASSIGNED">
+                    <input type="hidden" id="railingMfgAssigneeInput" name="railingMfgAssignee" value="UNASSIGNED">
+                    <input type="hidden" id="stairMfgAssigneeInput" name="stairMfgAssignee" value="UNASSIGNED">
+                    <input type="hidden" id="qaAssigneeInput" name="qaAssignee" value="UNASSIGNED">
+                    <input type="hidden" id="installAssigneeInput" name="installAssignee" value="UNASSIGNED">
 
                     <div class="space-y-3">
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
@@ -520,6 +520,7 @@
 
             document.querySelectorAll('.sortable-list').forEach(el => {
                 new Sortable(el, {
+                    group: 'shared-tasks',
                     animation: 150,
                     ghostClass: 'opacity-50'
                 });
@@ -575,7 +576,7 @@
                         previewList.appendChild(block);
                         
                         // Re-initialize Sortable and Add Task for the new block
-                        new Sortable(block.querySelector('.sortable-list'), { animation: 150, ghostClass: 'opacity-50' });
+                        new Sortable(block.querySelector('.sortable-list'), { group: 'shared-tasks', animation: 150, ghostClass: 'opacity-50' });
                         block.querySelector('.add-task-btn').addEventListener('click', (ev) => {
                             const tInput = ev.target.previousElementSibling;
                             const tVal = tInput.value.trim();
@@ -595,6 +596,7 @@
                         hiddenInput.type = "hidden";
                         hiddenInput.name = `customAssignee${customBlockCounter}Input`;
                         hiddenInput.id = `customAssignee${customBlockCounter}Input`;
+                        hiddenInput.value = "UNASSIGNED";
                         document.getElementById('handoffForm').appendChild(hiddenInput);
 
                         const cb = label.querySelector('input');
@@ -1018,7 +1020,7 @@
                             const targetList = item.getAttribute('data-list') || blockDefaultList;
                             task_lists[targetList].push({
                                 "name": taskName,
-                                "person_responsible": blockAssigneeId
+                                "person_responsible": blockAssigneeId === "UNASSIGNED" ? "" : blockAssigneeId
                             });
                         }
                     });
@@ -1034,6 +1036,36 @@
             const originalHTML = saveBtn.innerHTML;
             saveBtn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
             saveBtn.disabled = true;
+            let validationFailed = false;
+            let validationMsg = "";
+            const blocksToValidate = document.querySelectorAll('#projectPreviewList > div');
+            blocksToValidate.forEach(block => {
+                if (!block.classList.contains('hidden') && !validationFailed) {
+                    const assignBtn = block.querySelector('button[onclick^="openUserModal"]');
+                    if (assignBtn) {
+                        const match = assignBtn.getAttribute('onclick').match(/'([^']+)'/);
+                        if (match && match[1]) {
+                            const inputId = match[1].replace('Input', '');
+                            const val = formData.get(inputId);
+                            if (val === "UNASSIGNED") {
+                                validationFailed = true;
+                                const titleEl = block.querySelector('p');
+                                const blockName = titleEl ? titleEl.innerText.trim() : "Stage";
+                                validationMsg = `Validation Error: Please assign a lead to the "${blockName}" stage. (Or select 'Clear Override' to explicitly use the default).`;
+                                block.classList.add('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]');
+                                setTimeout(() => block.classList.remove('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'), 3000);
+                            }
+                        }
+                    }
+                }
+            });
+
+            if (validationFailed) {
+                alert(validationMsg);
+                saveBtn.innerHTML = originalHTML;
+                saveBtn.disabled = false;
+                return;
+            }
 
             if (isZohoEnvironment) {
                 try {
@@ -1099,8 +1131,15 @@
 
         function generateMiroFlowchart() {
             let mermaidText = "flowchart LR\n";
+            mermaidText += "classDef fab fill:#0c4a6e,stroke:#38bdf8,color:#fff;\n";
+            mermaidText += "classDef inst fill:#4c0519,stroke:#f43f5e,color:#fff;\n";
+            mermaidText += "classDef qa fill:#7c2d12,stroke:#fb923c,color:#fff;\n";
+            mermaidText += "classDef cust fill:#3b0764,stroke:#c084fc,color:#fff;\n";
+            mermaidText += "classDef defaultNode fill:#1e293b,stroke:#475569,color:#fff;\n";
+            
             let lastNode = null;
             let nodeIndex = 0;
+            let styleBlocks = "";
             
             const blocks = document.querySelectorAll('#projectPreviewList > div');
             blocks.forEach((block) => {
@@ -1108,6 +1147,22 @@
                     const titleEl = block.querySelector('p');
                     const blockName = titleEl ? titleEl.innerText.trim() : "Stage";
                     const safeId = blockName.replace(/[^a-zA-Z0-9]/g, '');
+                    
+                    let nodeClass = "defaultNode";
+                    if (blockName.toLowerCase().includes("fabrication") || blockName.toLowerCase().includes("mfg") || blockName.toLowerCase().includes("order")) {
+                        nodeClass = "fab";
+                        styleBlocks += `style ${safeId} fill:#0c4a6e,stroke:#38bdf8,stroke-width:2px,color:#fff\n`;
+                    } else if (blockName.toLowerCase().includes("install")) {
+                        nodeClass = "inst";
+                        styleBlocks += `style ${safeId} fill:#4c0519,stroke:#f43f5e,stroke-width:2px,color:#fff\n`;
+                    } else if (blockName.toLowerCase().includes("qa") || blockName.toLowerCase().includes("wrap")) {
+                        nodeClass = "qa";
+                        styleBlocks += `style ${safeId} fill:#7c2d12,stroke:#fb923c,stroke-width:2px,color:#fff\n`;
+                    } else {
+                        nodeClass = "cust";
+                        styleBlocks += `style ${safeId} fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#fff\n`;
+                    }
+                    
                     mermaidText += `    subgraph ${safeId} ["${blockName}"]\n`;
                     
                     const items = block.querySelectorAll('li');
@@ -1116,7 +1171,7 @@
                         if (!item.classList.contains('hidden')) {
                             const nodeName = `N${nodeIndex++}`;
                             const taskName = item.firstChild.textContent.trim();
-                            mermaidText += `        ${nodeName}["${taskName}"]\n`;
+                            mermaidText += `        ${nodeName}["${taskName}"]:::${nodeClass}\n`;
                             blockNodes.push(nodeName);
                         }
                     });
@@ -1136,6 +1191,7 @@
                 }
             });
             
+            mermaidText += styleBlocks;
             if (nodeIndex === 0) {
                 alert("No tasks selected! Please choose your project options first.");
                 return;
