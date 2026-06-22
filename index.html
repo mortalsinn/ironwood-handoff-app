@@ -606,7 +606,7 @@
                         const blockId = `block-custom-${customBlockCounter}`;
                         
                         // 1. Create Checkbox on Left
-                        const grid = e.target.parentElement.previousElementSibling;
+                        const grid = e.target.closest('details').previousElementSibling;
                         const label = document.createElement('label');
                         label.className = "flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2 relative";
                         label.innerHTML = `
