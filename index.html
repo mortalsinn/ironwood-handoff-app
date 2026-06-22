@@ -642,13 +642,14 @@
         const leftPanel = document.getElementById('leftPanel');
         let isResizing = false;
 
-        resizer.addEventListener('mousedown', (e) => {
+        resizer.addEventListener('pointerdown', (e) => {
             isResizing = true;
+            resizer.setPointerCapture(e.pointerId);
             document.body.style.cursor = 'col-resize';
             document.body.style.userSelect = 'none';
         });
 
-        document.addEventListener('mousemove', (e) => {
+        resizer.addEventListener('pointermove', (e) => {
             if (!isResizing) return;
             let newWidth = (e.clientX / window.innerWidth) * 100;
             if (newWidth < 20) newWidth = 20;
@@ -656,9 +657,10 @@
             leftPanel.style.width = `${newWidth}%`;
         });
 
-        document.addEventListener('mouseup', () => {
+        resizer.addEventListener('pointerup', (e) => {
             if (isResizing) {
                 isResizing = false;
+                resizer.releasePointerCapture(e.pointerId);
                 document.body.style.cursor = 'default';
                 document.body.style.userSelect = 'auto';
             }
@@ -680,8 +682,9 @@
             });
         }
 
-        windowResizer.addEventListener('mousedown', (e) => {
+        windowResizer.addEventListener('pointerdown', (e) => {
             isWindowResizing = true;
+            windowResizer.setPointerCapture(e.pointerId);
             document.body.style.cursor = 'se-resize';
             document.body.style.userSelect = 'none';
             currentWindowWidth = window.innerWidth;
@@ -691,7 +694,7 @@
 
         // Throttle the ZOHO resize calls slightly to prevent crashing the SDK bridge
         let resizeTimeout;
-        document.addEventListener('mousemove', (e) => {
+        windowResizer.addEventListener('pointermove', (e) => {
             if (!isWindowResizing) return;
             
             currentWindowWidth += e.movementX;
@@ -705,9 +708,10 @@
             }
         });
 
-        document.addEventListener('mouseup', () => {
+        windowResizer.addEventListener('pointerup', (e) => {
             if (isWindowResizing) {
                 isWindowResizing = false;
+                windowResizer.releasePointerCapture(e.pointerId);
                 document.body.style.cursor = 'default';
                 document.body.style.userSelect = 'auto';
                 if(isZohoEnvironment) {
