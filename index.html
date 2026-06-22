@@ -499,7 +499,7 @@
                     </span>
                     System Linked
                 </div>
-                <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v5.1 (Stage)</button>
+                <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v5.2 (Stage)</button>
             </div>
             
             <div class="flex gap-3">
@@ -580,7 +580,7 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v5.1 (Stage)</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v5.2 (Stage)</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
@@ -1450,12 +1450,13 @@
                 // Update Record
                 var config = {
                     Entity: currentEntity || "Deals",
-                    RecordID: currentDealId,
                     APIData: {
+                        "id": currentDealId,
                         "Stage": "Closed Won",
                         "Amount": cwAmount,
                         "Closing_Date": cwDate
-                    }
+                    },
+                    Trigger: ["workflow", "blueprint", "approval"]
                 };
                 
                 const response = await ZOHO.CRM.API.updateRecord(config);
@@ -1472,11 +1473,19 @@
                         btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
                     }, 1500);
                 } else {
-                    throw new Error(response?.data?.[0]?.message || "Unknown API Error");
+                    let errMsg = "Unknown API Error";
+                    if (response && response.message) errMsg = response.message;
+                    if (response && response.data && response.data[0] && response.data[0].message) errMsg = response.data[0].message;
+                    throw new Error(errMsg);
                 }
             } catch (error) {
                 console.error("Failed to update record:", error);
-                err.textContent = error.message || "Failed to update CRM record.";
+                let msg = "Failed to update CRM record.";
+                if (typeof error === 'string') msg = error;
+                else if (error.message) msg = error.message;
+                else msg = JSON.stringify(error);
+                
+                err.textContent = msg;
                 err.classList.remove('hidden');
                 btn.innerHTML = originalText;
                 btn.disabled = false;
