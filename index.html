@@ -722,7 +722,7 @@
                     const dealId = pageInfo.recordID;
                     
                     var func_name = "create_handoff_tasks";
-                    var req_data = { "arguments": JSON.stringify({ "dealId": dealId, "payload": capturedData }) };
+                    var req_data = { "arguments": JSON.stringify({ "dealId": dealId, "payload": JSON.stringify(capturedData) }) };
                     
                     await ZOHO.CRM.FUNCTIONS.execute(func_name, req_data);
                     
