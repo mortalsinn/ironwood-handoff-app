@@ -10,7 +10,7 @@
     <style>
         .sortable-list li { cursor: grab; position: relative; padding-right: 20px; }
         .sortable-list li:active { cursor: grabbing; }
-        .delete-btn { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: none; cursor: pointer; color: #ef4444; font-weight: bold; font-size: 14px; }
+        .delete-btn { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: none; cursor: pointer; color: #ef4444; font-weight: bold; font-size: 14px; background: #0f172a; padding-left: 4px; }
         .sortable-list li:hover .delete-btn { display: inline-block; }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -113,10 +113,16 @@
                                 <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Finished Stairs</span>
                             </label>
                         </div>
-                        <div class="mt-2 flex gap-1 items-center">
-                            <input type="text" class="custom-opt-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="+ Custom Stair Item..." data-list-target="Stair Production & Install">
-                            <button type="button" class="add-opt-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                        </div>
+                        <details class="mt-2 group">
+                            <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                Click to add custom stair item...
+                            </summary>
+                            <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5">
+                                <input type="text" class="custom-opt-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Type custom name..." data-list-target="Stair Production & Install">
+                                <button type="button" class="add-opt-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
+                        </details>
                     </div>
 
                     <div class="space-y-3">
@@ -137,10 +143,16 @@
                                 <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Full Metal Railing (Welded)</span>
                             </label>
                         </div>
-                        <div class="mt-2 flex gap-1 items-center">
-                            <input type="text" class="custom-opt-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="+ Custom Railing Item..." data-list-target="Railing Production & Install">
-                            <button type="button" class="add-opt-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                        </div>
+                        <details class="mt-2 group">
+                            <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                Click to add custom railing item...
+                            </summary>
+                            <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5">
+                                <input type="text" class="custom-opt-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Type custom name..." data-list-target="Railing Production & Install">
+                                <button type="button" class="add-opt-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
+                        </details>
                         
                         <div class="pt-3 mt-1 border-t border-slate-700/50">
                             <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Spindle / Infill Material</h4>
@@ -167,10 +179,16 @@
                                 </label>
                             </div>
                         </div>
-                        <div class="mt-2 flex gap-1 items-center">
-                            <input type="text" class="custom-opt-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="+ Custom Spindle Item..." data-list-target="Railing Production & Install">
-                            <button type="button" class="add-opt-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                        </div>
+                        <details class="mt-2 group">
+                            <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                Click to add custom spindle item...
+                            </summary>
+                            <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5">
+                                <input type="text" class="custom-opt-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Type custom name..." data-list-target="Railing Production & Install">
+                                <button type="button" class="add-opt-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                            </div>
+                        </details>
                     </div>
 
                     <div class="pb-4 pt-2">
@@ -235,10 +253,16 @@
                                 <li id="task-railing-drawing" class="task-standard">Create Railing Site Drawing</li>
                                 <li id="task-railing-takeoff" class="task-standard">Create Railing Take Off Sheet</li>
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Block 2: Stair Sheet -->
@@ -259,10 +283,16 @@
                                 <li id="task-stair-drawing" class="task-standard hidden">Create Stair Drawing</li>
                                 <li id="task-stair-takeoff" class="task-standard hidden">Create Stair Take Off Sheet</li>
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Block 3: Scheduling -->
@@ -288,10 +318,16 @@
                                 <li id="task-powder-schedule" class="task-metal hidden">Schedule Powder Coating</li>
                                 <li id="task-railing-install-date" class="task-standard hidden">Schedule Railing Install Date</li>
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Block 4: Materials -->
@@ -315,10 +351,16 @@
                                 <li id="task-finished-stair-order" class="task-finished hidden" data-list="Stair Production & Install">Order Finished Stair Materials</li>
                                 <li id="task-receive-materials" class="task-standard">Receive Materials (QA)</li>
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Block 5: Railing Mfg -->
@@ -340,10 +382,16 @@
                                 <li id="task-metal-mfg" class="task-metal-spindle hidden">Cut Metal Spindles</li>
                                 <li id="task-customMetal-mfg" class="task-metal hidden">Fabricate Custom Metal Parts</li>
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Block 6: Stair Mfg -->
@@ -361,10 +409,16 @@
                                 <li id="task-mfg-package-stair" class="task-finished hidden">Manufacture Stair Package</li>
                                 <li id="task-finished-stair-mfg" class="task-finished hidden">Manufacture Finished Stair Parts</li>
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Block 7: QA Wrapup -->
@@ -382,10 +436,16 @@
                                 <li id="task-qa-check" class="task-standard">Quality Assurance Check</li>
                                 <li id="task-wrap-generic" class="task-standard">Materials Wrap Up</li>
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         </div>
 
                         <!-- Block 8: Install -->
@@ -410,10 +470,16 @@
                                 <li id="task-glass-install" class="task-glass hidden">Glass Panel Installation</li>
                                 <li id="task-qa-turnover" class="task-standard hidden">QA & Turnover</li>
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         </div>
 
                     </div>
@@ -522,6 +588,7 @@
                 new Sortable(el, {
                     group: 'shared-tasks',
                     animation: 150,
+                    handle: '.task-drag-handle',
                     ghostClass: 'opacity-50'
                 });
             });
@@ -568,15 +635,21 @@
                             <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
                                 
                             </ul>
-                            <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
-                                <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
-                                <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                            </div>
+                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                    Click to add custom task...
+                                </summary>
+                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                                </div>
+                            </details>
                         `;
                         previewList.appendChild(block);
                         
                         // Re-initialize Sortable and Add Task for the new block
-                        new Sortable(block.querySelector('.sortable-list'), { group: 'shared-tasks', animation: 150, ghostClass: 'opacity-50' });
+                        new Sortable(block.querySelector('.sortable-list'), { group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50' });
                         block.querySelector('.add-task-btn').addEventListener('click', (ev) => {
                             const tInput = ev.target.previousElementSibling;
                             const tVal = tInput.value.trim();
@@ -585,7 +658,14 @@
                                 const li = document.createElement('li');
                                 li.className = "task-standard";
                                 li.setAttribute('data-list', targetList);
-                                li.innerHTML = `<span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${tVal}</span> <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>`;
+                                li.className += " flex items-center group relative";
+                                li.innerHTML = `
+                                    <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
+                                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
+                                    </span>
+                                    <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${tVal}</span> 
+                                    <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>
+                                `;
                                 ul.appendChild(li);
                                 tInput.value = "";
                             }
@@ -619,7 +699,14 @@
                         const ul = e.target.closest('div[id^="block-"]').querySelector('ul');
                         const li = document.createElement('li');
                         li.className = "task-standard";
-                        li.innerHTML = `<span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${val}</span> <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>`;
+                        li.className += " flex items-center group relative";
+                        li.innerHTML = `
+                            <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
+                                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
+                            </span>
+                            <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${val}</span> 
+                            <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>
+                        `;
                         ul.appendChild(li);
                         input.value = "";
                     }
@@ -628,13 +715,20 @@
 
             document.querySelectorAll('.sortable-list li').forEach(li => {
                 const text = li.innerHTML;
-                li.innerHTML = `<span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${text}</span>`;
+                li.innerHTML = `
+                    <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
+                    </span>
+                    <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${text}</span>
+                `;
                 
                 const span = document.createElement('span');
                 span.className = "delete-btn";
                 span.innerHTML = "&times;";
                 span.onclick = function() { this.parentElement.remove(); };
                 li.appendChild(span);
+                
+                li.className += " flex items-center group relative";
             });
         });
 
@@ -971,8 +1065,26 @@
             document.getElementById('task-qa-turnover').classList.toggle('hidden', !showProduction);
         };
 
+
         allCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateBlueprintPreview));
         projectRadios.forEach(radio => radio.addEventListener('change', updateBlueprintPreview));
+        
+        // Set Default Assignees on Page Load
+        const defaultAssignees = {
+            'schedulingAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
+            'materialsAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
+            'railingMfgAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
+            'qaAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
+            'installAssigneeInput': { id: '1768463000003860001', name: 'Joel Nalder' }
+        };
+
+        for (const [inputId, user] of Object.entries(defaultAssignees)) {
+            currentTargetInputId = inputId;
+            selectUser(user.id, user.name);
+        }
+        currentTargetInputId = null;
+        updateBlueprintPreview(); // Force an update so the preview reflects the defaults instantly
+
 
         const triggerBtn = document.getElementById('triggerBtn');
         const cancelBtn = document.getElementById('cancelBtn');
@@ -1016,7 +1128,7 @@
                     const items = block.querySelectorAll('li');
                     items.forEach(item => {
                         if (!item.classList.contains('hidden')) {
-                            const taskName = item.firstChild.textContent.trim();
+                            const taskName = item.querySelector('.editable-task') ? item.querySelector('.editable-task').textContent.trim() : item.textContent.trim().replace('×','');
                             const targetList = item.getAttribute('data-list') || blockDefaultList;
                             task_lists[targetList].push({
                                 "name": taskName,
@@ -1123,7 +1235,23 @@
                             selectUser('', '');
                         });
 
-                        updateBlueprintPreview();
+                        
+            // Set Default Assignees
+            const assignees = {
+                'schedulingAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
+                'materialsAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
+                'railingMfgAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
+                'qaAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
+                'installAssigneeInput': { id: '1768463000003860001', name: 'Joel Nalder' }
+            };
+            
+            for (const [inputId, user] of Object.entries(assignees)) {
+                currentTargetInputId = inputId;
+                selectUser(user.id, user.name);
+            }
+            currentTargetInputId = null;
+
+            updateBlueprintPreview();
                     }, 2000);
                 }, 1200);
             }
@@ -1170,7 +1298,7 @@
                     items.forEach((item) => {
                         if (!item.classList.contains('hidden')) {
                             const nodeName = `N${nodeIndex++}`;
-                            const taskName = item.firstChild.textContent.trim();
+                            const taskName = item.querySelector('.editable-task') ? item.querySelector('.editable-task').textContent.trim() : item.textContent.trim().replace('×','');
                             mermaidText += `        ${nodeName}["${taskName}"]:::${nodeClass}\n`;
                             blockNodes.push(nodeName);
                         }
