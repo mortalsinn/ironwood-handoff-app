@@ -188,6 +188,15 @@
             <!-- RIGHT COLUMN: PREVIEW -->
             <div id="rightPanel" class="flex-1 min-w-0 h-full bg-slate-900 flex flex-col shadow-[inset_10px_0_20px_-10px_rgba(0,0,0,0.5)] relative">
                 
+                <!-- OUTER WINDOW RESIZER -->
+                <div id="windowResizer" class="absolute bottom-0 right-0 w-6 h-6 cursor-se-resize z-50 flex items-end justify-end p-1 hover:bg-sky-500/20 rounded-tl-lg transition-colors group">
+                    <svg class="w-4 h-4 text-slate-500 group-hover:text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    <!-- using a standard resize icon shape (triangle dots or arrows) -->
+                    <svg class="w-4 h-4 text-slate-500 group-hover:text-sky-400 absolute" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M22 22H10L22 10V22ZM22 8L14 16H22V8Z"></path>
+                    </svg>
+                </div>
+                
                 <div class="px-5 py-4 shrink-0 border-b border-slate-800 bg-slate-900/50 backdrop-blur z-10 flex justify-between items-center">
                     <div>
                         <h3 class="text-xs font-bold text-white uppercase tracking-wider mb-0.5 flex items-center gap-2">
@@ -497,11 +506,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof ZOHO !== 'undefined') {
-                ZOHO.embeddedApp.on("PageLoad", function (data) {
-                    currentDealId = data.EntityId[0];
-                    isZohoEnvironment = true;
-                    ZOHO.CRM.UI.Resize({height: 950, width: 1400});
-                });
+
                 ZOHO.embeddedApp.init();
             }
 
@@ -656,6 +661,58 @@
                 isResizing = false;
                 document.body.style.cursor = 'default';
                 document.body.style.userSelect = 'auto';
+            }
+        });
+
+
+        // Outer Window Resize Logic
+        const windowResizer = document.getElementById('windowResizer');
+        let isWindowResizing = false;
+        let currentWindowWidth = 1400; // default start
+        let currentWindowHeight = 950; // default start
+
+        // Keep track of true dimensions in case ZOHO loads different sizes
+        if (typeof ZOHO !== 'undefined') {
+            ZOHO.embeddedApp.on("PageLoad", function (data) {
+                currentDealId = data.EntityId[0];
+                isZohoEnvironment = true;
+                ZOHO.CRM.UI.Resize({height: currentWindowHeight, width: currentWindowWidth});
+            });
+        }
+
+        windowResizer.addEventListener('mousedown', (e) => {
+            isWindowResizing = true;
+            document.body.style.cursor = 'se-resize';
+            document.body.style.userSelect = 'none';
+            currentWindowWidth = window.innerWidth;
+            currentWindowHeight = window.innerHeight;
+            e.preventDefault();
+        });
+
+        // Throttle the ZOHO resize calls slightly to prevent crashing the SDK bridge
+        let resizeTimeout;
+        document.addEventListener('mousemove', (e) => {
+            if (!isWindowResizing) return;
+            
+            currentWindowWidth += e.movementX;
+            currentWindowHeight += e.movementY;
+            
+            if (!resizeTimeout && isZohoEnvironment) {
+                resizeTimeout = setTimeout(() => {
+                    ZOHO.CRM.UI.Resize({height: currentWindowHeight, width: currentWindowWidth});
+                    resizeTimeout = null;
+                }, 16); // ~60fps
+            }
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isWindowResizing) {
+                isWindowResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto';
+                if(isZohoEnvironment) {
+                    ZOHO.CRM.UI.Resize({height: currentWindowHeight, width: currentWindowWidth});
+                }
             }
         });
 
