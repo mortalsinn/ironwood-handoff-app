@@ -744,7 +744,7 @@
                     let hasError = false;
                     let errorMsg = "";
                     
-                    if (response && response.code && response.code !== "SUCCESS") {
+                    if (response && response.code && response.code.toUpperCase() !== "SUCCESS") {
                         hasError = true;
                         errorMsg = response.message || JSON.stringify(response);
                     } else if (response && response.details && response.details.output && response.details.output.startsWith("Error")) {
