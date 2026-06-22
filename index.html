@@ -654,7 +654,7 @@
                             const tInput = ev.target.previousElementSibling;
                             const tVal = tInput.value.trim();
                             if (tVal) {
-                                const ul = ev.target.closest('div').previousElementSibling;
+                                const ul = ev.target.closest('div[id^="customBlock"]').querySelector('ul');
                                 const li = document.createElement('li');
                                 li.className = "task-standard";
                                 li.setAttribute('data-list', targetList);
@@ -1027,7 +1027,9 @@
 
             const taskRailingInstall = document.getElementById('task-railing-install');
             taskRailingInstall.classList.toggle('hidden', !railingAny && !spindleAny);
-            taskRailingInstall.textContent = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
+            const rEditable = taskRailingInstall.querySelector('.editable-task');
+            if (rEditable) rEditable.textContent = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
+            else taskRailingInstall.textContent = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
 
             document.getElementById('task-dryfit-task').classList.toggle('hidden', !railFullMetal);
             document.getElementById('task-const-stair-drop').classList.toggle('hidden', !(stairConst && !isReno));
@@ -1052,7 +1054,9 @@
             
             const taskConstStairSchedule = document.getElementById('task-const-stair-schedule');
             taskConstStairSchedule.classList.toggle('hidden', !stairConst);
-            taskConstStairSchedule.textContent = isReno ? "Schedule Const. Stair Installation" : "Schedule Const. Stair Drop Off";
+            const sEditable = taskConstStairSchedule.querySelector('.editable-task');
+            if (sEditable) sEditable.textContent = isReno ? "Schedule Const. Stair Installation" : "Schedule Const. Stair Drop Off";
+            else taskConstStairSchedule.textContent = isReno ? "Schedule Const. Stair Installation" : "Schedule Const. Stair Drop Off";
             
             document.getElementById('task-finished-stair-schedule').classList.toggle('hidden', !stairFinished);
             
