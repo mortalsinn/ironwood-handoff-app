@@ -371,6 +371,10 @@
             </div>
             
             <div class="flex gap-3">
+                <button id="miroBtn" type="button" onclick="generateMiroFlowchart()" class="px-5 py-2.5 text-sm font-bold text-emerald-400 bg-transparent border border-emerald-600 rounded-lg hover:bg-emerald-900/50 hover:text-white transition-all flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+                    Copy Miro Code
+                </button>
                 <button id="cancelBtn" class="px-5 py-2.5 text-sm font-bold text-slate-300 bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 hover:text-white transition-all">Cancel</button>
                 <button id="saveBtn" disabled class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-sky-500 to-blue-600 rounded-lg hover:from-sky-400 hover:to-blue-500 shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
                     Generate Production Run
@@ -792,6 +796,58 @@
                 }, 1200);
             }
         });
+
+        function generateMiroFlowchart() {
+            let mermaidText = "flowchart LR\n";
+            let lastNode = null;
+            let nodeIndex = 0;
+            
+            const blocks = document.querySelectorAll('#projectPreviewList > div');
+            blocks.forEach((block) => {
+                if (!block.classList.contains('hidden')) {
+                    const titleEl = block.querySelector('p');
+                    const blockName = titleEl ? titleEl.innerText.trim() : "Stage";
+                    const safeId = blockName.replace(/[^a-zA-Z0-9]/g, '');
+                    mermaidText += `    subgraph ${safeId} ["${blockName}"]\n`;
+                    
+                    const items = block.querySelectorAll('li');
+                    let blockNodes = [];
+                    items.forEach((item) => {
+                        if (!item.classList.contains('hidden')) {
+                            const nodeName = `N${nodeIndex++}`;
+                            const taskName = item.innerText.trim();
+                            mermaidText += `        ${nodeName}["${taskName}"]\n`;
+                            blockNodes.push(nodeName);
+                        }
+                    });
+                    
+                    for (let i = 0; i < blockNodes.length - 1; i++) {
+                        mermaidText += `        ${blockNodes[i]} --> ${blockNodes[i+1]}\n`;
+                    }
+                    mermaidText += `    end\n`;
+                    
+                    if (lastNode && blockNodes.length > 0) {
+                        mermaidText += `    ${lastNode} --> ${blockNodes[0]}\n`;
+                    }
+                    
+                    if (blockNodes.length > 0) {
+                        lastNode = blockNodes[blockNodes.length - 1];
+                    }
+                }
+            });
+            
+            if (nodeIndex === 0) {
+                alert("No tasks selected! Please choose your project options first.");
+                return;
+            }
+            
+            navigator.clipboard.writeText(mermaidText).then(() => {
+                alert("Miro (Mermaid) Flowchart code copied to clipboard!\n\nIn Miro, use the 'Mermaid' tool and paste this code to generate your flowchart.");
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                alert("Failed to copy to clipboard. Check console.");
+            });
+        }
     </script>
 </body>
 </html>
