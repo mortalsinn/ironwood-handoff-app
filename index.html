@@ -66,7 +66,7 @@
         <div class="flex flex-row flex-grow w-full overflow-hidden min-h-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 to-slate-900">
             
             <!-- LEFT COLUMN: FORM INPUTS -->
-            <div class="w-[45%] h-full overflow-y-auto px-6 py-6 border-r border-slate-700/50">
+            <div id="leftPanel" class="h-full overflow-y-auto px-6 py-6 border-r border-slate-700/50" style="width: 45%;">
                 <form id="handoffForm" class="space-y-6">
                     
                     <!-- Hidden inputs to store Stage-Based Assignee States -->
@@ -180,8 +180,13 @@
                 </form>
             </div>
 
+            <!-- RESIZER -->
+            <div id="resizer" class="w-1 hover:w-1.5 bg-slate-700 hover:bg-sky-500 cursor-col-resize shrink-0 z-20 transition-all flex flex-col justify-center items-center group -ml-[1px]">
+                <div class="h-8 w-0.5 bg-slate-500 group-hover:bg-white rounded-full"></div>
+            </div>
+
             <!-- RIGHT COLUMN: PREVIEW -->
-            <div class="w-[55%] h-full bg-slate-900 border-l border-slate-800 flex flex-col shadow-[inset_10px_0_20px_-10px_rgba(0,0,0,0.5)]">
+            <div id="rightPanel" class="flex-1 min-w-0 h-full bg-slate-900 flex flex-col shadow-[inset_10px_0_20px_-10px_rgba(0,0,0,0.5)] relative">
                 
                 <div class="px-5 py-4 shrink-0 border-b border-slate-800 bg-slate-900/50 backdrop-blur z-10 flex justify-between items-center">
                     <div>
@@ -555,7 +560,7 @@
                                 </button>
                             </div>
                             <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li class="task-standard" data-list="${targetList}">Custom Task 1 <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span></li>
+                                
                             </ul>
                             <div class="mt-2 flex gap-1 items-center border-t border-slate-700/50 pt-2">
                                 <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Add custom task...">
@@ -574,7 +579,7 @@
                                 const li = document.createElement('li');
                                 li.className = "task-standard";
                                 li.setAttribute('data-list', targetList);
-                                li.innerHTML = `${tVal} <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>`;
+                                li.innerHTML = `<span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${tVal}</span> <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>`;
                                 ul.appendChild(li);
                                 tInput.value = "";
                             }
@@ -607,7 +612,7 @@
                         const ul = e.target.closest('div[id^="block-"]').querySelector('ul');
                         const li = document.createElement('li');
                         li.className = "task-standard";
-                        li.innerHTML = `${val} <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>`;
+                        li.innerHTML = `<span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${val}</span> <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>`;
                         ul.appendChild(li);
                         input.value = "";
                     }
@@ -615,12 +620,43 @@
             });
 
             document.querySelectorAll('.sortable-list li').forEach(li => {
+                const text = li.innerHTML;
+                li.innerHTML = `<span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${text}</span>`;
+                
                 const span = document.createElement('span');
                 span.className = "delete-btn";
                 span.innerHTML = "&times;";
                 span.onclick = function() { this.parentElement.remove(); };
                 li.appendChild(span);
             });
+        });
+
+
+        // Split Pane Logic
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.getElementById('leftPanel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.body.style.cursor = 'col-resize';
+            document.body.style.userSelect = 'none';
+        });
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isResizing) return;
+            let newWidth = (e.clientX / window.innerWidth) * 100;
+            if (newWidth < 20) newWidth = 20;
+            if (newWidth > 80) newWidth = 80;
+            leftPanel.style.width = `${newWidth}%`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            if (isResizing) {
+                isResizing = false;
+                document.body.style.cursor = 'default';
+                document.body.style.userSelect = 'auto';
+            }
         });
 
         let isZohoEnvironment = false;
