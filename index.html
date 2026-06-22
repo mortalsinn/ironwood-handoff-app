@@ -499,7 +499,7 @@
                     </span>
                     System Linked
                 </div>
-                <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v6.1 Live</button>
+                <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v6.2 Live</button>
             </div>
             
             <div class="flex gap-3">
@@ -580,18 +580,15 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v6.1 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v6.2 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v6.1 - Live Release</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs">
-                            <li><strong class="text-slate-300">Auto-Refresh:</strong> The CRM window now automatically reloads after the protocol is generated to reflect all new data.</li>
-                            <li><strong class="text-slate-300">Closed Won Integration:</strong> One-click conversion with Date & Amount inputs directly syncing to Zoho CRM.</li>
-                            <li><strong class="text-slate-300">UI Cleanup:</strong> Added clean collapsible menus for custom items to reduce clutter.</li>
-                            <li><strong class="text-slate-300">Drag & Drop Guide:</strong> Explicit drag-handle icons added to all tasks for better discoverability.</li>
-                            <li><strong class="text-slate-300">Default Assignees:</strong> Auto-populates Matthew, Thomas, and Joel into their respective production blocks!</li>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v6.2 - Live Release</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Workflow Fix:</strong> Disabled automatic Zoho workflow triggers on the 'Mark Closed Won' button to prevent premature pushes to Projects.</li>
+                            <li><strong class="text-slate-300">UI Refresh Notice:</strong> Added an explicit 'Hit F5' notice upon completion.</li>
                         </ul>
                     </div>
                     <div>
@@ -1466,7 +1463,7 @@
                         "Amount": cwAmount,
                         "Closing_Date": cwDate
                     },
-                    Trigger: ["workflow", "blueprint", "approval"]
+                    Trigger: [] // Empty trigger array to bypass any CRM automations that auto-push to projects
                 };
                 
                 const response = await ZOHO.CRM.API.updateRecord(config);
@@ -1474,21 +1471,14 @@
                 
                 if (response && response.data && response.data[0] && response.data[0].code === "SUCCESS") {
                     // Success!
-                    btn.innerHTML = `<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> Success!`;
+                    btn.innerHTML = `<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> CRM Updated! (Please hit F5 to see changes)`;
                     btn.classList.replace('bg-emerald-600', 'bg-emerald-500');
                     setTimeout(() => {
                         document.getElementById('closedWonOverlay').classList.add('hidden');
                         btn.innerHTML = originalText;
                         btn.disabled = false;
                         btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
-                        
-                        // Attempt to gracefully refresh the parent CRM record without closing the widget
-                        try {
-                            if (typeof ZOHO !== 'undefined' && ZOHO.CRM.UI.Record && ZOHO.CRM.UI.Record.open) {
-                                ZOHO.CRM.UI.Record.open({Entity: currentEntity || "Deals", RecordID: currentDealId});
-                            }
-                        } catch (e) { console.log("Record open fail", e); }
-                    }, 1500);
+                    }, 3500); // Wait slightly longer so they can read the F5 message
                 } else {
                     let errMsg = "Unknown API Error";
                     if (response && response.message) errMsg = response.message;
