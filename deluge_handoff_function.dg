@@ -83,28 +83,30 @@ if (newProjectId != null) {
             connection : "zoho_projects_connection"
         ];
         stairTaskListId = stairTaskListResponse.get("tasklists").get(0).get("id_string");
+        stairTaskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/" + stairTaskListId + "/tasks/";
         
-        // Setup Sheet (Stair Sheet Assignee)
-        zoho.projects.createTask(portalId, newProjectId, { "name": "Stair Measure & Drawing", "tasklist_id": stairTaskListId, "person_responsible": stairSheetAssignee }, "zoho_projects_connection");
+        // Setup Sheet
+        tp1 = {"name": "Stair Measure & Drawing", "person_responsible": stairSheetAssignee};
+        invokeurl [ url: stairTaskUrl type: POST parameters: tp1 connection: "zoho_projects_connection" ];
         
         // Scheduling
-        zoho.projects.createTask(portalId, newProjectId, { "name": "Schedule Stair Delivery/Install", "tasklist_id": stairTaskListId, "person_responsible": schedulingAssignee }, "zoho_projects_connection");
+        tp2 = {"name": "Schedule Stair Delivery/Install", "person_responsible": schedulingAssignee};
+        invokeurl [ url: stairTaskUrl type: POST parameters: tp2 connection: "zoho_projects_connection" ];
 
         if (stairsList.contains("Construction")) {
-            zoho.projects.createTask(portalId, newProjectId, {
-                "name": "Construction Stair Drop-off",
-                "tasklist_id": stairTaskListId,
-                "person_responsible": installAssignee
-            }, "zoho_projects_connection");
+            tp3 = {"name": "Construction Stair Drop-off", "person_responsible": installAssignee};
+            invokeurl [ url: stairTaskUrl type: POST parameters: tp3 connection: "zoho_projects_connection" ];
         }
         
         if (stairsList.contains("Finished")) {
-            // Materials Ordering
-            zoho.projects.createTask(portalId, newProjectId, { "name": "Order Finished Stair Materials", "tasklist_id": stairTaskListId, "person_responsible": materialsAssignee }, "zoho_projects_connection");
-            // Manufacturing
-            zoho.projects.createTask(portalId, newProjectId, { "name": "Manufacture Finished Stair Components", "tasklist_id": stairTaskListId, "person_responsible": stairMfgAssignee }, "zoho_projects_connection");
-            // Install
-            zoho.projects.createTask(portalId, newProjectId, { "name": "Finished Stair Installation", "tasklist_id": stairTaskListId, "person_responsible": installAssignee }, "zoho_projects_connection");
+            tp4 = {"name": "Order Finished Stair Materials", "person_responsible": materialsAssignee};
+            invokeurl [ url: stairTaskUrl type: POST parameters: tp4 connection: "zoho_projects_connection" ];
+            
+            tp5 = {"name": "Manufacture Finished Stair Components", "person_responsible": stairMfgAssignee};
+            invokeurl [ url: stairTaskUrl type: POST parameters: tp5 connection: "zoho_projects_connection" ];
+            
+            tp6 = {"name": "Finished Stair Installation", "person_responsible": installAssignee};
+            invokeurl [ url: stairTaskUrl type: POST parameters: tp6 connection: "zoho_projects_connection" ];
         }
     }
     
@@ -124,36 +126,42 @@ if (newProjectId != null) {
             connection : "zoho_projects_connection"
         ];
         railingTaskListId = railingTaskListResponse.get("tasklists").get(0).get("id_string");
+        railingTaskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/" + railingTaskListId + "/tasks/";
         
-        // Setup Sheet (Railing Sheet Assignee)
-        zoho.projects.createTask(portalId, newProjectId, { "name": "Railing Site Measure & Drawing", "tasklist_id": railingTaskListId, "person_responsible": railingSheetAssignee }, "zoho_projects_connection");
+        // Setup Sheet
+        rp1 = {"name": "Railing Site Measure & Drawing", "person_responsible": railingSheetAssignee};
+        invokeurl [ url: railingTaskUrl type: POST parameters: rp1 connection: "zoho_projects_connection" ];
         
         // Scheduling
-        zoho.projects.createTask(portalId, newProjectId, { "name": "Schedule Railing Installation", "tasklist_id": railingTaskListId, "person_responsible": schedulingAssignee }, "zoho_projects_connection");
+        rp2 = {"name": "Schedule Railing Installation", "person_responsible": schedulingAssignee};
+        invokeurl [ url: railingTaskUrl type: POST parameters: rp2 connection: "zoho_projects_connection" ];
 
         if (railingsList != null && railingsList.contains("FullMetal")) {
-            // Mfg Assignee
-            zoho.projects.createTask(portalId, newProjectId, { "name": "Fabricate Welded Railing Structure", "tasklist_id": railingTaskListId, "person_responsible": railingMfgAssignee }, "zoho_projects_connection");
-            // Scheduling Assignee
-            zoho.projects.createTask(portalId, newProjectId, { "name": "Schedule Powder Coating", "tasklist_id": railingTaskListId, "person_responsible": schedulingAssignee }, "zoho_projects_connection");
+            rp3 = {"name": "Fabricate Welded Railing Structure", "person_responsible": railingMfgAssignee};
+            invokeurl [ url: railingTaskUrl type: POST parameters: rp3 connection: "zoho_projects_connection" ];
+            
+            rp4 = {"name": "Schedule Powder Coating", "person_responsible": schedulingAssignee};
+            invokeurl [ url: railingTaskUrl type: POST parameters: rp4 connection: "zoho_projects_connection" ];
         } else {
-            // Standard wood/custom mfg
-            zoho.projects.createTask(portalId, newProjectId, { "name": "Manufacture Railing / Spindles", "tasklist_id": railingTaskListId, "person_responsible": railingMfgAssignee }, "zoho_projects_connection");
+            rp5 = {"name": "Manufacture Railing / Spindles", "person_responsible": railingMfgAssignee};
+            invokeurl [ url: railingTaskUrl type: POST parameters: rp5 connection: "zoho_projects_connection" ];
         }
         
         if (spindlesList != null && spindlesList.contains("Glass")) {
-             // Materials Assignee
-             zoho.projects.createTask(portalId, newProjectId, { "name": "Order Glass Panels", "tasklist_id": railingTaskListId, "person_responsible": materialsAssignee }, "zoho_projects_connection");
+             rp6 = {"name": "Order Glass Panels", "person_responsible": materialsAssignee};
+             invokeurl [ url: railingTaskUrl type: POST parameters: rp6 connection: "zoho_projects_connection" ];
         } else {
-             // Generic Order
-             zoho.projects.createTask(portalId, newProjectId, { "name": "Order Spindle / Infill Materials", "tasklist_id": railingTaskListId, "person_responsible": materialsAssignee }, "zoho_projects_connection");
+             rp7 = {"name": "Order Spindle / Infill Materials", "person_responsible": materialsAssignee};
+             invokeurl [ url: railingTaskUrl type: POST parameters: rp7 connection: "zoho_projects_connection" ];
         }
         
         // Assembly & QA
-        zoho.projects.createTask(portalId, newProjectId, { "name": "Quality Assurance Check", "tasklist_id": railingTaskListId, "person_responsible": qaAssignee }, "zoho_projects_connection");
+        rp8 = {"name": "Quality Assurance Check", "person_responsible": qaAssignee};
+        invokeurl [ url: railingTaskUrl type: POST parameters: rp8 connection: "zoho_projects_connection" ];
 
         // Install
-        zoho.projects.createTask(portalId, newProjectId, { "name": "Railing / Spindle Installation", "tasklist_id": railingTaskListId, "person_responsible": installAssignee }, "zoho_projects_connection");
+        rp9 = {"name": "Railing / Spindle Installation", "person_responsible": installAssignee};
+        invokeurl [ url: railingTaskUrl type: POST parameters: rp9 connection: "zoho_projects_connection" ];
     }
     
     return "Success: Project and Tasks created in Zoho Projects.";
