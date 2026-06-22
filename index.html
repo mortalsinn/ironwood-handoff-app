@@ -499,7 +499,7 @@
                     </span>
                     System Linked
                 </div>
-                <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v5.2 (Stage)</button>
+                <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v6.0 Live</button>
             </div>
             
             <div class="flex gap-3">
@@ -580,13 +580,14 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v5.2 (Stage)</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v6.0 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v5.0 - The Polish Update</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v6.0 - Live Release</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs">
+                            <li><strong class="text-slate-300">Auto-Refresh:</strong> The CRM window now automatically reloads after the protocol is generated to reflect all new data.</li>
                             <li><strong class="text-slate-300">Closed Won Integration:</strong> One-click conversion with Date & Amount inputs directly syncing to Zoho CRM.</li>
                             <li><strong class="text-slate-300">UI Cleanup:</strong> Added clean collapsible menus for custom items to reduce clutter.</li>
                             <li><strong class="text-slate-300">Drag & Drop Guide:</strong> Explicit drag-handle icons added to all tasks for better discoverability.</li>
@@ -1295,7 +1296,7 @@
                     }
                     
                     document.getElementById('successOverlay').classList.remove('hidden');
-                    setTimeout(() => { ZOHO.CRM.UI.Popup.close(); }, 2000);
+                    setTimeout(() => { if (ZOHO.CRM.UI.Popup.closeReload) { ZOHO.CRM.UI.Popup.closeReload(); } else { ZOHO.CRM.UI.Popup.close(); } }, 2000);
                 } catch (error) {
                     console.error("Fatal exception calling CRM function:", error);
                     document.getElementById('errorMessageDetails').innerText = error.message || JSON.stringify(error);
@@ -1471,6 +1472,13 @@
                         btn.innerHTML = originalText;
                         btn.disabled = false;
                         btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
+                        
+                        // Attempt to gracefully refresh the parent CRM record without closing the widget
+                        try {
+                            if (ZOHO.CRM.UI.Record && ZOHO.CRM.UI.Record.populate) {
+                                ZOHO.CRM.UI.Record.populate({Stage: "Closed Won", Amount: cwAmount, Closing_Date: cwDate});
+                            }
+                        } catch (e) { console.log("Silent populate fail", e); }
                     }, 1500);
                 } else {
                     let errMsg = "Unknown API Error";
