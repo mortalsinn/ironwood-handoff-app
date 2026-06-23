@@ -1363,13 +1363,28 @@
                     if (handoffNotes && handoffNotes.trim() !== '') {
                         
                         // Parse mentions to Zoho syntax
-                        const usersToParse = (typeof crmUsers !== 'undefined' && crmUsers.length > 0) ? crmUsers : fallbackRoster;
+                        let usersToParse = (typeof crmUsers !== 'undefined' && crmUsers.length > 0) ? crmUsers : fallbackRoster;
+                        
+                        // Try one more time to fetch ZUIDs if they are missing
+                        if (usersToParse.length > 0 && !usersToParse[0].zuid) {
+                            try {
+                                const usersRes = await ZOHO.CRM.API.getAllUsers({Type:"ActiveUsers"});
+                                if (usersRes && usersRes.users) usersToParse = usersRes.users;
+                            } catch(e) { console.warn("Fallback fetch failed", e); }
+                        }
+
+                        console.log("Users to parse for mentions:", usersToParse);
+
                         usersToParse.forEach(u => {
                             const name = u.full_name || (u.first_name + " " + u.last_name);
                             const safeName = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                             const regex = new RegExp(`@${safeName}\\b`, 'gi');
-                            const zuidStr = u.zuid ? `#${u.zuid}` : ``;
-                            handoffNotes = handoffNotes.replace(regex, `crm[user#${u.id}${zuidStr}]crm`);
+                            
+                            if (u.id && u.zuid) {
+                                handoffNotes = handoffNotes.replace(regex, `crm[user#${u.id}#${u.zuid}]crm`);
+                            } else {
+                                console.warn(`Missing ZUID for ${name}. Cannot tag in Zoho API. Leaving as plain text.`);
+                            }
                         });
 
                         try {
