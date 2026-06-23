@@ -1350,7 +1350,8 @@
         });
 
         function generateMiroFlowchart() {
-            let mermaidText = "flowchart LR\n";
+            let mermaidText = "%%{init: {'flowchart': {'nodeSpacing': 50, 'rankSpacing': 60, 'curve': 'linear'}}}%%\n";
+            mermaidText += "flowchart LR\n";
             mermaidText += "classDef fab fill:#0c4a6e,stroke:#38bdf8,color:#fff;\n";
             mermaidText += "classDef inst fill:#4c0519,stroke:#f43f5e,color:#fff;\n";
             mermaidText += "classDef qa fill:#7c2d12,stroke:#fb923c,color:#fff;\n";
@@ -1384,6 +1385,7 @@
                     }
                     
                     mermaidText += `    subgraph ${safeId} ["${blockName}"]\n`;
+                    mermaidText += `        direction LR\n`;
                     
                     const items = block.querySelectorAll('li');
                     let blockNodes = [];
@@ -1402,7 +1404,7 @@
                     mermaidText += `    end\n`;
                     
                     if (lastNode && blockNodes.length > 0) {
-                        mermaidText += `    ${lastNode} --> ${blockNodes[0]}\n`;
+                        mermaidText += `    ${lastNode} ===> ${blockNodes[0]}\n`;
                     }
                     
                     if (blockNodes.length > 0) {
