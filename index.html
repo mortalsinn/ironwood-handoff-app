@@ -1391,30 +1391,48 @@
                     mermaidText += `        direction LR\n`;
                     
                     const items = block.querySelectorAll('li');
-                    let blockNodes = [];
+                    let visibleNodes = [];
                     items.forEach((item) => {
                         if (!item.classList.contains('hidden')) {
                             const nodeName = `N${nodeIndex++}`;
                             const taskName = item.querySelector('.editable-task') ? item.querySelector('.editable-task').textContent.trim() : item.textContent.trim().replace('×','');
-                            mermaidText += `        ${nodeName}["${taskName}"]:::${nodeClass}\n`;
-                            blockNodes.push(nodeName);
+                            
+                            let nodeFormat = `["${taskName}"]`;
+                            if (taskName.toLowerCase().includes("quality assurance check")) {
+                                nodeFormat = `{"${taskName}"}`;
+                            }
+                            
+                            mermaidText += `        ${nodeName}${nodeFormat}:::${nodeClass}\n`;
+                            visibleNodes.push({id: nodeName, name: taskName});
                         }
                     });
                     
-                    for (let i = 0; i < blockNodes.length - 1; i++) {
-                        mermaidText += `        ${blockNodes[i]} --> ${blockNodes[i+1]}\n`;
+                    for (let i = 0; i < visibleNodes.length - 1; i++) {
+                        if (visibleNodes[i].name.toLowerCase().includes("quality assurance check")) {
+                            mermaidText += `        ${visibleNodes[i].id} -->|Pass| ${visibleNodes[i+1].id}\n`;
+                            if (lastNode) {
+                                mermaidText += `        ${visibleNodes[i].id} -.->|Fail| ${lastNode}\n`;
+                            }
+                        } else {
+                            mermaidText += `        ${visibleNodes[i].id} --> ${visibleNodes[i+1].id}\n`;
+                        }
                     }
                     mermaidText += `    end\n`;
                     
-                    if (lastNode && blockNodes.length > 0) {
-                        mermaidText += `    ${lastNode} ===> ${blockNodes[0]}\n`;
+                    if (lastNode && visibleNodes.length > 0) {
+                        mermaidText += `    ${lastNode} ===> ${visibleNodes[0].id}\n`;
                     }
                     
-                    if (blockNodes.length > 0) {
-                        lastNode = blockNodes[blockNodes.length - 1];
+                    if (visibleNodes.length > 0) {
+                        lastNode = visibleNodes[visibleNodes.length - 1].id;
                     }
                 }
             });
+            
+            if (lastNode) {
+                mermaidText += `    EndNode(((End))):::defaultNode\n`;
+                mermaidText += `    ${lastNode} ===> EndNode\n`;
+            }
             
             mermaidText += "    end\n";
             
