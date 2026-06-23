@@ -196,7 +196,10 @@
 
                     <div class="pb-4 pt-2">
                         <label for="handoffNotes" class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">4. Production Notes</label>
-                        <textarea id="handoffNotes" name="notes" rows="2" class="w-full p-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none text-slate-200 placeholder-slate-500 text-sm transition-all"></textarea>
+                        <div class="relative w-full">
+                            <textarea id="handoffNotes" name="notes" rows="2" class="w-full p-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none text-slate-200 placeholder-slate-500 italic text-sm transition-all" placeholder="Type production notes here... (Use @ to tag a team member)"></textarea>
+                            <div id="mentionDropdown" class="absolute left-0 bottom-full mb-2 w-64 bg-slate-800 border border-slate-600 rounded-xl shadow-2xl hidden z-[100] overflow-y-auto max-h-48 py-1"></div>
+                        </div>
                     </div>
                 </form>
             </div>
@@ -654,12 +657,31 @@
 
     <script>
         let currentEntity = null;
+        let crmUsers = [];
+        const fallbackRoster = [
+            { id: '1768463000006454001', full_name: 'Brenda Peña' },
+            { id: '1768463000005035965', full_name: 'Camille Manalili' },
+            { id: '1768463000005827001', full_name: 'Jeff van der Hoop' },
+            { id: '1768463000003870001', full_name: 'Jeffery Chan' },
+            { id: '1768463000003860001', full_name: 'Joel Nalder' },
+            { id: '1768463000000070003', full_name: 'Julia Kent' },
+            { id: '1768463000002032001', full_name: 'Matthew De Man' },
+            { id: '1768463000000036003', full_name: 'Mike Kent' },
+            { id: '1768463000004225001', full_name: 'Thomas Macleod' }
+        ];
+
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof ZOHO !== 'undefined') {
-                ZOHO.embeddedApp.on("PageLoad", function(data){
+                ZOHO.embeddedApp.on("PageLoad", async function(data){
                     if(data && data.Entity) {
                         currentEntity = data.Entity;
                     }
+                    try {
+                        const usersRes = await ZOHO.CRM.API.getAllUsers({Type:"ActiveUsers"});
+                        if (usersRes && usersRes.users) {
+                            crmUsers = usersRes.users;
+                        }
+                    } catch(e) { console.warn("Could not load CRM users", e); }
                 });
                 ZOHO.embeddedApp.init();
             }
@@ -681,6 +703,66 @@
                 });
             });
 
+            // @mention autocomplete logic
+            const notesEl = document.getElementById('handoffNotes');
+            const mentionDropdown = document.getElementById('mentionDropdown');
+            let currentMentionQuery = "";
+            
+            if (notesEl && mentionDropdown) {
+                notesEl.addEventListener('input', () => {
+                    const cursor = notesEl.selectionStart;
+                    const textUpToCursor = notesEl.value.substring(0, cursor);
+                    const match = textUpToCursor.match(/@([a-zA-Z0-9 ]{0,20})$/);
+                    
+                    if (match) {
+                        currentMentionQuery = match[1].toLowerCase();
+                        const users = (crmUsers && crmUsers.length > 0) ? crmUsers : fallbackRoster;
+                        const filtered = users.filter(u => {
+                            const name = (u.full_name || (u.first_name + " " + u.last_name)).toLowerCase();
+                            return name.includes(currentMentionQuery);
+                        });
+                        
+                        if (filtered.length > 0) {
+                            mentionDropdown.innerHTML = filtered.map(u => {
+                                const name = u.full_name || (u.first_name + " " + u.last_name);
+                                return `<button type="button" class="mention-item block w-full text-left px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-sky-600 hover:text-white transition-colors border-b border-slate-700/50 last:border-0" data-id="${u.id}" data-zuid="${u.zuid || ''}" data-name="${name}">
+                                    ${name}
+                                </button>`;
+                            }).join('');
+                            mentionDropdown.classList.remove('hidden');
+                        } else {
+                            mentionDropdown.classList.add('hidden');
+                        }
+                    } else {
+                        mentionDropdown.classList.add('hidden');
+                    }
+                });
+                
+                mentionDropdown.addEventListener('click', (e) => {
+                    const item = e.target.closest('.mention-item');
+                    if (item) {
+                        const name = item.getAttribute('data-name');
+                        const cursor = notesEl.selectionStart;
+                        const textUpToCursor = notesEl.value.substring(0, cursor);
+                        const textAfterCursor = notesEl.value.substring(cursor);
+                        const match = textUpToCursor.match(/@([a-zA-Z0-9 ]{0,20})$/);
+                        if (match) {
+                            const beforeMention = textUpToCursor.substring(0, match.index);
+                            const newText = beforeMention + '@' + name + ' ';
+                            notesEl.value = newText + textAfterCursor;
+                            notesEl.focus();
+                            notesEl.setSelectionRange(newText.length, newText.length);
+                            mentionDropdown.classList.add('hidden');
+                        }
+                    }
+                });
+                
+                document.addEventListener('click', (e) => {
+                    if (!notesEl.contains(e.target) && !mentionDropdown.contains(e.target)) {
+                        mentionDropdown.classList.add('hidden');
+                    }
+                });
+            }
 
             // Custom Option Logic
             let customBlockCounter = 0;
@@ -1277,8 +1359,19 @@
                     if (!dealId) throw new Error("Missing Context: Please make sure you are clicking this button from inside a Deal record.");
                     
                     // Push Production Notes to Deals module
-                    const handoffNotes = formData.get('notes');
+                    let handoffNotes = formData.get('notes');
                     if (handoffNotes && handoffNotes.trim() !== '') {
+                        
+                        // Parse mentions to Zoho syntax
+                        const usersToParse = (typeof crmUsers !== 'undefined' && crmUsers.length > 0) ? crmUsers : fallbackRoster;
+                        usersToParse.forEach(u => {
+                            const name = u.full_name || (u.first_name + " " + u.last_name);
+                            const safeName = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+                            const regex = new RegExp(`@${safeName}\\b`, 'gi');
+                            const zuidStr = u.zuid ? `#${u.zuid}` : ``;
+                            handoffNotes = handoffNotes.replace(regex, `crm[user#${u.id}${zuidStr}]crm`);
+                        });
+
                         try {
                             const noteRecordData = {
                                 "Parent_Id": dealId,
