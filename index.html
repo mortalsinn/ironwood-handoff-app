@@ -65,6 +65,9 @@
                 </button>
             </div>
             <div class="flex items-center gap-4">
+                <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-sky-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 transition-colors flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help
+                </button>
                 <div id="autoSaveIndicator" class="hidden items-center gap-1.5 opacity-0 transition-opacity duration-300">
                     <div id="autoSaveDot" class="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse"></div>
                     <span id="autoSaveText" class="text-[10px] font-medium text-slate-400 italic">Saved locally</span>
@@ -206,7 +209,7 @@
                         <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">4. Production Notes</label>
                         <div id="notesContainer" class="space-y-3">
                             <div class="relative w-full note-block group">
-                                <textarea name="notes[]" rows="2" class="w-full p-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none text-slate-200 placeholder-slate-500 italic text-sm transition-all pr-10" placeholder="Type production notes here... (Use @ to tag a team member)"></textarea>
+                                <textarea name="notes[]" rows="2" class="w-full p-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none text-slate-200 placeholder-slate-500 italic text-sm transition-all note-textarea pr-10" placeholder="Type production notes here... (Use @ to tag a team member)"></textarea>
                                 <button type="button" class="delete-note-btn absolute right-3 top-3 text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                             </div>
                         </div>
@@ -820,16 +823,18 @@
             let currentMentionQuery = "";
             let activeNoteEl = null;
 
-            window.attachMentionLogic = (notesEl) => {
-                notesEl.addEventListener('input', () => {
-                    activeNoteEl = notesEl;
-                    const cursor = notesEl.selectionStart;
-                    const textUpToCursor = notesEl.value.substring(0, cursor);
+            const notesContainer = document.getElementById('notesContainer');
+            
+            notesContainer.addEventListener('input', (e) => {
+                if (e.target && e.target.tagName === 'TEXTAREA' && e.target.name === 'notes[]') {
+                    activeNoteEl = e.target;
+                    const cursor = activeNoteEl.selectionStart;
+                    const textUpToCursor = activeNoteEl.value.substring(0, cursor);
                     const match = textUpToCursor.match(/@([a-zA-Z0-9 ]{0,20})$/);
                     
                     if (match) {
                         currentMentionQuery = match[1].toLowerCase();
-                        const users = (crmUsers && crmUsers.length > 0) ? crmUsers : fallbackRoster;
+                        const users = (typeof crmUsers !== 'undefined' && crmUsers.length > 0) ? crmUsers : fallbackRoster;
                         const filtered = users.filter(u => {
                             const name = (u.full_name || (u.first_name + " " + u.last_name)).toLowerCase();
                             return name.includes(currentMentionQuery);
@@ -843,7 +848,7 @@
                                 </button>`;
                             }).join('');
                             
-                            notesEl.parentElement.appendChild(mentionDropdown);
+                            activeNoteEl.parentElement.appendChild(mentionDropdown);
                             mentionDropdown.classList.remove('hidden');
                         } else {
                             mentionDropdown.classList.add('hidden');
@@ -851,10 +856,8 @@
                     } else {
                         mentionDropdown.classList.add('hidden');
                     }
-                });
-            };
-
-            document.querySelectorAll('.note-textarea').forEach(el => window.attachMentionLogic(el));
+                }
+            });
             
             if (mentionDropdown) {
                 mentionDropdown.addEventListener('click', (e) => {
@@ -898,9 +901,6 @@
                     <button type="button" class="delete-note-btn absolute right-3 top-3 text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 `;
                 notesContainer.appendChild(newBlock);
-                const newTextarea = newBlock.querySelector('.note-textarea');
-                window.attachMentionLogic(newTextarea);
-                
                 newBlock.querySelector('.delete-note-btn').addEventListener('click', () => {
                     newBlock.remove();
                     // trigger autosave
@@ -1956,5 +1956,65 @@
             }
         });
     </script>
+    
+    <!-- INSTRUCTIONS MODAL -->
+    <div id="instructionsModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="document.getElementById('instructionsModal').classList.add('hidden')"></div>
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl w-full max-w-2xl relative flex flex-col max-h-[90vh] overflow-hidden transform transition-all">
+            
+            <div class="p-6 border-b border-slate-800 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-sky-500/20 border border-sky-500/30 flex items-center justify-center">
+                        <svg class="w-5 h-5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-white tracking-wide">How to use the Handoff App</h3>
+                </div>
+                <button type="button" onclick="document.getElementById('instructionsModal').classList.add('hidden')" class="text-slate-500 hover:text-slate-300 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 overflow-y-auto space-y-6 text-sm text-slate-300 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-800/40 [&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-500">
+                
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">1. Building the Blueprint</h4>
+                    <p class="leading-relaxed">Use the <strong>Left Panel</strong> to select the structural components of the job. The <strong>Right Panel</strong> dynamically updates to show the required production stages and tasks. The app automatically determines what needs to happen based on what you check off.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">2. Assigning Teams</h4>
+                    <p class="leading-relaxed">By default, tasks are grouped into blocks (e.g., <em>Railing Production & Install</em>). You can assign an entire block to a user by clicking the <strong>Assign User</strong> dropdown. If you need to override a specific task within that block, click the team icon on that specific task.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">3. Customizing the Workflow</h4>
+                    <ul class="list-disc pl-5 space-y-2 mt-2">
+                        <li><strong>Reordering:</strong> You can drag and drop any task on the Right Panel to reorganize the flow or move tasks between blocks.</li>
+                        <li><strong>Editing:</strong> Click directly on any task name to edit the text inline.</li>
+                        <li><strong>Adding Tasks:</strong> Use the "Click to add custom task..." dropdown inside any block to type a custom task.</li>
+                        <li><strong>Adding Blocks:</strong> Use the "Click to add custom item..." dropdowns on the Left Panel to generate entirely new blocks on the Right Panel!</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">4. Production Notes & @Mentions</h4>
+                    <p class="leading-relaxed">At the bottom of the Left Panel, you can write Production Notes. Type <strong>@</strong> followed by a team member's name to tag them. The system will convert this into a CRM Mention so they get a notification. You can click <strong>Add Another Note</strong> to separate different thoughts or messages into distinct CRM notes!</p>
+                </div>
+
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">5. Auto-Save & Resizing</h4>
+                    <ul class="list-disc pl-5 space-y-2 mt-2">
+                        <li><strong>Resizing:</strong> You can drag the vertical divider between the left and right panels to adjust the width. You can also drag the bottom-right corner of the Right Panel to resize the entire app window!</li>
+                        <li><strong>Auto-Save:</strong> The app actively saves your entire layout—including custom tasks and drag-and-drop locations—every few seconds. If you accidentally close the window, just re-open it and your exact setup will be restored!</li>
+                    </ul>
+                </div>
+
+            </div>
+            
+            <div class="p-4 border-t border-slate-800 bg-slate-900/80 flex justify-end shrink-0">
+                <button type="button" onclick="document.getElementById('instructionsModal').classList.add('hidden')" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors text-sm">Got it</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
