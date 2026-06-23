@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.10</title>
+    <title>Ironwood Handoff Form v8.11</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -47,7 +47,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.10</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.11</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -531,7 +531,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.10 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.11 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -614,14 +614,14 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.10 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v8.11 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.10 - Automatic Closed Won Status</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.11 - Enforced Stage Validation Popup</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">Mandatory Transition:</strong> Clicking the Generate Production Run button now silently and automatically updates the CRM Deal's Stage to "Closed Won" in the background to ensure no deals are left behind in the pipeline.</li>
+                            <li><strong class="text-slate-300">Mandatory Data Entry:</strong> If the worker clicks "Generate Production Run" and the Deal is not in the "Closed Won" stage, the app intercepts the process and forces the "Mark as Closed Won" UI overlay to appear, requiring them to enter the final Dollar Amount before they can proceed.</li>
                         </ul>
                     </div>
                     <div>
@@ -1797,19 +1797,21 @@
                     const dealId = currentDealId;
                     if (!dealId) throw new Error("Missing Context: Please make sure you are clicking this button from inside a Deal record.");
                     
-                    // Auto-update Deal Stage to Closed Won
+                    // Verify Deal Stage
                     try {
-                        await ZOHO.CRM.API.updateRecord({
-                            Entity: "Deals",
-                            APIData: {
-                                "id": dealId,
-                                "Stage": "Closed Won"
-                            },
-                            Trigger: ["workflow"]
-                        });
-                        console.log("Automatically marked Deal as Closed Won.");
+                        const dealRecord = await ZOHO.CRM.API.getRecord({Entity: "Deals", RecordID: dealId});
+                        if (dealRecord && dealRecord.data && dealRecord.data.length > 0) {
+                            const stage = dealRecord.data[0].Stage;
+                            if (stage !== "Closed Won") {
+                                clearInterval(loadingInterval);
+                                saveBtn.innerHTML = originalHTML;
+                                saveBtn.disabled = false;
+                                document.getElementById('closedWonOverlay').classList.remove('hidden');
+                                return;
+                            }
+                        }
                     } catch (stageErr) {
-                        console.warn("Failed to automatically update Deal Stage to Closed Won", stageErr);
+                        console.warn("Failed to verify Deal Stage:", stageErr);
                     }
                     
                     // Push Production Notes to Deals module
