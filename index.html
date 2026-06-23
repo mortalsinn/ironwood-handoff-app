@@ -114,7 +114,7 @@
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
                             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">2. Stair Structure</h3>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div id="stairCustomGrid" class="grid grid-cols-2 gap-3">
                             <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
                                 <input type="checkbox" name="stairType" value="Construction" class="w-3.5 h-3.5 text-emerald-500 bg-slate-900 border-slate-600 rounded form-checkbox">
                                 <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Construction Grade</span>
@@ -140,7 +140,7 @@
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
                             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">3. Railing Assembly</h3>
                         </div>
-                        <div class="grid grid-cols-2 gap-3">
+                        <div id="railingCustomGrid" class="grid grid-cols-2 gap-3">
                             <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
                                 <input type="checkbox" id="railStraight" name="railingType" value="Straight" class="w-3.5 h-3.5 text-amber-500 bg-slate-900 border-slate-600 rounded form-checkbox">
                                 <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Straight Railing</span>
@@ -167,7 +167,7 @@
                         
                         <div class="pt-3 mt-1 border-t border-slate-700/50">
                             <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Spindle / Infill Material</h4>
-                            <div class="grid grid-cols-2 gap-2">
+                            <div id="spindleCustomGrid" class="grid grid-cols-2 gap-2">
                                 <label class="flex items-center p-2 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2">
                                     <input type="checkbox" name="spindleType" value="WallMount" class="w-3 h-3 text-teal-400 bg-slate-900 border-slate-600 rounded form-checkbox">
                                     <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-slate-200">Wall Mount Handrail Only</span>
@@ -927,6 +927,7 @@
             const autoSaveText = document.getElementById('autoSaveText');
             const manualSaveBtn = document.getElementById('manualSaveBtn');
             let autoSaveTimeout;
+            let customBlockCounter = 0; // Moved here for AutoSave access
 
             window.saveDraftState = () => {
                 if (!isZohoEnvironment || !currentDealId) return;
@@ -944,7 +945,15 @@
                 
                 const draft = {
                     form: formState,
-                    timestamp: new Date().getTime()
+                    timestamp: new Date().getTime(),
+                    previewListHTML: document.getElementById('projectPreviewList').innerHTML,
+                    customOptionsData: Array.from(document.querySelectorAll('.custom-option-cb')).map(cb => ({
+                        value: cb.value,
+                        targetList: document.getElementById(cb.getAttribute('data-block-target'))?.getAttribute('data-default-list') || "Railing Production & Install",
+                        gridId: cb.closest('.grid')?.id || cb.closest('div').id,
+                        blockId: cb.getAttribute('data-block-target')
+                    })),
+                    customBlockCounter: customBlockCounter
                 };
                 
                 localStorage.setItem('ironwood_draft_' + currentDealId, JSON.stringify(draft));
@@ -985,6 +994,26 @@
                     try {
                         const draft = JSON.parse(draftStr);
                         const formState = draft.form || {};
+                        
+                        // 1. Restore Custom Options Checkboxes (Left Side)
+                        if (draft.customOptionsData) {
+                            draft.customOptionsData.forEach(opt => {
+                                const grid = document.getElementById(opt.gridId);
+                                if (grid && !document.querySelector(`input[value="${opt.value}"]`)) {
+                                    const label = document.createElement('label');
+                                    label.className = "flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2 relative";
+                                    label.innerHTML = `
+                                        <input type="checkbox" name="customOpt" value="${opt.value}" class="w-3.5 h-3.5 text-sky-400 bg-slate-900 border-slate-600 rounded form-checkbox custom-option-cb" data-block-target="${opt.blockId}">
+                                        <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">${opt.value}</span>
+                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 font-black text-lg hidden group-hover:block px-2 cursor-pointer hover:scale-125 transition-transform" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('${opt.blockId}').remove(); const inpId = '${opt.blockId}'.replace('block-custom-', 'customAssignee') + 'Input'; const hiddenInp = document.getElementById(inpId); if(hiddenInp) hiddenInp.remove(); this.parentElement.remove();" title="Delete Custom Item">&times;</span>
+                                    `;
+                                    grid.appendChild(label);
+                                }
+                            });
+                        }
+                        customBlockCounter = draft.customBlockCounter || 0;
+
+                        // 2. Restore Form State
                         for (let key in formState) {
                             if (key === 'notes[]') {
                                 const valArray = Array.isArray(formState[key]) ? formState[key] : [formState[key]];
@@ -1010,7 +1039,53 @@
                                 inputs[0].value = val;
                             }
                         }
+                        
+                        // 3. Trigger recalculation
                         form.dispatchEvent(new Event('change', { bubbles: true }));
+                        
+                        // 4. Override Right Panel with UI Snapshot (after a tiny delay so updateBlueprintPreview finishes)
+                        if (draft.previewListHTML) {
+                            setTimeout(() => {
+                                document.getElementById('projectPreviewList').innerHTML = draft.previewListHTML;
+                                
+                                // 5. Rebind SortableJS
+                                new Sortable(document.getElementById('projectPreviewList'), {
+                                    animation: 150, handle: '.block-handle', ghostClass: 'opacity-50'
+                                });
+                                document.querySelectorAll('.sortable-list').forEach(el => {
+                                    new Sortable(el, {
+                                        group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50'
+                                    });
+                                });
+
+                                // 6. Rebind Add Custom Task buttons
+                                document.querySelectorAll('.add-task-btn').forEach(btn => {
+                                    btn.addEventListener('click', (ev) => {
+                                        const tInput = ev.target.previousElementSibling;
+                                        const tVal = tInput.value.trim();
+                                        if (tVal) {
+                                            const targetList = ev.target.closest('div[id^="block-"]').getAttribute('data-default-list');
+                                            const ul = ev.target.closest('div[id^="block-"]').querySelector('ul');
+                                            const li = document.createElement('li');
+                                            li.className = "task-standard";
+                                            li.setAttribute('data-list', targetList);
+                                            li.className += " flex items-center group relative";
+                                            li.innerHTML = `
+                                                <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
+                                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
+                                                </span>
+                                                <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${tVal}</span> 
+                                                <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>
+                                            `;
+                                            ul.appendChild(li);
+                                            tInput.value = "";
+                                            triggerAutoSave();
+                                        }
+                                    });
+                                });
+                            }, 50);
+                        }
+
                         console.log("Draft restored from local storage");
                     } catch(e) { console.error("Draft restore failed", e); }
                 }
@@ -1018,7 +1093,6 @@
             // --- END AUTO SAVE ---
 
             // Custom Option Logic
-            let customBlockCounter = 0;
             document.querySelectorAll('.add-opt-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const input = e.target.previousElementSibling;
