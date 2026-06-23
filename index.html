@@ -60,23 +60,25 @@
             <div class="flex items-center gap-3">
                 <span class="w-5 h-5 bg-gradient-to-br from-sky-400 to-blue-600 rounded flex items-center justify-center text-white font-black text-[10px] shadow-sm">IS</span>
                 <span class="text-[11px] font-bold text-slate-200 tracking-[0.2em] uppercase">Ironwood Stair & Rail</span>
-                <button type="button" onclick="document.getElementById('closedWonOverlay').classList.remove('hidden')" class="ml-4 px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded text-xs font-bold transition-all flex items-center gap-1">
+                <button type="button" onclick="window.openTravelModal()" class="ml-4 px-2 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 rounded text-xs font-bold transition-all flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Travel
+                </button>
+                <button type="button" onclick="document.getElementById('closedWonOverlay').classList.remove('hidden')" class="ml-2 px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded text-xs font-bold transition-all flex items-center gap-1">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> Mark Closed Won
                 </button>
             </div>
             <div class="flex items-center gap-4">
-                <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-sky-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 transition-colors flex items-center gap-1">
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help
-                </button>
                 <div id="autoSaveIndicator" class="hidden items-center gap-1.5 opacity-0 transition-opacity duration-300">
                     <div id="autoSaveDot" class="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse"></div>
                     <span id="autoSaveText" class="text-[10px] font-medium text-slate-400 italic">Saved locally</span>
                 </div>
+                <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-sky-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 transition-colors flex items-center gap-1">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help
+                </button>
                 <button type="button" id="resetBtn" class="text-[10px] text-rose-400 hover:text-white bg-slate-800 hover:bg-rose-900/50 px-2 py-0.5 rounded border border-slate-700 hover:border-rose-700 transition-colors flex items-center gap-1" title="Clear auto-save and reset form to defaults">
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Reset
                 </button>
                 <button type="button" id="manualSaveBtn" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 transition-colors">Save Draft</button>
-                <span class="text-[10px] font-medium text-sky-400 uppercase tracking-widest bg-sky-950/50 px-2 py-0.5 rounded border border-sky-800/50">Production Wizard</span>
             </div>
         </div>
 
@@ -757,6 +759,53 @@
                         Confirm & Update CRM
                     </button>
                     <p id="cwError" class="text-rose-400 text-xs text-center hidden mt-2"></p>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRAVEL / OUT OF TOWN OVERLAY -->
+        <div id="travelOverlay" class="absolute inset-0 bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center hidden z-[70] text-white p-6">
+            <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-sm relative">
+                <button type="button" onclick="document.getElementById('travelOverlay').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                <div class="flex flex-col items-center mb-6">
+                    <div class="w-14 h-14 rounded-full bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-3 shadow-[0_0_20px_rgba(245,158,11,0.2)]">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-black tracking-tight">Travel & Logistics</h3>
+                    <p class="text-xs text-slate-400 mt-1 text-center">Configure travel requirements for scheduling.</p>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="travelAddress" class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Job Address</label>
+                        <input type="text" id="travelAddress" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-slate-200 text-sm" placeholder="Loading from CRM...">
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Travel Req?</label>
+                            <select id="travelRequired" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-slate-200 text-sm">
+                                <option value="No">No</option>
+                                <option value="Yes">Yes</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="travelKMs" class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Total KMs</label>
+                            <input type="number" id="travelKMs" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-slate-200 text-sm" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Hotel / Meals Req?</label>
+                        <select id="travelHotel" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-slate-200 text-sm">
+                            <option value="No">No</option>
+                            <option value="Yes">Yes</option>
+                        </select>
+                    </div>
+
+                    <button type="button" onclick="window.submitTravelModal()" class="w-full mt-2 px-4 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] flex items-center justify-center gap-2">
+                        Push to Notes
+                    </button>
                 </div>
             </div>
         </div>
@@ -1975,6 +2024,62 @@
                 btn.disabled = false;
             }
         });
+
+        window.openTravelModal = async () => {
+            document.getElementById('travelOverlay').classList.remove('hidden');
+            const addressInput = document.getElementById('travelAddress');
+            addressInput.value = "Loading from CRM...";
+            
+            if (isZohoEnvironment && currentDealId) {
+                try {
+                    const response = await ZOHO.CRM.API.getRecord({Entity: "Deals", RecordID: currentDealId});
+                    if (response && response.data && response.data[0]) {
+                        const deal = response.data[0];
+                        let address = deal.Site_Address || deal.Job_Address || deal.Address || deal.Billing_Street || deal.Shipping_Street || "";
+                        if (!address) {
+                            for (let key of Object.keys(deal)) {
+                                if (key.toLowerCase().includes('address') && typeof deal[key] === 'string') {
+                                    address = deal[key];
+                                    break;
+                                }
+                            }
+                        }
+                        addressInput.value = address || "";
+                    } else {
+                        addressInput.value = "";
+                    }
+                } catch(e) {
+                    console.error("Failed to load deal address:", e);
+                    addressInput.value = "";
+                }
+            } else {
+                addressInput.value = "";
+            }
+        };
+
+        window.submitTravelModal = () => {
+            const address = document.getElementById('travelAddress').value;
+            const req = document.getElementById('travelRequired').value;
+            const kms = document.getElementById('travelKMs').value;
+            const hotel = document.getElementById('travelHotel').value;
+            
+            const noteString = `--- TRAVEL & LOGISTICS ---\nAddress: ${address || 'N/A'}\nTravel Required: ${req}\nDistance: ${kms || '0'} KM\nHotel/Meals: ${hotel}`;
+            
+            const notesContainer = document.getElementById('notesContainer');
+            const textareas = notesContainer.querySelectorAll('.note-textarea');
+            let targetArea = textareas[textareas.length - 1];
+            
+            if (targetArea.value.trim() !== '') {
+                document.getElementById('addNoteBtn').click();
+                const newAreas = notesContainer.querySelectorAll('.note-textarea');
+                targetArea = newAreas[newAreas.length - 1];
+            }
+            
+            targetArea.value = noteString;
+            targetArea.dispatchEvent(new Event('input', { bubbles: true }));
+            
+            document.getElementById('travelOverlay').classList.add('hidden');
+        };
     </script>
     
     <!-- INSTRUCTIONS MODAL -->
