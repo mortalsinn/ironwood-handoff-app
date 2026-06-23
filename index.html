@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.6</title>
+    <title>Ironwood Handoff Form v8.7</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -47,7 +47,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.6</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.7</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -531,7 +531,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.6 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.7 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -614,10 +614,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.6 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v8.7 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.7 - The ESA Blueprint Update</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">ESA Visual Indicators:</strong> When "ESA" is set to Yes in the Travel Modal, the terms "[ESA]" will automatically be prepended to the <em>Railing Site Measure</em>, <em>Railing Installation</em>, and <em>Finished Stair Installation</em> tasks in the blueprint.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.5 - Logistics Terminology</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1469,6 +1475,9 @@
             const stairFinished = document.querySelector('input[name="stairType"][value="Finished"]').checked;
             const stairAny = stairConst || stairFinished;
 
+            const isESA = document.getElementById('travelRequired').value === 'Yes';
+            const esaPrefix = isESA ? "[ESA] " : "";
+
             // Colors
             let stairColor = stairFinished ? 'task-finished' : (stairConst ? 'task-framing' : 'task-standard');
             let railingColor = railFullMetal ? 'task-metal' : (railCurved ? 'task-curved' : (railStraight ? 'task-straight' : 'task-standard'));
@@ -1561,7 +1570,12 @@
 
             // Task Visibility
             document.getElementById('task-metal-measure').classList.toggle('hidden', !railFullMetal);
-            document.getElementById('task-standard-measure').classList.toggle('hidden', railFullMetal);
+            
+            const taskStandardMeasure = document.getElementById('task-standard-measure');
+            taskStandardMeasure.classList.toggle('hidden', railFullMetal);
+            const smEditable = taskStandardMeasure.querySelector('.editable-task');
+            if (smEditable) smEditable.textContent = esaPrefix + "Railing Site Measure";
+            else taskStandardMeasure.textContent = esaPrefix + "Railing Site Measure";
 
             document.getElementById('task-order-materials-generic').classList.toggle('hidden', !needsWoodMaterials);
             document.getElementById('task-customMetal-order').classList.toggle('hidden', !railFullMetal && !spindleCustom);
@@ -1586,13 +1600,19 @@
             const taskRailingInstall = document.getElementById('task-railing-install');
             taskRailingInstall.classList.toggle('hidden', !railingAny && !spindleAny);
             const rEditable = taskRailingInstall.querySelector('.editable-task');
-            if (rEditable) rEditable.textContent = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
-            else taskRailingInstall.textContent = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
+            const railingText = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
+            if (rEditable) rEditable.textContent = esaPrefix + railingText;
+            else taskRailingInstall.textContent = esaPrefix + railingText;
 
             document.getElementById('task-dryfit-task').classList.toggle('hidden', !railFullMetal);
             document.getElementById('task-const-stair-drop').classList.toggle('hidden', !(stairConst && !isReno));
             document.getElementById('task-const-stair-install').classList.toggle('hidden', !(stairConst && isReno));
-            document.getElementById('task-finished-stair-install').classList.toggle('hidden', !stairFinished);
+            
+            const taskFinishedStairInstall = document.getElementById('task-finished-stair-install');
+            taskFinishedStairInstall.classList.toggle('hidden', !stairFinished);
+            const fsiEditable = taskFinishedStairInstall.querySelector('.editable-task');
+            if (fsiEditable) fsiEditable.textContent = esaPrefix + "Finished Stair Installation";
+            else taskFinishedStairInstall.textContent = esaPrefix + "Finished Stair Installation";
 
             document.getElementById('task-glass-schedule').classList.toggle('hidden', !spindleGlass);
             document.getElementById('task-glass-install').classList.toggle('hidden', !spindleGlass);
@@ -2139,6 +2159,8 @@
                 // Ensure the block is visible if it was hidden
                 document.getElementById('block-scheduling').classList.remove('hidden');
             }
+            
+            updateBlueprintPreview();
             
             document.getElementById('travelOverlay').classList.add('hidden');
         };
