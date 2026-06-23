@@ -33,7 +33,7 @@
 3. **Miro (Mermaid) Flowchart**: The app can compile the active project blocks and tasks into a Mermaid JS flowchart string, color-coded by department (e.g., Fabrication=Blue, Installation=Red, QA=Orange, Custom=Purple), and copy it to the clipboard.
 4. **Data Validation**: Prior to generating the production run, the UI enforces that every block has an assigned user (checking against `"UNASSIGNED"`). It will glow red if verification fails.
 5. **Default Assignees**: specific users (Matthew De Man, Thomas Macleod, Joel Nalder) are auto-populated to specific stages on DOM load.
-6. **Changelog UI**: There is an integrated Changelog in the top right. **Always bump the version number** and add release notes to the `#changelogOverlay` inside `index.html` after modifying the file.
+6. **Changelog & Versioning**: There is an integrated Changelog in the top right. **CRITICAL RULE**: ALWAYS bump the version number in the `<title>` tag, the `#localSimulator` `<h1>` tag, and add release notes to the `#changelogOverlay` inside `index.html` every single time you push new features or bug fixes. Do not forget this step!
 
 ## Best Practices
 - **DOM Mutations**: Be extremely careful when using `element.textContent = ...` or `element.innerHTML = ...` on pre-rendered items, as this will destroy attached SVGs (like drag handles) or custom button elements. Use `querySelector` to target inner text nodes.
