@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.11</title>
+    <title>Ironwood Handoff Form v8.12</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -47,7 +47,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.11</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.12</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -531,7 +531,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.11 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.12 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -614,10 +614,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.11 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v8.12 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.12 - Project ID Reversion</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Default IDs Reverted:</strong> Reverted the default assignee IDs back to the Zoho Projects User IDs (1768...) so that the payload maps natively without requiring backend translation.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.11 - Enforced Stage Validation Popup</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -863,15 +869,15 @@
         let currentWindowHeight = 950;
         let crmUsers = [];
         const fallbackRoster = [
-            { id: '4797857000054094001', full_name: 'Brenda Peña' },
-            { id: '4797857000028057001', full_name: 'Camille Manalili' },
-            { id: '4797857000046784001', full_name: 'Jeff van der Hoop' },
-            { id: '4797857000020121001', full_name: 'Jeffery Chan' },
-            { id: '4797857000019976001', full_name: 'Joel Nalder' },
-            { id: '4797857000000708139', full_name: 'Julia Kent' },
-            { id: '4797857000009398001', full_name: 'Matthew De Man' },
-            { id: '4797857000000303001', full_name: 'Mike Kent' },
-            { id: '4797857000029998001', full_name: 'Thomas Macleod' }
+            { id: '1768463000006454001', full_name: 'Brenda Peña' },
+            { id: '1768463000005035965', full_name: 'Camille Manalili' },
+            { id: '1768463000005827001', full_name: 'Jeff van der Hoop' },
+            { id: '1768463000003870001', full_name: 'Jeffery Chan' },
+            { id: '1768463000003860001', full_name: 'Joel Nalder' },
+            { id: '1768463000000070003', full_name: 'Julia Kent' },
+            { id: '1768463000002032001', full_name: 'Matthew De Man' },
+            { id: '1768463000000036003', full_name: 'Mike Kent' },
+            { id: '1768463000004225001', full_name: 'Thomas Macleod' }
         ];
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1671,11 +1677,11 @@
         
         // Set Default Assignees on Page Load
         const defaultAssignees = {
-            'schedulingAssigneeInput': { id: '4797857000009398001', name: 'Matthew De Man' },
-            'materialsAssigneeInput': { id: '4797857000029998001', name: 'Thomas Macleod' },
-            'railingMfgAssigneeInput': { id: '4797857000029998001', name: 'Thomas Macleod' },
-            'qaAssigneeInput': { id: '4797857000029998001', name: 'Thomas Macleod' },
-            'installAssigneeInput': { id: '4797857000019976001', name: 'Joel Nalder' }
+            'schedulingAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
+            'materialsAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
+            'railingMfgAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
+            'qaAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
+            'installAssigneeInput': { id: '1768463000003860001', name: 'Joel Nalder' }
         };
 
         for (const [inputId, user] of Object.entries(defaultAssignees)) {
@@ -1716,7 +1722,7 @@
                     const blockDefaultList = block.getAttribute('data-default-list') || "Railing Production & Install";
                     
                     const assignBtn = block.querySelector('button[onclick^="openUserModal"]');
-                    let blockAssigneeId = "4797857000000303001"; // Fallback to Mike
+                    let blockAssigneeId = "1768463000000036003"; // Fallback to Mike
                     if (assignBtn) {
                         const match = assignBtn.getAttribute('onclick').match(/'([^']+)'/);
                         if (match && match[1]) {
