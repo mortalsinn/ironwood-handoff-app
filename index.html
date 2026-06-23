@@ -1358,6 +1358,9 @@
             mermaidText += "classDef cust fill:#3b0764,stroke:#c084fc,color:#fff;\n";
             mermaidText += "classDef defaultNode fill:#1e293b,stroke:#475569,color:#fff;\n";
             
+            mermaidText += "    subgraph ProjectFrame [\"Ironwood Project Handoff Flowchart\"]\n";
+            mermaidText += "        direction LR\n";
+            
             let lastNode = null;
             let nodeIndex = 0;
             let styleBlocks = "";
@@ -1412,6 +1415,8 @@
                     }
                 }
             });
+            
+            mermaidText += "    end\n";
             
             mermaidText += styleBlocks;
             if (nodeIndex === 0) {
