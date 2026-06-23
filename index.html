@@ -72,6 +72,9 @@
                     <div id="autoSaveDot" class="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse"></div>
                     <span id="autoSaveText" class="text-[10px] font-medium text-slate-400 italic">Saved locally</span>
                 </div>
+                <button type="button" id="resetBtn" class="text-[10px] text-rose-400 hover:text-white bg-slate-800 hover:bg-rose-900/50 px-2 py-0.5 rounded border border-slate-700 hover:border-rose-700 transition-colors flex items-center gap-1" title="Clear auto-save and reset form to defaults">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Reset
+                </button>
                 <button type="button" id="manualSaveBtn" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 transition-colors">Save Draft</button>
                 <span class="text-[10px] font-medium text-sky-400 uppercase tracking-widest bg-sky-950/50 px-2 py-0.5 rounded border border-sky-800/50">Production Wizard</span>
             </div>
@@ -987,6 +990,16 @@
                 });
             }
 
+            const resetBtn = document.getElementById('resetBtn');
+            if (resetBtn) {
+                resetBtn.addEventListener('click', () => {
+                    if (confirm("Are you sure you want to reset all data and start over? This cannot be undone.")) {
+                        if (currentDealId) localStorage.removeItem('ironwood_draft_' + currentDealId);
+                        window.location.reload();
+                    }
+                });
+            }
+
             window.restoreDraftState = (dealId) => {
                 const draftStr = localStorage.getItem('ironwood_draft_' + dealId);
                 if (draftStr) {
@@ -1544,7 +1557,7 @@
         // Set Default Assignees on Page Load
         const defaultAssignees = {
             'schedulingAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
-            'materialsAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
+            'materialsAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
             'railingMfgAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
             'qaAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
             'installAssigneeInput': { id: '1768463000003860001', name: 'Joel Nalder' }
@@ -1762,7 +1775,7 @@
             // Set Default Assignees
             const assignees = {
                 'schedulingAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
-                'materialsAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
+                'materialsAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
                 'railingMfgAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
                 'qaAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
                 'installAssigneeInput': { id: '1768463000003860001', name: 'Joel Nalder' }
