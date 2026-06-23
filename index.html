@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.12</title>
+    <title>Ironwood Handoff Form v8.13</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -47,7 +47,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.12</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.13</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -531,7 +531,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.12 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.13 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -614,10 +614,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.12 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v8.13 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.13 - Seamless Stage Validation Flow</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Auto-Generate:</strong> If the "Mark as Closed Won" popup is triggered automatically by the Generate button, successfully saving it will now instantly and automatically trigger the project generation process without requiring a second click.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.12 - Project ID Reversion</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -806,7 +812,7 @@
                         </div>
                     </div>
                     <button type="button" id="submitClosedWon" class="w-full mt-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold transition-all shadow-[0_0_15px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2">
-                        Confirm & Update CRM
+                        Save
                     </button>
                     <p id="cwError" class="text-rose-400 text-xs text-center hidden mt-2"></p>
                 </div>
@@ -867,6 +873,7 @@
         let currentDealId = null;
         let currentWindowWidth = 1600;
         let currentWindowHeight = 950;
+        let wasTriggeredByGenerate = false;
         let crmUsers = [];
         const fallbackRoster = [
             { id: '1768463000006454001', full_name: 'Brenda Peña' },
@@ -1812,6 +1819,7 @@
                                 clearInterval(loadingInterval);
                                 saveBtn.innerHTML = originalHTML;
                                 saveBtn.disabled = false;
+                                wasTriggeredByGenerate = true;
                                 document.getElementById('closedWonOverlay').classList.remove('hidden');
                                 return;
                             }
@@ -2092,14 +2100,19 @@
                 
                 if (response && response.data && response.data[0] && response.data[0].code === "SUCCESS") {
                     // Success!
-                    btn.innerHTML = `<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> CRM Updated! (Please hit F5 to see changes)`;
+                    btn.innerHTML = `<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> Saved!`;
                     btn.classList.replace('bg-emerald-600', 'bg-emerald-500');
                     setTimeout(() => {
                         document.getElementById('closedWonOverlay').classList.add('hidden');
                         btn.innerHTML = originalText;
                         btn.disabled = false;
                         btn.classList.replace('bg-emerald-500', 'bg-emerald-600');
-                    }, 3500); // Wait slightly longer so they can read the F5 message
+                        
+                        if (wasTriggeredByGenerate) {
+                            wasTriggeredByGenerate = false;
+                            document.getElementById('saveBtn').click();
+                        }
+                    }, 1000); 
                 } else {
                     let errMsg = "Unknown API Error";
                     if (response && response.message) errMsg = response.message;
