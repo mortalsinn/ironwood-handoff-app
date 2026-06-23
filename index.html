@@ -890,7 +890,6 @@
             }
 
             // Dynamic Note Logic
-            const notesContainer = document.getElementById('notesContainer');
             const addNoteBtn = document.getElementById('addNoteBtn');
 
             addNoteBtn.addEventListener('click', () => {
@@ -906,7 +905,7 @@
                     // trigger autosave
                     form.dispatchEvent(new Event('change', { bubbles: true }));
                 });
-                newTextarea.focus();
+                newBlock.querySelector('textarea').focus();
                 form.dispatchEvent(new Event('change', { bubbles: true }));
             });
 
