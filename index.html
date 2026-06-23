@@ -743,6 +743,10 @@
 
     <script>
         let currentEntity = null;
+        let isZohoEnvironment = false;
+        let currentDealId = null;
+        let currentWindowWidth = 1600;
+        let currentWindowHeight = 950;
         let crmUsers = [];
         const fallbackRoster = [
             { id: '1768463000006454001', full_name: 'Brenda Peña' },
@@ -759,13 +763,24 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof ZOHO !== 'undefined') {
                 ZOHO.embeddedApp.on("PageLoad", async function(data){
+                    isZohoEnvironment = true;
                     if(data && data.Entity) {
                         currentEntity = data.Entity;
                     }
                     if(data && data.EntityId && data.EntityId[0]) {
                         currentDealId = data.EntityId[0];
-                        setTimeout(() => { if (typeof restoreDraftState === 'function') restoreDraftState(currentDealId); }, 500);
+                    } else if (data && data.recordId) {
+                        currentDealId = data.recordId;
                     }
+                    
+                    document.getElementById('localSimulator').classList.add('hidden');
+                    document.getElementById('appContainer').classList.remove('hidden');
+                    ZOHO.CRM.UI.Resize({height: currentWindowHeight, width: currentWindowWidth});
+
+                    if(currentDealId) {
+                        setTimeout(() => { if (typeof window.restoreDraftState === 'function') window.restoreDraftState(currentDealId); }, 500);
+                    }
+
                     try {
                         const usersRes = await ZOHO.CRM.API.getAllUsers({Type:"ActiveUsers"});
                         if (usersRes && usersRes.users) {
@@ -1111,17 +1126,6 @@
         // Outer Window Resize Logic
         const windowResizer = document.getElementById('windowResizer');
         let isWindowResizing = false;
-        let currentWindowWidth = 1600; // default start
-        let currentWindowHeight = 950; // default start
-
-        // Keep track of true dimensions in case ZOHO loads different sizes
-        if (typeof ZOHO !== 'undefined') {
-            ZOHO.embeddedApp.on("PageLoad", function (data) {
-                currentDealId = data.EntityId[0];
-                isZohoEnvironment = true;
-                ZOHO.CRM.UI.Resize({height: currentWindowHeight, width: currentWindowWidth});
-            });
-        }
 
         windowResizer.addEventListener('pointerdown', (e) => {
             isWindowResizing = true;
@@ -1160,23 +1164,6 @@
                 }
             }
         });
-
-        let isZohoEnvironment = false;
-        let currentDealId = null;
-
-        if (typeof ZOHO !== 'undefined') {
-            ZOHO.embeddedApp.on("PageLoad", function(data){
-                isZohoEnvironment = true;
-                if (data && data.EntityId) {
-                    currentDealId = data.EntityId[0];
-                } else if (data && data.recordId) {
-                    currentDealId = data.recordId;
-                }
-                document.getElementById('localSimulator').classList.add('hidden');
-                document.getElementById('appContainer').classList.remove('hidden');
-            });
-            ZOHO.embeddedApp.init();
-        }
 
         const form = document.getElementById('handoffForm');
         const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
