@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.13</title>
+    <title>Ironwood Handoff Form v8.14</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -47,7 +47,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.13</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.14</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -531,7 +531,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.13 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.14 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -614,10 +614,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.13 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v8.14 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.14 - Dynamic Project Ownership</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Smart Ownership Mapping:</strong> The widget now fetches the actively logged-in Zoho CRM user, cross-references their name against the hardcoded Zoho Projects ID roster, and attaches their Project ID to the payload so the backend API can set them as the Project Owner.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.13 - Seamless Stage Validation Flow</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -875,6 +881,7 @@
         let currentWindowHeight = 950;
         let wasTriggeredByGenerate = false;
         let crmUsers = [];
+        let currentUserZPId = null;
         const fallbackRoster = [
             { id: '1768463000006454001', full_name: 'Brenda Peña' },
             { id: '1768463000005035965', full_name: 'Camille Manalili' },
@@ -912,6 +919,16 @@
                         const usersRes = await ZOHO.CRM.API.getAllUsers({Type:"ActiveUsers"});
                         if (usersRes && usersRes.users) {
                             crmUsers = usersRes.users;
+                        }
+                        
+                        const currentUserRes = await ZOHO.CRM.CONFIG.getCurrentUser();
+                        if (currentUserRes && currentUserRes.users && currentUserRes.users[0]) {
+                            const u = currentUserRes.users[0];
+                            const fullName = (u.full_name || (u.first_name + " " + u.last_name)).toLowerCase();
+                            const match = fallbackRoster.find(r => r.full_name.toLowerCase() === fullName);
+                            if (match) {
+                                currentUserZPId = match.id;
+                            }
                         }
                     } catch(e) { console.warn("Could not load CRM users", e); }
                 });
@@ -1868,6 +1885,10 @@
                         } catch (e) {
                             console.error("Failed to append note(s) to Deal:", e);
                         }
+                    }
+
+                    if (currentUserZPId) {
+                        capturedData.owner_id = currentUserZPId;
                     }
 
                     var func_name = "create_handoff_tasks";
