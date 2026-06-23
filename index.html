@@ -1276,6 +1276,22 @@
                     const dealId = currentDealId;
                     if (!dealId) throw new Error("Missing Context: Please make sure you are clicking this button from inside a Deal record.");
                     
+                    // Push Production Notes to Deals module
+                    const handoffNotes = formData.get('notes');
+                    if (handoffNotes && handoffNotes.trim() !== '') {
+                        try {
+                            const noteRecordData = {
+                                "Parent_Id": dealId,
+                                "se_module": "Deals",
+                                "Note_Title": "Production Handoff Notes",
+                                "Note_Content": handoffNotes
+                            };
+                            await ZOHO.CRM.API.insertRecord({ Entity: "Notes", APIData: noteRecordData, Trigger: [] });
+                        } catch (e) {
+                            console.error("Failed to append note to Deal:", e);
+                        }
+                    }
+
                     var func_name = "create_handoff_tasks";
                     var req_data = { "arguments": JSON.stringify({ "dealId": dealId, "payload": JSON.stringify(capturedData) }) };
                     
