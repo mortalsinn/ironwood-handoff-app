@@ -2043,21 +2043,46 @@
                     const response = await ZOHO.CRM.API.getRecord({Entity: "Deals", RecordID: currentDealId});
                     if (response && response.data && response.data[0]) {
                         const deal = response.data[0];
-                        let address = deal.Site_Address || deal.Job_Address || deal.Address || deal.Billing_Street || deal.Shipping_Street || "";
+                        let address = "";
+                        
+                        // Try fetching related Account first
+                        if (deal.Account_Name && deal.Account_Name.id) {
+                            try {
+                                const accountRes = await ZOHO.CRM.API.getRecord({Entity: "Accounts", RecordID: deal.Account_Name.id});
+                                if (accountRes && accountRes.data && accountRes.data[0]) {
+                                    const account = accountRes.data[0];
+                                    if (account.Billing_Street) {
+                                        address = account.Billing_Street;
+                                        if (account.Billing_City) address += ", " + account.Billing_City;
+                                        if (account.Billing_State) address += ", " + account.Billing_State;
+                                    } else if (account.Shipping_Street) {
+                                        address = account.Shipping_Street;
+                                    }
+                                }
+                            } catch(accErr) {
+                                console.warn("Failed to fetch account address, falling back to Deal.", accErr);
+                            }
+                        }
+
+                        // Fallback to Deal fields
                         if (!address) {
-                            for (let key of Object.keys(deal)) {
-                                if (key.toLowerCase().includes('address') && typeof deal[key] === 'string') {
-                                    address = deal[key];
-                                    break;
+                            address = deal.Site_Address || deal.Job_Address || deal.Address || deal.Billing_Street || deal.Shipping_Street || "";
+                            if (!address) {
+                                for (let key of Object.keys(deal)) {
+                                    if (key.toLowerCase().includes('address') && typeof deal[key] === 'string') {
+                                        address = deal[key];
+                                        break;
+                                    }
                                 }
                             }
                         }
+                        
                         addressInput.value = address || "";
                     } else {
                         addressInput.value = "";
                     }
                 } catch(e) {
-                    console.error("Failed to load deal address:", e);
+                    console.error("Failed to load deal/account address:", e);
                     addressInput.value = "";
                 }
             } else {
