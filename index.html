@@ -956,7 +956,8 @@
             new Sortable(document.getElementById('projectPreviewList'), {
                 animation: 150,
                 handle: '.block-handle',
-                ghostClass: 'opacity-50'
+                ghostClass: 'opacity-50',
+                onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); }
             });
 
 
@@ -965,7 +966,8 @@
                     group: 'shared-tasks',
                     animation: 150,
                     handle: '.task-drag-handle',
-                    ghostClass: 'opacity-50'
+                    ghostClass: 'opacity-50',
+                    onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); }
                 });
             });
 
@@ -1128,7 +1130,6 @@
 
             form.addEventListener('input', triggerAutoSave);
             form.addEventListener('change', triggerAutoSave);
-            document.getElementById('projectPreviewList').addEventListener('mouseup', () => setTimeout(triggerAutoSave, 500));
             
             if(manualSaveBtn) {
                 manualSaveBtn.addEventListener('click', () => {
@@ -1210,11 +1211,11 @@
                                 
                                 // 5. Rebind SortableJS
                                 new Sortable(document.getElementById('projectPreviewList'), {
-                                    animation: 150, handle: '.block-handle', ghostClass: 'opacity-50'
+                                    animation: 150, handle: '.block-handle', ghostClass: 'opacity-50', onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); }
                                 });
                                 document.querySelectorAll('.sortable-list').forEach(el => {
                                     new Sortable(el, {
-                                        group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50'
+                                        group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50', onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); }
                                     });
                                 });
 
@@ -1306,7 +1307,7 @@
                         previewList.appendChild(block);
                         
                         // Re-initialize Sortable and Add Task for the new block
-                        new Sortable(block.querySelector('.sortable-list'), { group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50' });
+                        new Sortable(block.querySelector('.sortable-list'), { group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50', onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); } });
                         block.querySelector('.add-task-btn').addEventListener('click', (ev) => {
                             const tInput = ev.target.previousElementSibling;
                             const tVal = tInput.value.trim();
