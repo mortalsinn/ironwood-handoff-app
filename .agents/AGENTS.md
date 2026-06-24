@@ -40,3 +40,12 @@
 - **State Preservation**: Because it operates in a Zoho iframe widget, any page refresh wipes the entire state. Ensure all actions that modify state do so defensively and provide clear UI feedback (modals, success spinners) before reloading or closing the popup.
 - **Auto-Refreshing CRM**: `window.top.location.reload()` and `ZOHO.CRM.UI.Record.open()` are highly unreliable inside Zoho's strict iframe sandbox and often fail to refresh the background record data after API calls. The best practice is to show a success message instructing the user to manually "Hit F5".
 - **Custom Items & Layouts**: Dynamically rendering custom items into the standard base layout can break toggle visibility. Keep custom logic highly isolated or heavily tested.
+
+## Output Formatting for External Scripts
+When providing code updates or modifications for external scripts that the user must copy and paste manually (e.g., Zoho Deluge functions, external APIs), **always provide the full, complete code block** containing the entire script with the new updates incorporated. 
+Do not provide partial snippets or diffs (e.g., "add this line here"). The user should be able to Ctrl+A and Ctrl+C the entire block to replace their existing code instantly.
+
+## Zoho Projects API & User IDs
+- **API Fetching**: Do NOT rely on standalone Deluge functions to fetch Zoho Projects data into the frontend widget if REST API access isn't explicitly configured. Instead, use `ZOHO.CRM.CONNECTION.invoke("zoho_projects_connection", { url: "...", method: "GET" })` directly in the frontend. This securely bypasses CORS and permission walls.
+- **ID Discrepancy**: Zoho Projects User IDs (9-digits) are completely different from Zoho CRM User IDs (19-digits). ZUIDs are not required when passing data directly to the Projects API. If using `POST /users/` to invite users to a project in a Deluge script, simply pass the native 9-digit Projects User ID.
+- **Payload Extraction**: Always ensure that dynamically extracting `person_responsible` assignments from the DOM targets the actual underlying `id` attributes or `data-` attributes correctly. Avoid `.querySelector` scopes inside nested loops that might shadow variables and accidentally nullify payload data, as Zoho Projects will natively accept empty assignees (`""`) and create tasks completely unassigned without throwing an error.
