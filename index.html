@@ -1503,7 +1503,7 @@
                 const s = styles[idx % styles.length];
                 const safeName = name.replace(/'/g, "\\'");
                 
-                html += `<button type="button" onclick="selectUser('${u.id}', '${safeName}', '${u.zuid || ''}')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group">
+                html += `<button type="button" onclick="selectUser('${u.id}', '${safeName}', '${u.email || u.zuid || ''}')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group">
                     <div class="w-8 h-8 rounded-full ${s.bg} flex items-center justify-center ${s.text} font-bold text-xs mr-3 border ${s.border} ${s.hoverBg} group-hover:text-white transition-colors">${initials}</div>
                     <div><p class="text-sm font-bold text-slate-200 group-hover:text-white">${name}</p></div>
                 </button>`;
