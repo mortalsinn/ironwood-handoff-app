@@ -575,15 +575,11 @@
                     <div class="h-px w-full bg-slate-800 my-1"></div>
                     
                     <!-- Pre-filled Roster -->
-                    <button type="button" onclick="selectUser('1768463000006454001', 'Brenda Peña')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 font-bold text-xs mr-3 border border-blue-500/30 group-hover:bg-blue-500 group-hover:text-white transition-colors">BP</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Brenda Peña</p></div></button>
-                    <button type="button" onclick="selectUser('1768463000005035965', 'Camille Manalili')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold text-xs mr-3 border border-emerald-500/30 group-hover:bg-emerald-500 group-hover:text-white transition-colors">CM</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Camille Manalili</p></div></button>
-                    <button type="button" onclick="selectUser('1768463000005827001', 'Jeff van der Hoop')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 font-bold text-xs mr-3 border border-orange-500/30 group-hover:bg-orange-500 group-hover:text-white transition-colors">JH</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Jeff van der Hoop</p></div></button>
-                    <button type="button" onclick="selectUser('1768463000003870001', 'Jeffery Chan')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-rose-500/20 flex items-center justify-center text-rose-400 font-bold text-xs mr-3 border border-rose-500/30 group-hover:bg-rose-500 group-hover:text-white transition-colors">JC</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Jeffery Chan</p></div></button>
-                    <button type="button" onclick="selectUser('1768463000003860001', 'Joel Nalder')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center text-violet-400 font-bold text-xs mr-3 border border-violet-500/30 group-hover:bg-violet-500 group-hover:text-white transition-colors">JN</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Joel Nalder</p></div></button>
-                    <button type="button" onclick="selectUser('1768463000000070003', 'Julia Kent')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-xs mr-3 border border-amber-500/30 group-hover:bg-amber-500 group-hover:text-white transition-colors">JK</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Julia Kent</p></div></button>
-                    <button type="button" onclick="selectUser('1768463000002032001', 'Matthew De Man')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-teal-500/20 flex items-center justify-center text-teal-400 font-bold text-xs mr-3 border border-teal-500/30 group-hover:bg-teal-500 group-hover:text-white transition-colors">MD</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Matthew De Man</p></div></button>
-                    <button type="button" onclick="selectUser('1768463000000036003', 'Mike Kent')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-400 font-bold text-xs mr-3 border border-cyan-500/30 group-hover:bg-cyan-500 group-hover:text-white transition-colors">MK</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Mike Kent</p></div></button>
-                    <button type="button" onclick="selectUser('1768463000004225001', 'Thomas Macleod')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group"><div class="w-8 h-8 rounded-full bg-fuchsia-500/20 flex items-center justify-center text-fuchsia-400 font-bold text-xs mr-3 border border-fuchsia-500/30 group-hover:bg-fuchsia-500 group-hover:text-white transition-colors">TM</div><div><p class="text-sm font-bold text-slate-200 group-hover:text-white">Thomas Macleod</p></div></button>
+                    <div id="dynamicUserList" class="flex flex-col gap-1">
+                        <div class="flex justify-center p-4">
+                            <svg class="animate-spin h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -893,21 +889,22 @@
         let currentWindowHeight = 950;
         let wasTriggeredByGenerate = false;
         let crmUsers = [];
-        const fallbackRoster = [
-            { id: '1768463000006454001', full_name: 'Brenda Peña' },
-            { id: '1768463000005035965', full_name: 'Camille Manalili' },
-            { id: '1768463000005827001', full_name: 'Jeff van der Hoop' },
-            { id: '1768463000003870001', full_name: 'Jeffery Chan' },
-            { id: '1768463000003860001', full_name: 'Joel Nalder' },
-            { id: '1768463000000070003', full_name: 'Julia Kent' },
-            { id: '1768463000002032001', full_name: 'Matthew De Man' },
-            { id: '1768463000000036003', full_name: 'Mike Kent' },
-            { id: '1768463000004225001', full_name: 'Thomas Macleod' }
-        ];
+        let dynamicProjectUsers = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             if (typeof ZOHO !== 'undefined') {
                 ZOHO.embeddedApp.on("PageLoad", async function(data){
+                    try {
+                        const usersRes = await ZOHO.CRM.FUNCTIONS.execute("get_project_users", {});
+                        if (usersRes && usersRes.code === "SUCCESS" && usersRes.details && usersRes.details.output) {
+                            const parsedOutput = JSON.parse(usersRes.details.output);
+                            if (parsedOutput.users) {
+                                dynamicProjectUsers = parsedOutput.users;
+                                renderDynamicUserModal(dynamicProjectUsers);
+                                setDynamicDefaultAssignees(dynamicProjectUsers);
+                            }
+                        }
+                    } catch(e) { console.warn("Could not fetch dynamic project users", e); }
                     isZohoEnvironment = true;
                     if(data && data.Entity) {
                         currentEntity = data.Entity;
@@ -1461,14 +1458,49 @@
             void modal.offsetWidth;
         }
 
+        function renderDynamicUserModal(users) {
+            const container = document.getElementById('dynamicUserList');
+            if (!container) return;
+            
+            let html = '';
+            
+            const styles = [
+                { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', hoverBg: 'group-hover:bg-blue-500' },
+                { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30', hoverBg: 'group-hover:bg-emerald-500' },
+                { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30', hoverBg: 'group-hover:bg-orange-500' },
+                { bg: 'bg-rose-500/20', text: 'text-rose-400', border: 'border-rose-500/30', hoverBg: 'group-hover:bg-rose-500' },
+                { bg: 'bg-violet-500/20', text: 'text-violet-400', border: 'border-violet-500/30', hoverBg: 'group-hover:bg-violet-500' },
+                { bg: 'bg-amber-500/20', text: 'text-amber-400', border: 'border-amber-500/30', hoverBg: 'group-hover:bg-amber-500' },
+                { bg: 'bg-teal-500/20', text: 'text-teal-400', border: 'border-teal-500/30', hoverBg: 'group-hover:bg-teal-500' },
+                { bg: 'bg-cyan-500/20', text: 'text-cyan-400', border: 'border-cyan-500/30', hoverBg: 'group-hover:bg-cyan-500' },
+                { bg: 'bg-fuchsia-500/20', text: 'text-fuchsia-400', border: 'border-fuchsia-500/30', hoverBg: 'group-hover:bg-fuchsia-500' }
+            ];
+            
+            users.forEach((u, idx) => {
+                const name = u.name || "Unknown User";
+                const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
+                const s = styles[idx % styles.length];
+                const safeName = name.replace(/'/g, "\\'");
+                
+                html += `<button type="button" onclick="selectUser('${u.id}', '${safeName}', '${u.zuid || ''}')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group">
+                    <div class="w-8 h-8 rounded-full ${s.bg} flex items-center justify-center ${s.text} font-bold text-xs mr-3 border ${s.border} ${s.hoverBg} group-hover:text-white transition-colors">${initials}</div>
+                    <div><p class="text-sm font-bold text-slate-200 group-hover:text-white">${name}</p></div>
+                </button>`;
+            });
+            
+            container.innerHTML = html;
+        }
+
         function closeUserModal() {
             document.getElementById('userModal').classList.add('hidden');
             currentTargetInputId = null;
         }
 
-        function selectUser(userId, userName) {
+        function selectUser(userId, userName, zuid = '') {
             if (!currentTargetInputId) return;
-            document.getElementById(currentTargetInputId).value = userId;
+            const inputEl = document.getElementById(currentTargetInputId);
+            inputEl.value = userId;
+            inputEl.setAttribute('data-zuid', zuid);
             const btn = document.getElementById('btn-' + currentTargetInputId);
             
             if (userId === "") {
@@ -1700,21 +1732,27 @@
         allCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateBlueprintPreview));
         projectRadios.forEach(radio => radio.addEventListener('change', updateBlueprintPreview));
         
-        // Set Default Assignees on Page Load
-        const defaultAssignees = {
-            'schedulingAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
-            'materialsAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
-            'railingMfgAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
-            'qaAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
-            'installAssigneeInput': { id: '1768463000003860001', name: 'Joel Nalder' }
-        };
+        // Dynamic defaults set after API loads
+        function setDynamicDefaultAssignees(users) {
+            const findUser = (name) => users.find(u => u.name && u.name.toLowerCase().includes(name.toLowerCase()));
+            
+            const mapping = {
+                'schedulingAssigneeInput': findUser('Matthew'),
+                'materialsAssigneeInput': findUser('Thomas'),
+                'railingMfgAssigneeInput': findUser('Thomas'),
+                'qaAssigneeInput': findUser('Thomas'),
+                'installAssigneeInput': findUser('Joel')
+            };
 
-        for (const [inputId, user] of Object.entries(defaultAssignees)) {
-            currentTargetInputId = inputId;
-            selectUser(user.id, user.name);
+            for (const [inputId, user] of Object.entries(mapping)) {
+                if (user) {
+                    currentTargetInputId = inputId;
+                    selectUser(user.id, user.name, user.zuid);
+                }
+            }
+            currentTargetInputId = null;
+            updateBlueprintPreview();
         }
-        currentTargetInputId = null;
-        updateBlueprintPreview(); // Force an update so the preview reflects the defaults instantly
 
 
         const triggerBtn = document.getElementById('triggerBtn');
@@ -1755,15 +1793,23 @@
                             blockAssigneeId = formData.get(inputId) || blockAssigneeId;
                         }
                     }
-
                     const items = block.querySelectorAll('li');
                     items.forEach(item => {
                         if (!item.classList.contains('hidden')) {
                             const taskName = item.querySelector('.editable-task') ? item.querySelector('.editable-task').textContent.trim() : item.textContent.trim().replace('×','');
                             const targetList = item.getAttribute('data-list') || blockDefaultList;
+                            const assigneeHidden = block.querySelector('.assignee-hidden');
+                            let blockAssigneeId = "UNASSIGNED";
+                            let blockAssigneeZuid = "";
+                            if (assigneeHidden && assigneeHidden.value) {
+                                blockAssigneeId = assigneeHidden.value;
+                                blockAssigneeZuid = assigneeHidden.getAttribute('data-zuid') || "";
+                            }
+                            
                             task_lists[targetList].push({
                                 "name": taskName,
-                                "person_responsible": blockAssigneeId === "UNASSIGNED" ? "" : blockAssigneeId
+                                "person_responsible": blockAssigneeId === "UNASSIGNED" ? "" : blockAssigneeId,
+                                "zuid": blockAssigneeZuid
                             });
                         }
                     });
@@ -1796,21 +1842,14 @@
             const blocksToValidate = document.querySelectorAll('#projectPreviewList > div');
             blocksToValidate.forEach(block => {
                 if (!block.classList.contains('hidden') && !validationFailed) {
-                    const assignBtn = block.querySelector('button[onclick^="openUserModal"]');
-                    if (assignBtn) {
-                        const match = assignBtn.getAttribute('onclick').match(/'([^']+)'/);
-                        if (match && match[1]) {
-                            const inputId = match[1].replace('Input', '');
-                            const val = formData.get(inputId);
-                            if (val === "UNASSIGNED") {
-                                validationFailed = true;
-                                const titleEl = block.querySelector('p');
-                                const blockName = titleEl ? titleEl.innerText.trim() : "Stage";
-                                validationMsg = `Validation Error: Please assign a lead to the "${blockName}" stage. (Or select 'Clear Override' to explicitly use the default).`;
-                                block.classList.add('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]');
-                                setTimeout(() => block.classList.remove('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'), 3000);
-                            }
-                        }
+                    const assigneeHidden = block.querySelector('.assignee-hidden');
+                    if (assigneeHidden && assigneeHidden.value === "UNASSIGNED") {
+                        validationFailed = true;
+                        const titleEl = block.querySelector('p');
+                        const blockName = titleEl ? titleEl.innerText.trim() : "Stage";
+                        validationMsg = `Validation Error: Please assign a lead to the "${blockName}" stage.`;
+                        block.classList.add('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]');
+                        setTimeout(() => block.classList.remove('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'), 3000);
                     }
                 }
             });
@@ -1849,26 +1888,18 @@
                     // Push Production Notes to Deals module
                     const notesToPush = allNotes.filter(n => n.trim() !== '');
                     if (notesToPush.length > 0) {
+                        let usersToParse = (typeof dynamicProjectUsers !== 'undefined' && dynamicProjectUsers.length > 0) ? dynamicProjectUsers : crmUsers;
                         
-                        let usersToParse = (typeof crmUsers !== 'undefined' && crmUsers.length > 0) ? crmUsers : fallbackRoster;
-                        
-                        // Try one more time to fetch ZUIDs if they are missing
-                        if (usersToParse.length > 0 && !usersToParse[0].zuid) {
-                            try {
-                                const usersRes = await ZOHO.CRM.API.getAllUsers({Type:"ActiveUsers"});
-                                if (usersRes && usersRes.users) usersToParse = usersRes.users;
-                            } catch(e) { console.warn("Fallback fetch failed", e); }
-                        }
-
                         const notePromises = notesToPush.map(noteText => {
                             let parsedNote = noteText;
                             usersToParse.forEach(u => {
-                                const name = u.full_name || (u.first_name + " " + u.last_name);
+                                const name = u.name || u.full_name || (u.first_name + " " + u.last_name);
+                                if (!name) return;
                                 const safeName = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                                 const regex = new RegExp(`@${safeName}\\b`, 'gi');
                                 
-                                if (u.id && u.zuid) {
-                                    parsedNote = parsedNote.replace(regex, `crm[user#${u.id}#${u.zuid}]crm`);
+                                if (u.zuid) {
+                                    parsedNote = parsedNote.replace(regex, `[@${name}](zohocrm://user/${u.id})`);
                                 }
                             });
 
