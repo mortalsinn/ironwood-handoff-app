@@ -896,7 +896,7 @@
                 ZOHO.embeddedApp.on("PageLoad", async function(data){
                     try {
                         const req_data = {
-                            url: "https://projectsapi.zoho.com/restapi/portal/ironwoodstairs/users/",
+                            url: "https://projectsapi.zoho.com/restapi/portal/ironwoodstairs/users/?range=100",
                             method: "GET"
                         };
                         const connRes = await ZOHO.CRM.CONNECTION.invoke("zoho_projects_connection", req_data);
