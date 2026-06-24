@@ -862,7 +862,7 @@
                 <div class="space-y-4">
                     <div>
                         <label for="travelAddress" class="block text-xs font-bold text-slate-400 mb-1 uppercase tracking-wider">Job Address</label>
-                        <input type="text" id="travelAddress" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-slate-200 text-sm" placeholder="Loading from CRM...">
+                        <input type="text" id="travelAddress" class="w-full p-2.5 bg-slate-900 border border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-amber-500 outline-none text-slate-200 text-sm" placeholder="Enter Job Address...">
                     </div>
                     
                     <div class="grid grid-cols-2 gap-3">
@@ -2249,7 +2249,7 @@
         window.openTravelModal = async () => {
             document.getElementById('travelOverlay').classList.remove('hidden');
             const addressInput = document.getElementById('travelAddress');
-            addressInput.value = "Loading from CRM...";
+            addressInput.value = "Fetching...";
             
             if (isZohoEnvironment && currentDealId) {
                 try {
@@ -2288,6 +2288,11 @@
                                     }
                                 }
                             }
+                        }
+                        
+                        // Fallback to Deal Name if they store the address inside the Deal Name
+                        if (!address && deal.Deal_Name) {
+                            address = deal.Deal_Name;
                         }
                         
                         addressInput.value = address || "";
