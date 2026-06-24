@@ -1789,31 +1789,31 @@
                     const blockDefaultList = block.getAttribute('data-default-list') || "Railing Production & Install";
                     
                     const assignBtn = block.querySelector('button[onclick^="openUserModal"]');
-                    let blockAssigneeId = "1768463000000036003"; // Fallback to Mike
+                    let currentBlockAssigneeId = "UNASSIGNED";
+                    let currentBlockAssigneeZuid = "";
+                    
                     if (assignBtn) {
                         const match = assignBtn.getAttribute('onclick').match(/'([^']+)'/);
                         if (match && match[1]) {
-                            const inputId = match[1].replace('Input', '');
-                            blockAssigneeId = formData.get(inputId) || blockAssigneeId;
+                            const inputId = match[1];
+                            const inputEl = document.getElementById(inputId);
+                            if (inputEl && inputEl.value) {
+                                currentBlockAssigneeId = inputEl.value;
+                                currentBlockAssigneeZuid = inputEl.getAttribute('data-zuid') || "";
+                            }
                         }
                     }
+                    
                     const items = block.querySelectorAll('li');
                     items.forEach(item => {
                         if (!item.classList.contains('hidden')) {
                             const taskName = item.querySelector('.editable-task') ? item.querySelector('.editable-task').textContent.trim() : item.textContent.trim().replace('×','');
                             const targetList = item.getAttribute('data-list') || blockDefaultList;
-                            const assigneeHidden = block.querySelector('.assignee-hidden');
-                            let blockAssigneeId = "UNASSIGNED";
-                            let blockAssigneeZuid = "";
-                            if (assigneeHidden && assigneeHidden.value) {
-                                blockAssigneeId = assigneeHidden.value;
-                                blockAssigneeZuid = assigneeHidden.getAttribute('data-zuid') || "";
-                            }
                             
                             task_lists[targetList].push({
                                 "name": taskName,
-                                "person_responsible": blockAssigneeId === "UNASSIGNED" ? "" : blockAssigneeId,
-                                "zuid": blockAssigneeZuid
+                                "person_responsible": currentBlockAssigneeId === "UNASSIGNED" ? "" : currentBlockAssigneeId,
+                                "zuid": currentBlockAssigneeZuid
                             });
                         }
                     });
@@ -1846,14 +1846,21 @@
             const blocksToValidate = document.querySelectorAll('#projectPreviewList > div');
             blocksToValidate.forEach(block => {
                 if (!block.classList.contains('hidden') && !validationFailed) {
-                    const assigneeHidden = block.querySelector('.assignee-hidden');
-                    if (assigneeHidden && assigneeHidden.value === "UNASSIGNED") {
-                        validationFailed = true;
-                        const titleEl = block.querySelector('p');
-                        const blockName = titleEl ? titleEl.innerText.trim() : "Stage";
-                        validationMsg = `Validation Error: Please assign a lead to the "${blockName}" stage.`;
-                        block.classList.add('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]');
-                        setTimeout(() => block.classList.remove('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'), 3000);
+                    const assignBtn = block.querySelector('button[onclick^="openUserModal"]');
+                    if (assignBtn) {
+                        const match = assignBtn.getAttribute('onclick').match(/'([^']+)'/);
+                        if (match && match[1]) {
+                            const inputId = match[1];
+                            const inputEl = document.getElementById(inputId);
+                            if (inputEl && inputEl.value === "UNASSIGNED") {
+                                validationFailed = true;
+                                const titleEl = block.querySelector('p');
+                                const blockName = titleEl ? titleEl.innerText.trim() : "Stage";
+                                validationMsg = `Validation Error: Please assign a lead to the "${blockName}" stage.`;
+                                block.classList.add('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]');
+                                setTimeout(() => block.classList.remove('border-red-500', 'shadow-[0_0_15px_rgba(239,68,68,0.5)]'), 3000);
+                            }
+                        }
                     }
                 }
             });
