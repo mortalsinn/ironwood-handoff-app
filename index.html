@@ -895,16 +895,20 @@
             if (typeof ZOHO !== 'undefined') {
                 ZOHO.embeddedApp.on("PageLoad", async function(data){
                     try {
-                        const usersRes = await ZOHO.CRM.FUNCTIONS.execute("get_project_users", {});
-                        if (usersRes && usersRes.code === "SUCCESS" && usersRes.details && usersRes.details.output) {
-                            const parsedOutput = JSON.parse(usersRes.details.output);
+                        const req_data = {
+                            url: "https://projectsapi.zoho.com/restapi/portal/ironwoodstairs/users/",
+                            method: "GET"
+                        };
+                        const connRes = await ZOHO.CRM.CONNECTION.invoke("zoho_projects_connection", req_data);
+                        if (connRes && connRes.details && connRes.details.statusMessage) {
+                            const parsedOutput = typeof connRes.details.statusMessage === "string" ? JSON.parse(connRes.details.statusMessage) : connRes.details.statusMessage;
                             if (parsedOutput.users) {
                                 dynamicProjectUsers = parsedOutput.users;
                                 renderDynamicUserModal(dynamicProjectUsers);
                                 setDynamicDefaultAssignees(dynamicProjectUsers);
                             }
                         }
-                    } catch(e) { console.warn("Could not fetch dynamic project users", e); }
+                    } catch(e) { console.warn("Could not fetch dynamic project users via connection", e); }
                     isZohoEnvironment = true;
                     if(data && data.Entity) {
                         currentEntity = data.Entity;
