@@ -2331,6 +2331,25 @@
                         // 2. Fallback to Deal Name if no explicit address field exists
                         if (!address && deal.Deal_Name) {
                             address = deal.Deal_Name;
+                            
+                            // Smart Extraction: Look for a segment separated by hyphens that starts with a number
+                            const segments = deal.Deal_Name.split(/[-|]/);
+                            let foundSmartAddress = false;
+                            for (const seg of segments) {
+                                if (/^\s*\d+/.test(seg)) {
+                                    address = seg.trim();
+                                    foundSmartAddress = true;
+                                    break;
+                                }
+                            }
+                            
+                            // Regex Fallback: Look for "Number + Street + Quadrant/City" if split failed
+                            if (!foundSmartAddress) {
+                                const match = deal.Deal_Name.match(/\b\d+\s+[a-zA-Z0-9\s,]+(?:NW|NE|SW|SE|Calgary)\b/i);
+                                if (match) {
+                                    address = match[0].trim();
+                                }
+                            }
                         }
                         
                         addressInput.value = address || "";
