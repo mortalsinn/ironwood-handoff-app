@@ -1202,6 +1202,7 @@
                         }
                         
                         // 3. Trigger recalculation
+                        if (typeof updateBlueprintPreview === 'function') updateBlueprintPreview();
                         form.dispatchEvent(new Event('change', { bubbles: true }));
                         
                         // 4. Override Right Panel with UI Snapshot (after a tiny delay so updateBlueprintPreview finishes)
