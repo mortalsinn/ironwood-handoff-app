@@ -1,5 +1,13 @@
 # Ironwood Stair & Rail - Production Handoff Protocol
 
+## 🚨 CRITICAL RULES 🚨
+1. **MANDATORY VERSION BUMP**: Every single time you modify logic, fix a bug, or add a feature to `index.html`, you MUST:
+   - Bump the version number in the `<title>` tag.
+   - Bump the version number in the `#localSimulator` `<h1>` tag.
+   - Bump the version number in the `vX.XX` header UI tag.
+   - Add a detailed entry to the `#changelogOverlay` modal.
+   - **Do this in the same step as your code changes, before pushing to git.**
+
 ## Tech Stack & Architecture
 - **Single-File Setup**: The entire frontend application is housed in `index.html`. All styles use Tailwind CSS via CDN, and all logic is embedded in the bottom `<script>` tag.
 - **Styling Guidelines**:
@@ -33,7 +41,6 @@
 3. **Miro (Mermaid) Flowchart**: The app can compile the active project blocks and tasks into a Mermaid JS flowchart string, color-coded by department (e.g., Fabrication=Blue, Installation=Red, QA=Orange, Custom=Purple), and copy it to the clipboard.
 4. **Data Validation**: Prior to generating the production run, the UI enforces that every block has an assigned user (checking against `"UNASSIGNED"`). It will glow red if verification fails.
 5. **Default Assignees**: specific users (Matthew De Man, Thomas Macleod, Joel Nalder) are auto-populated to specific stages on DOM load.
-6. **Changelog & Versioning**: There is an integrated Changelog in the top right. **CRITICAL RULE**: ALWAYS bump the version number in the `<title>` tag, the `#localSimulator` `<h1>` tag, and add release notes to the `#changelogOverlay` inside `index.html` every single time you push new features or bug fixes. Do not forget this step!
 
 ## Best Practices
 - **DOM Mutations**: Be extremely careful when using `element.textContent = ...` or `element.innerHTML = ...` on pre-rendered items, as this will destroy attached SVGs (like drag handles) or custom button elements. Use `querySelector` to target inner text nodes.
