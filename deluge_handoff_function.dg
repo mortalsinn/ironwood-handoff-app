@@ -37,6 +37,10 @@ string standalone.create_handoff_tasks(string dealId, string payload)
                     msParams.put("owner", milestoneOwner);
                     msParams.put("flag", "internal");
                     
+                    currentDate = zoho.currentdate;
+                    msParams.put("start_date", currentDate.toString("MM-dd-yyyy"));
+                    msParams.put("end_date", currentDate.addDay(14).toString("MM-dd-yyyy"));
+                    
                     msResponse = invokeurl
                     [
                         url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/milestones/"
