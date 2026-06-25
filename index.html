@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.30</title>
+    <title>Ironwood Handoff Form v8.31</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -48,7 +48,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.30</h1>>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.31</h1>>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -660,7 +660,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.30 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.31 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -739,10 +739,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.30 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v8.31 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.31 - Documentation Update</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Help Section:</strong> Added comprehensive documentation for recent features including global assignees, block deletion, custom tasks, and the travel calculator.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.30 - UI Polish</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1001,7 +1007,23 @@
                     </div>
 
                     <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 5. Pro Tips</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 5. Global Assignees & Custom Tasks</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <strong>Assign Overrides:</strong> Use the "Assign To All" dropdowns under the Project Constraints to instantly overwrite all tasks in that category with a specific team member.<br><br>
+                            <strong>Custom Tagging:</strong> When you add a custom task via the input box at the bottom of a block, it is automatically tagged with a vibrant purple <code>[Custom]</code> label to stand out to the team.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 6. Travel Calc & Deletions</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">
+                            <strong>Distance Auto-Calc:</strong> Enter a postal code and click the "Auto-Calc" button in the Travel menu to calculate round trip KM.<br><br>
+                            <strong>Removing Items:</strong> Delete individual tasks by clicking the red 'x' on hover. Delete entire blueprint blocks by clicking the trash can icon next to the block's title in the right panel.
+                        </p>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 7. Pro Tips</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs">
                             <li><strong>Resizing:</strong> You can drag the middle divider between the left and right panels to give yourself more reading room! You can also drag the bottom-right corner of the outer popup to make the whole app bigger.</li>
                             <li><strong>Auto-Save:</strong> The app silently saves your draft every time you type. If you accidentally close out, just reopen it on the same deal and everything snaps back!</li>
