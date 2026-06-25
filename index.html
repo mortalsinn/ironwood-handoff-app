@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.22</title>
+    <title>Ironwood Handoff Form v8.23</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -47,7 +47,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.22</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.23</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -698,10 +698,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.22 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v8.23 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.23 - Travel UI Update</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Save Feedback:</strong> Travel settings save button now gives visual confirmation before closing.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.22 - UI Tweak</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1012,7 +1018,7 @@
                         </select>
                     </div>
 
-                    <button type="button" onclick="window.submitTravelModal()" class="w-full mt-2 px-4 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] flex items-center justify-center gap-2">
+                    <button type="button" id="saveTravelBtn" onclick="window.submitTravelModal()" class="w-full mt-2 px-4 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold transition-all shadow-[0_0_15px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] flex items-center justify-center gap-2">
                         Save
                     </button>
                 </div>
@@ -2486,46 +2492,67 @@
         };
 
         window.submitTravelModal = () => {
-            const address = document.getElementById('travelAddress').value;
-            const req = document.getElementById('travelRequired').value;
-            const kms = document.getElementById('travelKMs').value;
-            const hotel = document.getElementById('travelHotel').value;
-            
-            const noteString = `--- TRAVEL & LOGISTICS ---\nAddress: ${address || 'N/A'}\nESA (Travel): ${req}\nDistance: ${kms || '0'} KM (One Way)\nHotel/Meals: ${hotel}`;
-            
-            const notesContainer = document.getElementById('notesContainer');
-            const textareas = notesContainer.querySelectorAll('.note-textarea');
-            let targetArea = textareas[textareas.length - 1];
-            
-            if (targetArea.value.trim() !== '') {
-                document.getElementById('addNoteBtn').click();
-                const newAreas = notesContainer.querySelectorAll('.note-textarea');
-                targetArea = newAreas[newAreas.length - 1];
-            }
-            
-            targetArea.value = noteString;
-            targetArea.dispatchEvent(new Event('input', { bubbles: true }));
-            
-            // Push as Task to Project Scheduling block
-            const taskString = `Travel Logistics: ESA: ${req} | KMs: ${kms || '0'} (One Way) | Hotel/Meals: ${hotel}`;
-            const schedulingUl = document.querySelector('#block-scheduling ul.sortable-list');
-            if (schedulingUl) {
-                const li = document.createElement('li');
-                li.className = 'task-custom group/item relative pl-5 cursor-move list-none border-b border-transparent hover:border-slate-700/30 pb-0.5 transition-colors';
-                li.innerHTML = `
-                    <svg class="w-3 h-3 text-slate-600 absolute left-0 top-0.5 task-drag-handle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
-                    <span class="editable-task outline-none focus:ring-1 focus:ring-sky-500/50 rounded px-1 -ml-1 text-amber-400 font-bold" contenteditable="true" onblur="if(!this.textContent.trim()) this.parentElement.remove()">${taskString}</span>
-                    <button type="button" class="absolute -right-2 top-0.5 opacity-0 group-hover/item:opacity-100 text-rose-500 hover:text-rose-400 transition-opacity" onclick="this.parentElement.remove()"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                `;
-                schedulingUl.appendChild(li);
+            const saveBtn = document.getElementById('saveTravelBtn');
+            const originalHtml = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Saved!';
+            saveBtn.classList.remove('bg-amber-600', 'hover:bg-amber-500', 'shadow-[0_0_15px_rgba(245,158,11,0.3)]', 'hover:shadow-[0_0_25px_rgba(245,158,11,0.5)]');
+            saveBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-[0_0_15px_rgba(5,150,105,0.4)]');
+            saveBtn.disabled = true;
+
+            try {
+                const address = document.getElementById('travelAddress').value;
+                const req = document.getElementById('travelRequired').value;
+                const kms = document.getElementById('travelKMs').value;
+                const hotel = document.getElementById('travelHotel').value;
                 
-                // Ensure the block is visible if it was hidden
-                document.getElementById('block-scheduling').classList.remove('hidden');
+                const noteString = `--- TRAVEL & LOGISTICS ---\nAddress: ${address || 'N/A'}\nESA (Travel): ${req}\nDistance: ${kms || '0'} KM (One Way)\nHotel/Meals: ${hotel}`;
+                
+                const notesContainer = document.getElementById('notesContainer');
+                const textareas = notesContainer.querySelectorAll('.note-textarea');
+                let targetArea = textareas[textareas.length - 1];
+                
+                if (targetArea && targetArea.value.trim() !== '') {
+                    document.getElementById('addNoteBtn').click();
+                    const newAreas = notesContainer.querySelectorAll('.note-textarea');
+                    targetArea = newAreas[newAreas.length - 1];
+                }
+                
+                if (targetArea) {
+                    targetArea.value = noteString;
+                    targetArea.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+                
+                // Push as Task to Project Scheduling block
+                const taskString = `Travel Logistics: ESA: ${req} | KMs: ${kms || '0'} (One Way) | Hotel/Meals: ${hotel}`;
+                const schedulingUl = document.querySelector('#block-scheduling ul.sortable-list');
+                if (schedulingUl) {
+                    const li = document.createElement('li');
+                    li.className = 'task-custom group/item relative pl-5 cursor-move list-none border-b border-transparent hover:border-slate-700/30 pb-0.5 transition-colors';
+                    li.innerHTML = `
+                        <svg class="w-3 h-3 text-slate-600 absolute left-0 top-0.5 task-drag-handle" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16"></path></svg>
+                        <span class="editable-task outline-none focus:ring-1 focus:ring-sky-500/50 rounded px-1 -ml-1 text-amber-400 font-bold" contenteditable="true" onblur="if(!this.textContent.trim()) this.parentElement.remove()">${taskString}</span>
+                        <button type="button" class="absolute -right-2 top-0.5 opacity-0 group-hover/item:opacity-100 text-rose-500 hover:text-rose-400 transition-opacity" onclick="this.parentElement.remove()"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
+                    `;
+                    schedulingUl.appendChild(li);
+                    
+                    document.getElementById('block-scheduling').classList.remove('hidden');
+                }
+                
+                updateBlueprintPreview();
+            } catch (e) {
+                console.error("Error saving travel settings:", e);
             }
-            
-            updateBlueprintPreview();
-            
-            document.getElementById('travelOverlay').classList.add('hidden');
+
+            setTimeout(() => {
+                document.getElementById('travelOverlay').classList.add('hidden');
+                
+                setTimeout(() => {
+                    saveBtn.innerHTML = originalHtml;
+                    saveBtn.classList.add('bg-amber-600', 'hover:bg-amber-500', 'shadow-[0_0_15px_rgba(245,158,11,0.3)]', 'hover:shadow-[0_0_25px_rgba(245,158,11,0.5)]');
+                    saveBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-500', 'shadow-[0_0_15px_rgba(5,150,105,0.4)]');
+                    saveBtn.disabled = false;
+                }, 300);
+            }, 800);
         };
     </script>
     
