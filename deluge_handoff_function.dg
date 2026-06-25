@@ -23,40 +23,62 @@ string standalone.create_handoff_tasks(string dealId, string payload)
     newProjectId = createResponse.get("projects").get(0).get("id_string");
 
     if (newProjectId != null) {
-        taskListsMap = payloadData.get("task_lists");
+        milestonesList = payloadData.get("milestones");
         
-        if (taskListsMap != null) {
-            keys = taskListsMap.keys();
-            for each listName in keys {
-                tasksInList = taskListsMap.get(listName);
-                if (tasksInList != null && tasksInList.size() > 0) {
-                    taskListParams = Map();
-                    taskListParams.put("name", listName);
-                    taskListResponse = invokeurl
+        if (milestonesList != null) {
+            for each milestone in milestonesList {
+                milestoneName = milestone.get("name");
+                milestoneOwner = milestone.get("owner");
+                tasksInMilestone = milestone.get("tasks");
+                
+                if (tasksInMilestone != null && tasksInMilestone.size() > 0) {
+                    msParams = Map();
+                    msParams.put("name", milestoneName);
+                    msParams.put("owner", milestoneOwner);
+                    msParams.put("flag", "internal");
+                    
+                    msResponse = invokeurl
                     [
-                        url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+                        url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/milestones/"
                         type : POST
-                        parameters : taskListParams
+                        parameters : msParams
                         connection : "zoho_projects_connection"
                     ];
                     
-                    if (taskListResponse.get("tasklists") != null) {
-                        createdTaskListId = taskListResponse.get("tasklists").get(0).get("id_string");
-                        taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
+                    if (msResponse.get("milestones") != null) {
+                        createdMilestoneId = msResponse.get("milestones").get(0).get("id_string");
                         
-                        for each taskObj in tasksInList {
-                            taskParams = Map();
-                            taskParams.put("name", taskObj.get("name"));
-                            taskParams.put("person_responsible", taskObj.get("person_responsible"));
-                            taskParams.put("tasklist_id", createdTaskListId);
+                        taskListParams = Map();
+                        taskListParams.put("name", milestoneName + " Tasks");
+                        taskListParams.put("milestone_id", createdMilestoneId);
+                        taskListParams.put("flag", "internal");
+                        
+                        taskListResponse = invokeurl
+                        [
+                            url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+                            type : POST
+                            parameters : taskListParams
+                            connection : "zoho_projects_connection"
+                        ];
+                        
+                        if (taskListResponse.get("tasklists") != null) {
+                            createdTaskListId = taskListResponse.get("tasklists").get(0).get("id_string");
+                            taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
                             
-                            invokeurl [ url: taskUrl type: POST parameters: taskParams connection: "zoho_projects_connection" ];
+                            for each taskObj in tasksInMilestone {
+                                taskParams = Map();
+                                taskParams.put("name", taskObj.get("name"));
+                                taskParams.put("person_responsible", taskObj.get("person_responsible"));
+                                taskParams.put("tasklist_id", createdTaskListId);
+                                
+                                invokeurl [ url: taskUrl type: POST parameters: taskParams connection: "zoho_projects_connection" ];
+                            }
                         }
                     }
                 }
             }
         }
-        return "Success: Project and Tasks created in Zoho Projects.";
+        return "Success: Project, Milestones, and Tasks created in Zoho Projects.";
     } else {
         return "Error: Could not create Zoho Project.";
     }
