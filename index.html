@@ -2046,10 +2046,14 @@
                 "Railing Production & Install": []
             };
 
+            const milestones = [];
             const blocks = document.querySelectorAll('#projectPreviewList > div');
             blocks.forEach(block => {
                 if (!block.classList.contains('hidden')) {
                     const blockDefaultList = block.getAttribute('data-default-list') || "Railing Production & Install";
+                    
+                    const titleEl = block.querySelector('p');
+                    const milestoneName = titleEl ? titleEl.innerText.trim() : "Stage";
                     
                     const assignBtn = block.querySelector('button[onclick^="openUserModal"]');
                     let currentBlockAssigneeId = "UNASSIGNED";
@@ -2068,17 +2072,32 @@
                     }
                     
                     const items = block.querySelectorAll('li');
+                    const milestoneTasks = [];
                     items.forEach(item => {
                         if (!item.classList.contains('hidden')) {
                             const taskName = item.querySelector('.editable-task') ? item.querySelector('.editable-task').textContent.trim() : item.textContent.trim().replace('×','');
                             const targetList = item.getAttribute('data-list') || blockDefaultList;
                             
+                            // Legacy task_lists
                             task_lists[targetList].push({
                                 "name": taskName,
                                 "person_responsible": currentBlockAssigneeId === "UNASSIGNED" ? "" : currentBlockAssigneeId,
                                 "zuid": currentBlockAssigneeZuid
                             });
+                            
+                            // New milestones logic
+                            milestoneTasks.push({
+                                "name": taskName,
+                                "person_responsible": currentBlockAssigneeId === "UNASSIGNED" ? "" : currentBlockAssigneeId,
+                                "zuid": currentBlockAssigneeZuid
+                            });
                         }
+                    });
+                    
+                    milestones.push({
+                        "name": milestoneName,
+                        "owner": currentBlockAssigneeId === "UNASSIGNED" ? "" : currentBlockAssigneeId,
+                        "tasks": milestoneTasks
                     });
                 }
             });
@@ -2089,6 +2108,7 @@
             const capturedData = {
                 notes: joinedNotes,
                 task_lists: task_lists,
+                milestones: milestones,
                 project_owner: document.getElementById('projectOwnerAssigneeInput') ? document.getElementById('projectOwnerAssigneeInput').value : "UNASSIGNED"
             };
             console.log("Payload ready for Zoho CRM:", capturedData);
