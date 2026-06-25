@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.19</title>
+    <title>Ironwood Handoff Form v8.20</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
@@ -47,7 +47,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.19</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.20</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -126,25 +126,35 @@
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
                             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">2. Construction Grade Stairs</h3>
                         </div>
-                        <div id="stairConstShapeGrid" class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center p-2 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
-                                <input type="checkbox" name="constStairShape" value="Straight" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Straight</span>
-                            </label>
-                            <label class="flex items-center p-2 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
-                                <input type="checkbox" name="constStairShape" value="Curved" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Curved</span>
-                            </label>
-                        </div>
-                        <div id="stairConstTypeGrid" class="grid grid-cols-2 gap-3 mt-1">
-                            <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
-                                <input type="checkbox" name="constStairType" value="Eastern" class="w-3.5 h-3.5 text-emerald-500 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Eastern Grade</span>
-                            </label>
-                            <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
-                                <input type="checkbox" name="constStairType" value="Western" class="w-3.5 h-3.5 text-emerald-500 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Western Grade</span>
-                            </label>
+                        
+                        <div class="bg-slate-800/30 p-3 rounded-xl border border-slate-700/50 space-y-3">
+                            <div>
+                                <p class="text-[9px] font-bold text-emerald-500/70 uppercase tracking-widest mb-1.5 ml-1">Step 1. Select Shape</p>
+                                <div id="stairConstShapeGrid" class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center p-2 bg-slate-800/40 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                        <input type="checkbox" name="constStairShape" value="Straight" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Straight</span>
+                                    </label>
+                                    <label class="flex items-center p-2 bg-slate-800/40 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                        <input type="checkbox" name="constStairShape" value="Curved" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Curved</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-700/50">
+                                <p class="text-[9px] font-bold text-emerald-500/70 uppercase tracking-widest mb-1.5 ml-1">Step 2. Select Type</p>
+                                <div id="stairConstTypeGrid" class="grid grid-cols-2 gap-3">
+                                    <label class="flex items-center p-3 bg-slate-800/60 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
+                                        <input type="checkbox" name="constStairType" value="Eastern" class="w-3.5 h-3.5 text-emerald-500 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Eastern</span>
+                                    </label>
+                                    <label class="flex items-center p-3 bg-slate-800/60 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
+                                        <input type="checkbox" name="constStairType" value="Western" class="w-3.5 h-3.5 text-emerald-500 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Western</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -152,33 +162,43 @@
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
                             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">3. Finished Stairs</h3>
                         </div>
-                        <div id="stairFinShapeGrid" class="grid grid-cols-2 gap-2">
-                            <label class="flex items-center p-2 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
-                                <input type="checkbox" name="finStairShape" value="Straight" class="w-3 h-3 text-violet-400 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Straight</span>
-                            </label>
-                            <label class="flex items-center p-2 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
-                                <input type="checkbox" name="finStairShape" value="Curved" class="w-3 h-3 text-violet-400 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Curved</span>
-                            </label>
-                        </div>
-                        <div id="stairFinTypeGrid" class="grid grid-cols-2 gap-3 mt-1">
-                            <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
-                                <input type="checkbox" name="finStairType" value="Western" class="w-3.5 h-3.5 text-violet-500 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Western Fin.</span>
-                            </label>
-                            <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
-                                <input type="checkbox" name="finStairType" value="Eastern" class="w-3.5 h-3.5 text-violet-500 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Eastern Fin.</span>
-                            </label>
-                            <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
-                                <input type="checkbox" name="finStairType" value="Mono" class="w-3.5 h-3.5 text-violet-500 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Mono</span>
-                            </label>
-                            <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
-                                <input type="checkbox" name="finStairType" value="Cantilever" class="w-3.5 h-3.5 text-violet-500 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Cantilever</span>
-                            </label>
+                        
+                        <div class="bg-slate-800/30 p-3 rounded-xl border border-slate-700/50 space-y-3">
+                            <div>
+                                <p class="text-[9px] font-bold text-violet-500/70 uppercase tracking-widest mb-1.5 ml-1">Step 1. Select Shape</p>
+                                <div id="stairFinShapeGrid" class="grid grid-cols-2 gap-2">
+                                    <label class="flex items-center p-2 bg-slate-800/40 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                        <input type="checkbox" name="finStairShape" value="Straight" class="w-3 h-3 text-violet-400 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Straight</span>
+                                    </label>
+                                    <label class="flex items-center p-2 bg-slate-800/40 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                        <input type="checkbox" name="finStairShape" value="Curved" class="w-3 h-3 text-violet-400 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Curved</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <div class="pt-2 border-t border-slate-700/50">
+                                <p class="text-[9px] font-bold text-violet-500/70 uppercase tracking-widest mb-1.5 ml-1">Step 2. Select Type</p>
+                                <div id="stairFinTypeGrid" class="grid grid-cols-2 gap-3">
+                                    <label class="flex items-center p-3 bg-slate-800/60 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
+                                        <input type="checkbox" name="finStairType" value="Western" class="w-3.5 h-3.5 text-violet-500 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Western</span>
+                                    </label>
+                                    <label class="flex items-center p-3 bg-slate-800/60 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
+                                        <input type="checkbox" name="finStairType" value="Eastern" class="w-3.5 h-3.5 text-violet-500 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Eastern</span>
+                                    </label>
+                                    <label class="flex items-center p-3 bg-slate-800/60 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
+                                        <input type="checkbox" name="finStairType" value="Mono" class="w-3.5 h-3.5 text-violet-500 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Mono</span>
+                                    </label>
+                                    <label class="flex items-center p-3 bg-slate-800/60 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative">
+                                        <input type="checkbox" name="finStairType" value="Cantilever" class="w-3.5 h-3.5 text-violet-500 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                        <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Cantilever</span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                         <details class="mt-2 group">
                             <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
@@ -658,10 +678,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.19 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v8.20 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.20 - The Stair Menu UI Polish</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Stair Layout:</strong> Added nested stepped containers for shape and type selection to look like a wizard.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.19 - The Stair Menu Update</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
