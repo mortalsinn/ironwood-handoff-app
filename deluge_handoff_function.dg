@@ -1,89 +1,166 @@
-string standalone.create_handoff_tasks(string dealId, string payload)
+string standalone.create_handoff_tasks(String dealId,String payload)
 {
-    payloadData = payload.toMap();
-    info "Handoff Triggered for Deal ID: " + dealId;
-    info "Payload: " + payloadData;
-
-    dealInfo = zoho.crm.getRecordById("Deals", dealId.toLong());
-    dealName = dealInfo.get("Deal_Name");
-    projectName = dealName + " - Production";
-
-    portalId = "ironwoodstairs"; 
-
-    projectData = Map();
-    projectData.put("name", projectName);
-    projectData.put("template_id", "1768463000007543025");
-    projectData.put("description", "Auto-generated from Ironwood Handoff Widget. Notes: " + payloadData.get("notes"));
-
-    createResponse = zoho.projects.createProject(portalId, projectData, "zoho_projects_connection");
-    if (createResponse.get("projects") == null) {
-        return "Error creating project in Zoho: " + createResponse;
-    }
-
-    newProjectId = createResponse.get("projects").get(0).get("id_string");
-
-    if (newProjectId != null) {
-        milestonesList = payloadData.get("milestones");
-        
-        if (milestonesList != null) {
-            for each milestone in milestonesList {
-                milestoneName = milestone.get("name");
-                milestoneOwner = milestone.get("owner");
-                tasksInMilestone = milestone.get("tasks");
-                
-                if (tasksInMilestone != null && tasksInMilestone.size() > 0) {
-                    msParams = Map();
-                    msParams.put("name", milestoneName);
-                    msParams.put("owner", milestoneOwner);
-                    msParams.put("flag", "internal");
-                    
-                    currentDate = zoho.currentdate;
-                    msParams.put("start_date", currentDate.toString("MM-dd-yyyy"));
-                    msParams.put("end_date", currentDate.addDay(14).toString("MM-dd-yyyy"));
-                    
-                    msResponse = invokeurl
-                    [
-                        url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/milestones/"
-                        type : POST
-                        parameters : msParams
-                        connection : "zoho_projects_connection"
-                    ];
-                    
-                    if (msResponse.get("milestones") != null) {
-                        createdMilestoneId = msResponse.get("milestones").get(0).get("id_string");
-                        
-                        taskListParams = Map();
-                        taskListParams.put("name", milestoneName + " Tasks");
-                        taskListParams.put("milestone_id", createdMilestoneId);
-                        taskListParams.put("flag", "internal");
-                        
-                        taskListResponse = invokeurl
-                        [
-                            url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
-                            type : POST
-                            parameters : taskListParams
-                            connection : "zoho_projects_connection"
-                        ];
-                        
-                        if (taskListResponse.get("tasklists") != null) {
-                            createdTaskListId = taskListResponse.get("tasklists").get(0).get("id_string");
-                            taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
-                            
-                            for each taskObj in tasksInMilestone {
-                                taskParams = Map();
-                                taskParams.put("name", taskObj.get("name"));
-                                taskParams.put("person_responsible", taskObj.get("person_responsible"));
-                                taskParams.put("tasklist_id", createdTaskListId);
-                                
-                                invokeurl [ url: taskUrl type: POST parameters: taskParams connection: "zoho_projects_connection" ];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return "Success: Project, Milestones, and Tasks created in Zoho Projects.";
-    } else {
-        return "Error: Could not create Zoho Project.";
-    }
+payloadData = payload.toMap();
+info "Handoff Triggered for Deal ID: " + dealId;
+info "Payload: " + payloadData;
+dealInfo = zoho.crm.getRecordById("Deals",dealId.toLong());
+dealName = dealInfo.get("Deal_Name");
+projectName = dealName + " - Production";
+portalId = "ironwoodstairs";
+projectData = Map();
+projectData.put("name",projectName);
+projectData.put("template_id","1768463000007543025");
+projectData.put("description","Auto-generated from Ironwood Handoff Widget. Notes: " + payloadData.get("notes"));
+projectData.put("public","yes");
+// =====================================
+// INJECT PROJECT OWNER IF ASSIGNED
+// =====================================
+if(payloadData.get("project_owner") != null && payloadData.get("project_owner") != "UNASSIGNED" && payloadData.get("project_owner") != "")
+{
+	projectData.put("owner",payloadData.get("project_owner"));
+}
+createResponse = zoho.projects.createProject(portalId,projectData,"zoho_projects_connection");
+if(createResponse.get("projects") == null)
+{
+	return "Error creating project in Zoho: " + createResponse.toString();
+}
+newProjectId = createResponse.get("projects").get(0).get("id_string");
+if(newProjectId != null)
+{
+	delay_response = invokeurl
+	[
+		url :"https://postman-echo.com/delay/2"
+		type :GET
+	];
+	taskListsMap = payloadData.get("task_lists");
+	if(taskListsMap != null)
+	{
+		// ==========================================
+		// BRUTE FORCE: EXTRACT IDS/EMAILS & FORCE-INVITE
+		// ==========================================
+		uniqueUsers = List();
+		userEmailsMap = Map();
+		for each  listName in taskListsMap.keys()
+		{
+			tasksInList = taskListsMap.get(listName);
+			if(tasksInList != null)
+			{
+				for each  taskObj in tasksInList
+				{
+					uid = taskObj.get("person_responsible");
+					email = taskObj.get("zuid");
+					if(uid != "" && uid != null && !uniqueUsers.contains(uid))
+					{
+						uniqueUsers.add(uid);
+						if(email != null && email != "")
+						{
+							userEmailsMap.put(uid,email);
+						}
+					}
+				}
+			}
+		}
+		if(uniqueUsers.size() > 0)
+		{
+			for each  uid in uniqueUsers
+			{
+				// Attempt 1: Brute force via URL parameters with User ID
+				addUsersResponse = invokeurl
+				[
+					url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/users/?users_list=" + uid + "&role=employee"
+					type :POST
+					connection:"zoho_projects_connection"
+				];
+				info "BRUTE FORCE ADD USER ID (" + uid + ") RESULT: " + addUsersResponse.toString();
+				// Attempt 2: Brute force via payload with Email Address
+				email = userEmailsMap.get(uid);
+				if(email != null && email != "")
+				{
+					addUserEmailParams = Map();
+					addUserEmailParams.put("email",email);
+					addUserEmailParams.put("role","employee");
+					addUsersEmailResponse = invokeurl
+					[
+						url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/users/"
+						type :POST
+						parameters:addUserEmailParams
+						connection:"zoho_projects_connection"
+					];
+					info "BRUTE FORCE ADD USER EMAIL (" + email + ") RESULT: " + addUsersEmailResponse.toString();
+				}
+			}
+		}
+		// ==========================================
+		existingListsResponse = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+			type :GET
+			connection:"zoho_projects_connection"
+		];
+		existingListsMap = Map();
+		existingTaskLists = existingListsResponse.get("tasklists");
+		if(existingTaskLists != null)
+		{
+			for each  elist in existingTaskLists
+			{
+				existingListsMap.put(elist.get("name"),elist.get("id_string"));
+			}
+		}
+		keys = taskListsMap.keys();
+		for each  listName in keys
+		{
+			tasksInList = taskListsMap.get(listName);
+			if(tasksInList != null && tasksInList.size() > 0)
+			{
+				createdTaskListId = existingListsMap.get(listName);
+				if(createdTaskListId == null)
+				{
+					taskListParams = Map();
+					taskListParams.put("name",listName);
+					taskListResponse = invokeurl
+					[
+						url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+						type :POST
+						parameters:taskListParams
+						connection:"zoho_projects_connection"
+					];
+					if(taskListResponse.get("tasklists") != null)
+					{
+						createdTaskListId = taskListResponse.get("tasklists").get(0).get("id_string");
+					}
+				}
+				if(createdTaskListId != null)
+				{
+					taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
+					for each  taskObj in tasksInList
+					{
+						taskParams = Map();
+						taskParams.put("name",taskObj.get("name"));
+						if(taskObj.get("person_responsible") != "")
+						{
+							taskParams.put("person_responsible",taskObj.get("person_responsible"));
+						}
+						taskParams.put("tasklist_id",createdTaskListId);
+						taskResponse = invokeurl
+						[
+							url :taskUrl
+							type :POST
+							parameters:taskParams
+							connection:"zoho_projects_connection"
+						];
+						if(taskResponse.get("tasks") == null)
+						{
+							info "FAILED TO CREATE TASK: " + taskObj.get("name").toString() + " | ERROR: " + taskResponse.toString();
+						}
+					}
+				}
+			}
+		}
+	}
+	return "Success: Project and Tasks created in Zoho Projects.";
+}
+else
+{
+	return "Error: Could not create Zoho Project.";
+}
 }
