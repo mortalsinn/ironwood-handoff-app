@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.3</title>
+    <title>Ironwood Handoff Form v11.4</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -60,7 +60,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.3</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.4</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -394,8 +394,8 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.3 Live</button>
-                    <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.4 Live</button>
+                    <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
             
@@ -473,10 +473,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.3 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.4 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.4 - Help Rewritten</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">One Accurate Guide:</strong> Both Help buttons now open a single rewritten guide covering the workflow engine, owner chips, timelines and the "d" boxes, dependencies, add-on checkboxes, Supply Only behavior, safe re-runs, and the Closed Won F5 note.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.3 - Owner Chips Everywhere</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -797,78 +803,6 @@
                 </div>
             </div>
         </div>
-        <!-- INSTRUCTIONS OVERLAY -->
-        <div id="instructionsOverlay" class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm flex flex-col items-center justify-center hidden z-[60] text-white p-6">
-            <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-2xl relative max-h-[85vh] flex flex-col">
-                <button type="button" onclick="document.getElementById('instructionsOverlay').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-white"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
-                <div class="flex items-center gap-3 mb-6 shrink-0">
-                    <div class="w-10 h-10 rounded-full bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-black tracking-widest uppercase">How to Use</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">Production Wizard Guide</p>
-                    </div>
-                </div>
-                <div class="flex-grow overflow-y-auto pr-4 space-y-6 text-sm text-slate-300">
-                    
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 1. Drafting the Blueprint</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Start on the left side by selecting your project constraints (e.g., Wood Railing, Metal Spindles). As you check boxes, the right side automatically generates the required production stages and checklists tailored exactly to those materials.
-                        </p>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 2. Rearranging & Customizing</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            <strong>Drag & Drop:</strong> Every task on the right side has a drag handle on the left edge. Click and drag tasks to reorder them within a block. <br><br>
-                            <strong>Custom Items:</strong> Need something unique? Use the input boxes on the left panel (e.g., "Add Custom Fabrication") to inject bespoke, one-off tasks into the production run.
-                        </p>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 3. Smart @Mentions in Notes</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            When typing in the <strong>Production Notes</strong> box, you can type the <code>@</code> symbol followed by a team member's name. A dropdown will appear allowing you to select them. When you push to CRM, the system automatically translates this into Zoho's hidden API format, triggering a real email notification to that user!
-                        </p>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 4. Miro / Mermaid Export</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            Click the purple <strong>"Copy Miro Code"</strong> button at the top to silently copy your entire production sequence to your clipboard. Paste this directly into a Miro board (or Mermaid JS viewer) and it will instantly generate a perfectly formatted, color-coded flowchart!
-                        </p>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 5. Global Assignees & Custom Tasks</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            <strong>Assign Overrides:</strong> Use the "Assign To All" dropdowns under the Project Constraints to instantly overwrite all tasks in that category with a specific team member.<br><br>
-                            <strong>Custom Tagging:</strong> When you add a custom task via the input box at the bottom of a block, it is automatically tagged with a vibrant purple <code>[Custom]</code> label to stand out to the team.
-                        </p>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 6. Travel Calc & Deletions</h4>
-                        <p class="text-xs text-slate-400 leading-relaxed">
-                            <strong>Distance Auto-Calc:</strong> Enter a postal code and click the "Auto-Calc" button in the Travel menu to calculate round trip KM.<br><br>
-                            <strong>Removing Items:</strong> Delete individual tasks by clicking the red 'x' on hover. Delete entire blueprint blocks by clicking the trash can icon next to the block's title in the right panel.
-                        </p>
-                    </div>
-
-                    <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700">
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span> 7. Pro Tips</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs">
-                            <li><strong>Resizing:</strong> You can drag the middle divider between the left and right panels to give yourself more reading room! You can also drag the bottom-right corner of the outer popup to make the whole app bigger.</li>
-                            <li><strong>Auto-Save:</strong> The app silently saves your draft every time you type. If you accidentally close out, just reopen it on the same deal and everything snaps back!</li>
-                        </ul>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-        
         <!-- CLOSED WON OVERLAY -->
         <div id="closedWonOverlay" class="absolute inset-0 bg-slate-900/90 backdrop-blur-md flex flex-col items-center justify-center hidden z-[70] text-white p-6">
             <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-2xl p-6 w-full max-w-sm relative">
@@ -2808,45 +2742,67 @@
             <div class="p-6 overflow-y-auto space-y-6 text-sm text-slate-300 [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-slate-800/40 [&::-webkit-scrollbar-thumb]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-slate-500">
                 
                 <div>
-                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">1. Building the Blueprint</h4>
-                    <p class="leading-relaxed">Use the <strong>Left Panel</strong> to select the structural components of the job. The <strong>Right Panel</strong> dynamically updates to show the required production stages and tasks. The app automatically determines what needs to happen based on what you check off.</p>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">1. How the Blueprint Works</h4>
+                    <p class="leading-relaxed">Check off the job's components on the <strong>Left Panel</strong> (stairs, railing type, spindles, glass, welded metal). The Right Panel generates the matching <strong>production workflow sections</strong> — the exact task chains, order, and QA gates the team agreed on — for each type of work. Tasks are color-coded by phase: <span class="text-violet-400 font-bold">setup</span>, <span class="text-sky-400 font-bold">fabrication</span>, <span class="text-orange-400 font-bold">QA</span>, <span class="text-rose-400 font-bold">install</span>, <span class="text-slate-400 font-bold">wrap-up</span>. Every job automatically ends with the <strong>Accounting Close Out</strong> (Jeffery / Zoho Books).</p>
                 </div>
 
                 <div>
-                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">2. Assigning Teams</h4>
-                    <p class="leading-relaxed">By default, tasks are grouped into blocks (e.g., <em>Railing Production & Install</em>). You can assign an entire block to a user by clicking the <strong>Assign User</strong> dropdown. If you need to override a specific task within that block, click the team icon on that specific task.</p>
-                </div>
-
-                <div>
-                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">3. Customizing the Workflow</h4>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">2. Who Owns What</h4>
                     <ul class="list-disc pl-5 space-y-2 mt-2">
-                        <li><strong>Reordering:</strong> You can drag and drop any task on the Right Panel to reorganize the flow or move tasks between blocks.</li>
-                        <li><strong>Editing & Deleting:</strong> Click directly on any task name to edit the text inline. You can also delete any standard or custom task by clicking the <strong>&times;</strong> button next to it.</li>
-                        <li><strong>Adding Tasks:</strong> Use the "Click to add custom task..." dropdown inside any block to type a custom task.</li>
-                        <li><strong>Adding Blocks:</strong> Use the "Click to add custom item..." dropdowns on the Left Panel to generate entirely new blocks on the Right Panel!</li>
+                        <li><strong>Automatic owners:</strong> Tasks pre-assign to the right people (Tom, Matt, Joel, Jeffery) from the live roster — you'll see their initials chip on each task.</li>
+                        <li><strong>The Sales section is intentionally blank</strong> — use its "Assign User" button to pick the salesperson. Generating is blocked until every section has an owner.</li>
+                        <li><strong>Overrides:</strong> "Assign User" on a section header sets that whole section; the small person icon on any single task overrides just that task.</li>
                     </ul>
                 </div>
 
                 <div>
-                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">4. Production Notes & @Mentions</h4>
-                    <p class="leading-relaxed">At the bottom of the Left Panel, you can write Production Notes. Type <strong>@</strong> followed by a team member's name to tag them. The system will convert this into a CRM Mention so they get a notification. You can click <strong>Add Another Note</strong> to separate different thoughts or messages into distinct CRM notes!</p>
-                </div>
-
-                <div>
-                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">5. Auto-Save & Resizing</h4>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">3. Timelines (the "d" boxes)</h4>
                     <ul class="list-disc pl-5 space-y-2 mt-2">
-                        <li><strong>Resizing:</strong> You can drag the vertical divider between the left and right panels to adjust the width. You can also drag the bottom-right corner of the Right Panel to resize the entire app window!</li>
-                        <li><strong>Auto-Save:</strong> The app actively saves your entire layout—including custom tasks and drag-and-drop locations—every few seconds. If you accidentally close the window, just re-open it and your exact setup will be restored!</li>
+                        <li>Every task shows its <strong>working days</strong> in a small "d" box — click and change the number for this job. Section headers show the live day total.</li>
+                        <li>On Generate, the app builds a real schedule: tasks run back-to-back (weekends skipped) starting today, with stair and railing work as parallel tracks. The dates land on every task in Zoho Projects — check the Gantt view.</li>
+                        <li>Sections are <strong>chained in Zoho</strong> (finish-to-start), so each crew's work shows "waiting on" the previous section. Dates can still be dragged around in Zoho Projects afterward.</li>
                     </ul>
                 </div>
 
                 <div>
-                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">6. Finalizing & Pushing to CRM</h4>
-                    <p class="leading-relaxed">When the job is completely verified and all tasks and assignments are correct, click the <strong>Mark Closed Won</strong> button in the top left header. This will officially update the Deal in Zoho CRM and push all your configured tasks to the assigned team members!</p>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">4. Tailoring a Job</h4>
+                    <ul class="list-disc pl-5 space-y-2 mt-2">
+                        <li><strong>Rename</strong> any task by clicking its text (your rename sticks, even when toggling options). <strong>Delete</strong> tasks with the &times;, or whole sections with the trash can. <strong>Drag</strong> tasks to reorder or move them between sections.</li>
+                        <li><strong>Custom tasks</strong>: "Click to add custom task..." inside any section. <strong>Custom sections</strong>: "Click to add custom item..." on the Left Panel.</li>
+                        <li><strong>Needs Site Measure?</strong> (Construction Grade stairs) adds the Joel/Tom measure task only when checked.</li>
+                        <li><strong>Wood Components Add-On</strong> injects wood ordering, lathe work, and cap rail install — for welded jobs capped with wood.</li>
+                        <li><strong>Supply Only</strong> scope hides all site work (measures, installs) and adds a Customer Pickup section instead.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">5. Travel / ESA</h4>
+                    <p class="leading-relaxed">The <strong>Travel</strong> button (top left) pulls the job address from the Deal, auto-calculates one-way KMs, and flags ESA automatically past 50 KM. Saving adds a travel logistics note and task, and prefixes site tasks with <strong>[ESA]</strong> so crews see it.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">6. Production Notes &amp; @Mentions</h4>
+                    <p class="leading-relaxed">Write notes at the bottom of the Left Panel — type <strong>@</strong> plus a name to tag a teammate (they get a CRM notification). Use "Add Another Note" to create separate CRM notes. Notes are pushed to the Deal only after a successful handoff, so retries never duplicate them.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">7. Mark Closed Won</h4>
+                    <p class="leading-relaxed">Updates the Deal's stage, amount, and closing date in CRM. The Deal page behind the widget can't auto-refresh — <strong>hit F5</strong> to see the new stage. If you click Generate on a deal that isn't Closed Won yet, this popup appears automatically and continues the handoff after saving.</p>
+                </div>
+
+                <div>
+                    <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">8. Generate Production Run</h4>
+                    <ul class="list-disc pl-5 space-y-2 mt-2">
+                        <li>Creates the Zoho Project (from the production template), invites every assigned person, and builds all task lists, tasks, owners, dates, and section dependencies.</li>
+                        <li><strong>Safe to re-run:</strong> generating again on the same Deal re-uses the existing project and only fills in missing pieces — no duplicates.</li>
+                        <li><strong>"Handoff Incomplete"</strong> means the project exists but some tasks failed — it lists exactly which; click Generate again to retry just those.</li>
+                        <li>Your work <strong>auto-saves</strong> as a draft per Deal — close and reopen anytime. <strong>Reset</strong> (top right) clears the draft and starts fresh.</li>
+                        <li><strong>Copy Miro Code</strong> exports the blueprint as a color-coded Mermaid flowchart for Miro.</li>
+                    </ul>
                 </div>
 
             </div>
-            
+
             <div class="p-4 border-t border-slate-800 bg-slate-900/80 flex justify-end shrink-0">
                 <button type="button" onclick="document.getElementById('instructionsModal').classList.add('hidden')" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg font-semibold transition-colors text-sm">Got it</button>
             </div>
