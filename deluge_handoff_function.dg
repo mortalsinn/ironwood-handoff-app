@@ -13,7 +13,7 @@ portalId = "ironwoodstairs";
 // project. If the lookup fails we fail open and create normally.
 // =====================================
 newProjectId = "";
-isReusedProject = false;
+isReusedProject = "no";
 existingProjectsResponse = invokeurl
 [
 	url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/?index=1&range=200"
@@ -28,7 +28,7 @@ if(existingProjects != null)
 		if(newProjectId == "" && existingProj.get("name") == projectName)
 		{
 			newProjectId = existingProj.get("id_string");
-			isReusedProject = true;
+			isReusedProject = "yes";
 			info "IDEMPOTENCY: Re-using existing project " + newProjectId + " (" + projectName + ")";
 		}
 	}
@@ -54,7 +54,11 @@ if(newProjectId == "")
 	}
 	newProjectId = createResponse.get("projects").get(0).get("id_string");
 }
-if(newProjectId == null || newProjectId == "")
+if(newProjectId == null)
+{
+	newProjectId = "";
+}
+if(newProjectId == "")
 {
 	return "Error: Could not create Zoho Project.";
 }
@@ -127,11 +131,11 @@ for each  uid in uniqueUsers
 // (Deluge has no break; the listsReady flag skips finished attempts.)
 // =====================================
 existingListsMap = Map();
-listsReady = false;
-pollAttempts = {1,2,3,4,5};
+listsReady = "no";
+pollAttempts = "1,2,3,4,5".toList(",");
 for each  attempt in pollAttempts
 {
-	if(listsReady == false)
+	if(listsReady == "no")
 	{
 		existingListsResponse = invokeurl
 		[
@@ -146,11 +150,11 @@ for each  attempt in pollAttempts
 			{
 				existingListsMap.put(elist.get("name"),elist.get("id_string"));
 			}
-			listsReady = true;
+			listsReady = "yes";
 		}
 	}
 }
-if(listsReady == false)
+if(listsReady == "no")
 {
 	info "READINESS: task lists still not provisioned after polling; proceeding with fresh list creation.";
 }
@@ -276,7 +280,7 @@ if(failedItems.size() > 0)
 	}
 	return "Warning: The project is in Zoho Projects, but " + failedItems.size() + " task(s) could not be created: " + failedNames + ".";
 }
-if(isReusedProject)
+if(isReusedProject == "yes")
 {
 	return "Success: Existing project updated in Zoho Projects (" + createdCount + " task(s) created, " + skippedCount + " already existed).";
 }
