@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.5</title>
+    <title>Ironwood Handoff Form v11.6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -60,7 +60,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.5</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.6</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -394,7 +394,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.5 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.6 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -473,10 +473,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.5 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.6 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.6 - Material Order Heads-Up</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Order List on the Task:</strong> Tom's "Schedule Manufacturing / Order Materials" task now appends what to order based on the spindle infill selection &mdash; wood spindle blanks, metal spindles, and/or metal wall brackets. A reminder, not extra tasks.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.5 - Curved Heads-Up</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1763,7 +1769,14 @@
             { key: 'railing-production', abbrev: 'RM', title: 'Railing Manufacturing', list: 'Railing Production & Install', owner: 'TOM',
               when: s => s.railingGeneral,
               tasks: [
-                { name: 'Schedule Manufacturing / Order Materials', days: 2, phase: 'fab', owner: 'TOM' },
+                { name: 'Schedule Manufacturing / Order Materials', days: 2, phase: 'fab', owner: 'TOM',
+                  note: s => {
+                      const mats = [];
+                      if (s.spindleWood) mats.push('wood spindle blanks');
+                      if (s.spindleMetal) mats.push('metal spindles');
+                      if (s.spindleWall) mats.push('metal wall brackets');
+                      return mats.length ? ' (order: ' + mats.join(', ') + ')' : '';
+                  } },
                 { name: 'QA Materials', days: 1, phase: 'qa', owner: 'TOM' },
                 { name: 'Manufacture Railing Package (incl. Lathe Work)', days: 5, phase: 'fab', owner: 'TOM', curved: true },
                 { name: 'QA - Manufactured Materials', days: 1, phase: 'qa', owner: 'TOM' }
@@ -1896,12 +1909,13 @@
             const tasksHtml = arch.tasks.map((t, i) => {
                 const taskId = `task-arch-${arch.key}-${i}`;
                 const esaPrefix = ((t.esa && state.esa) ? '[ESA] ' : '') + ((t.curved && state.railCurved) ? '[CURVED] ' : '');
+                const noteSuffix = t.note ? t.note(state) : '';
                 return `
                 <li data-ti="${i}" data-phase="${t.phase}" data-days="${t.days || 1}"${t.list ? ` data-list="${t.list}"` : ''} class="task-phase-${t.phase} flex items-center group relative">
                     <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
                     </span>
-                    <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${escapeHtml(esaPrefix + t.name)}</span>
+                    <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${escapeHtml(esaPrefix + t.name + noteSuffix)}</span>
                     <span class="task-days-wrap opacity-70 group-hover:opacity-100 transition-opacity" title="Working days for this task (drives the project timeline)">
                         <input type="number" min="1" max="99" value="${t.days || 1}" class="task-days-input text-[9px] bg-slate-900 border border-slate-700 rounded px-0.5 py-0 text-slate-300 focus:outline-none focus:border-sky-500">
                         <span class="text-[8px] text-slate-500 font-bold uppercase">d</span>
@@ -2033,7 +2047,7 @@
                     li.classList.toggle('hidden', !visible);
                     if (!li.hasAttribute('data-user-edited')) {
                         const span = li.querySelector('.editable-task');
-                        if (span) span.textContent = ((t.esa && state.esa) ? '[ESA] ' : '') + ((t.curved && state.railCurved) ? '[CURVED] ' : '') + t.name;
+                        if (span) span.textContent = ((t.esa && state.esa) ? '[ESA] ' : '') + ((t.curved && state.railCurved) ? '[CURVED] ' : '') + t.name + (t.note ? t.note(state) : '');
                     }
                 });
                 // A block with no visible tasks (e.g. an install-only block on a
