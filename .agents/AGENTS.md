@@ -52,6 +52,17 @@
 When providing code updates or modifications for external scripts that the user must copy and paste manually (e.g., Zoho Deluge functions, external APIs), **always provide the full, complete code block** containing the entire script with the new updates incorporated. 
 Do not provide partial snippets or diffs (e.g., "add this line here"). The user should be able to Ctrl+A and Ctrl+C the entire block to replace their existing code instantly.
 
+## Deluge Parser Constraints (learned 2026-07-28)
+The Zoho CRM function editor rejected a script with "Improper code format" until ALL of the following were removed. When writing Deluge, stick to constructs already proven in this repo's `deluge_handoff_function.dg`:
+- **No `variable = null;` assignments** — use an empty string `""` sentinel and compare with `== ""` (comparing an API result `== null` is fine; assigning null is not).
+- **No boolean flag assignments** (`flag = false;`) — use string flags: `flag = "no";` / `flag = "yes";`.
+- **No collection literals in assignments** (`list = {1,2,3};`) — build lists with `"1,2,3".toList(",")` or `List()` + `.add()`.
+- **No bare `!variable` negation** — write `variable == "no"` / explicit comparisons (`!list.contains(x)` on a method call IS fine).
+- **Avoid `||`** — restructure into sequential ifs; `&&` is proven fine.
+- **ASCII only** — no em-dashes or smart quotes anywhere, including comments.
+- **No `break`/`while`** — use a for-each over a fixed list with a guard flag for retry loops.
+- Paste over the existing standalone function; never create a new function (the widget calls it by name via ZOHO.CRM.FUNCTIONS.execute).
+
 ## v9.0 Architecture Contracts (do not regress these)
 1. **Event delegation on `#projectPreviewList`**: All "+ add task" buttons and contenteditable task edits are handled by ONE delegated listener on the persistent container. Never bind per-button listeners on preview-panel content — the auto-save snapshot (`previewListHTML` via innerHTML) destroys element listeners on restore, delegation survives. Inline `onclick` attributes are still valid inside the snapshot (they serialize) — that's why openUserModal/delete buttons keep them.
 2. **`window.triggerAutoSave`**: intentionally exposed globally. Inline onclick handlers execute in global scope, so a closure-only `triggerAutoSave` silently no-ops there (this was a real bug pre-v9.0).
