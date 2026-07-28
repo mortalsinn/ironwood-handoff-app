@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v10.3</title>
+    <title>Ironwood Handoff Form v11.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -54,7 +54,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v10.3</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.0</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -388,7 +388,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v10.3 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.0 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -467,10 +467,19 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v10.3 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.0 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.0 - The Timeline Update</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Editable Task Durations:</strong> Every task now has a small "d" field showing its default working days &mdash; click and change it before generating. Each section header shows its live total.</li>
+                            <li><strong class="text-slate-300">Real Schedule in Zoho:</strong> On Generate, the widget computes start/end dates for every task (weekends skipped, anchored on today; stair and railing lanes run in parallel) and pushes them to Zoho Projects &mdash; the Gantt becomes a production calendar on day one.</li>
+                            <li><strong class="text-slate-300">Dependency Chain:</strong> Each section is linked finish-to-start to the previous one in Zoho Projects, so tasks show "waiting on" context and slippage can shift the downstream schedule.</li>
+                            <li><strong class="text-slate-300">Heads up:</strong> Team members can enable "predecessor completed" notifications in their Zoho Projects personal settings to get a ping when their section is up.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v10.3 - Railing Template Restructure</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -938,6 +947,21 @@
         // won't recreate them until their driving checkbox is toggled off and on.
         const dismissedArchetypes = new Set();
 
+        // Working-day date helpers for the task timeline (weekends skipped)
+        const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
+        const nextBusinessDay = (date) => {
+            const d = new Date(date);
+            do { d.setDate(d.getDate() + 1); } while (isWeekend(d));
+            return d;
+        };
+        const addBusinessDays = (date, n) => {
+            let d = new Date(date);
+            while (isWeekend(d)) d = nextBusinessDay(d);
+            for (let i = 0; i < n; i++) d = nextBusinessDay(d);
+            return d;
+        };
+        const fmtProjectsDate = (d) => `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}-${d.getFullYear()}`;
+
         // Escape user-supplied text before injecting it into innerHTML templates
         const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
@@ -1049,14 +1073,19 @@
                 const li = document.createElement('li');
                 li.className = "task-custom flex items-center group relative";
                 li.setAttribute('data-list', blockEl.getAttribute('data-default-list') || "Railing Production & Install");
+                li.setAttribute('data-days', '1');
                 const taskId = 'task-inline-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
                 li.innerHTML = `
                     <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
                     </span>
                     <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${escapeHtml(displayVal)}</span>
+                    <span class="ml-auto mr-1 flex items-center gap-0.5 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" title="Working days for this task (drives the project timeline)">
+                        <input type="number" min="1" max="99" value="1" class="task-days-input w-8 text-center text-[9px] bg-slate-900 border border-slate-700 rounded px-0.5 py-0 text-slate-300 focus:outline-none focus:border-sky-500">
+                        <span class="text-[8px] text-slate-500 font-bold uppercase">d</span>
+                    </span>
                     <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
-                    <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
+                    <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
                         <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     </button>
                     <span class="delete-btn" onclick="this.parentElement.remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();">&times;</span>
@@ -1083,6 +1112,16 @@
                 if (span) {
                     const li = span.closest('li');
                     if (li) li.setAttribute('data-user-edited', '1');
+                    triggerAutoSave();
+                }
+                // Editable working-day fields: sync to data-days (payload source of
+                // truth) and to the value attribute (so draft snapshots keep it).
+                if (e.target && e.target.classList && e.target.classList.contains('task-days-input')) {
+                    const v = Math.max(1, Math.min(99, parseInt(e.target.value, 10) || 1));
+                    const li = e.target.closest('li');
+                    if (li) li.setAttribute('data-days', String(v));
+                    e.target.setAttribute('value', String(v));
+                    updateBlockDayTotals();
                     triggerAutoSave();
                 }
             });
@@ -1233,7 +1272,7 @@
                 });
 
                 const draft = {
-                    schema: 10,
+                    schema: 11,
                     form: formState,
                     assignees: assignees,
                     timestamp: new Date().getTime(),
@@ -1344,7 +1383,7 @@
                     try {
                         const draft = JSON.parse(draftStr);
                         const formState = draft.form || {};
-                        const isV10Draft = (draft.schema || 0) >= 10;
+                        const isV10Draft = (draft.schema || 0) >= 11;
 
                         // 1. Restore Custom Options Checkboxes (Left Side)
                         // Dedup is scoped to custom-option inputs only, so a custom item
@@ -1424,7 +1463,7 @@
                                         const taskId = 'task-inline-legacy-' + idx + '-' + Math.floor(Math.random()*1000);
                                         const btnHTML = `
                                             <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
-                                            <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
+                                            <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
                                                 <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                                             </button>
                                         `;
@@ -1742,98 +1781,98 @@
             { key: 'railing-setup', abbrev: 'RD', title: 'Railing Setup & Design (Sales)', list: 'Railing Production & Install',
               when: s => s.railingGeneral,
               tasks: [
-                { name: 'Railing Site Measure', phase: 'setup', site: true, esa: true },
-                { name: 'Create Railing Site Drawing', phase: 'setup' },
-                { name: 'Create Railing Take Off Sheet', phase: 'setup' },
-                { name: 'Existing Railing Removal', phase: 'install', site: true, cond: s => s.isReno }
+                { name: 'Railing Site Measure', days: 1, phase: 'setup', site: true, esa: true },
+                { name: 'Create Railing Site Drawing', days: 1, phase: 'setup' },
+                { name: 'Create Railing Take Off Sheet', days: 1, phase: 'setup' },
+                { name: 'Existing Railing Removal', days: 1, phase: 'install', site: true, cond: s => s.isReno }
               ] },
             { key: 'spec-qa', abbrev: 'QS', title: 'QA - Spec Package', list: 'Railing Production & Install', owner: 'JOEL',
               when: s => s.railingGeneral,
               tasks: [
-                { name: 'QA Spec Package (Measure, Drawing, Take Off)', phase: 'qa', owner: 'JOEL' }
+                { name: 'QA Spec Package (Measure, Drawing, Take Off)', days: 1, phase: 'qa', owner: 'JOEL' }
               ] },
             { key: 'railing-production', abbrev: 'RM', title: 'Railing Scheduling & Manufacturing', list: 'Railing Production & Install', owner: 'TOM',
               when: s => s.railingGeneral,
               tasks: [
-                { name: 'Schedule Install', phase: 'setup', owner: 'MATT', site: true },
-                { name: 'Schedule Manufacturing / Order Materials', phase: 'fab', owner: 'TOM' },
-                { name: 'QA Materials', phase: 'qa', owner: 'TOM' },
-                { name: 'Manufacture Railing Package (incl. Lathe Work)', phase: 'fab', owner: 'TOM' },
-                { name: 'QA - Manufactured Materials', phase: 'qa' }
+                { name: 'Schedule Install', days: 1, phase: 'setup', owner: 'MATT', site: true },
+                { name: 'Schedule Manufacturing / Order Materials', days: 2, phase: 'fab', owner: 'TOM' },
+                { name: 'QA Materials', days: 1, phase: 'qa', owner: 'TOM' },
+                { name: 'Manufacture Railing Package (incl. Lathe Work)', days: 5, phase: 'fab', owner: 'TOM' },
+                { name: 'QA - Manufactured Materials', days: 1, phase: 'qa' }
               ] },
             { key: 'spindles-install', abbrev: 'SP', title: 'Railing Install', list: 'Railing Production & Install', owner: 'JOEL',
               when: s => s.spindlesInstall,
               tasks: [
-                { name: 'Railing Installation', phase: 'install', site: true, esa: true },
-                { name: 'QA - Install', phase: 'qa', owner: 'JOEL', site: true },
-                { name: 'Turn Over to Customer', phase: 'wrap', site: true }
+                { name: 'Railing Installation', days: 2, phase: 'install', site: true, esa: true },
+                { name: 'QA - Install', days: 1, phase: 'qa', owner: 'JOEL', site: true },
+                { name: 'Turn Over to Customer', days: 1, phase: 'wrap', site: true }
               ] },
             { key: 'glass', abbrev: 'GL', title: 'Railing - Glass', list: 'Railing Production & Install', owner: 'JOEL',
               when: s => s.spindleGlass,
               tasks: [
-                { name: 'Install Railing Framework', phase: 'install', site: true, esa: true },
-                { name: 'QC Frame, Template Glass, Draw / Order Glass', phase: 'qa', site: true },
-                { name: 'Install Glass Panels', phase: 'install', site: true, esa: true }
+                { name: 'Install Railing Framework', days: 1, phase: 'install', site: true, esa: true },
+                { name: 'QC Frame, Template Glass, Draw / Order Glass', days: 2, phase: 'qa', site: true },
+                { name: 'Install Glass Panels', days: 1, phase: 'install', site: true, esa: true }
               ] },
             { key: 'welding', abbrev: 'CW', title: 'Railing - Custom Welding', list: 'Railing Production & Install', owner: 'JEFFERY',
               when: s => s.welding,
               tasks: [
-                { name: 'Job Proof', phase: 'setup', owner: 'JEFFERY' },
-                { name: 'Metal Template Measure', phase: 'setup', site: true, esa: true },
-                { name: 'Order Custom Metal / Steel', phase: 'fab', owner: 'JEFFERY' },
-                { name: 'Schedule Materials Delivery', phase: 'fab', owner: 'JEFFERY' },
-                { name: 'Fabricate Welded Structure', phase: 'fab' },
-                { name: 'QA - Weld / Fabrication Check', phase: 'qa' },
-                { name: 'Send to Powder Coating', phase: 'fab', owner: 'JEFFERY' },
-                { name: 'Schedule Coating Pick Up', phase: 'fab', owner: 'JEFFERY' },
-                { name: 'Powder Coat QA - at the Coaters', phase: 'qa', owner: 'JEFFERY' },
-                { name: 'Install Welded Railing', phase: 'install', owner: 'JOEL', site: true, esa: true }
+                { name: 'Job Proof', days: 2, phase: 'setup', owner: 'JEFFERY' },
+                { name: 'Metal Template Measure', days: 1, phase: 'setup', site: true, esa: true },
+                { name: 'Order Custom Metal / Steel', days: 2, phase: 'fab', owner: 'JEFFERY' },
+                { name: 'Schedule Materials Delivery', days: 2, phase: 'fab', owner: 'JEFFERY' },
+                { name: 'Fabricate Welded Structure', days: 5, phase: 'fab' },
+                { name: 'QA - Weld / Fabrication Check', days: 1, phase: 'qa' },
+                { name: 'Send to Powder Coating', days: 5, phase: 'fab', owner: 'JEFFERY' },
+                { name: 'Schedule Coating Pick Up', days: 1, phase: 'fab', owner: 'JEFFERY' },
+                { name: 'Powder Coat QA - at the Coaters', days: 1, phase: 'qa', owner: 'JEFFERY' },
+                { name: 'Install Welded Railing', days: 2, phase: 'install', owner: 'JOEL', site: true, esa: true }
               ] },
             { key: 'wood-addon', abbrev: 'WD', title: 'Wood Components Add-On', list: 'Railing Production & Install', owner: 'TOM',
               when: s => s.woodAddon,
               tasks: [
-                { name: 'Order Wood Components', phase: 'fab', owner: 'TOM' },
-                { name: 'Lathe / Manufacture Wood Components', phase: 'fab' },
-                { name: 'Install Wood Cap Rail', phase: 'install', site: true, esa: true }
+                { name: 'Order Wood Components', days: 2, phase: 'fab', owner: 'TOM' },
+                { name: 'Lathe / Manufacture Wood Components', days: 3, phase: 'fab' },
+                { name: 'Install Wood Cap Rail', days: 1, phase: 'install', site: true, esa: true }
               ] },
             { key: 'const-stair', abbrev: 'CG', title: 'Construction Grade Stairs', list: 'Stair Production & Install', owner: 'MATT',
               when: s => s.constStair,
               tasks: [
-                { name: 'Schedule Production & Install', phase: 'setup', owner: 'MATT' },
-                { name: 'Complete Site Measure', phase: 'setup', owner: 'JOEL', site: true, esa: true, cond: s => s.needsMeasure },
-                { name: 'Existing Stair Removal', phase: 'install', site: true, cond: s => s.isReno },
-                { name: 'Fill Spec Sheet / Takeoff (Verify Sheet Name with Tom)', phase: 'setup', owner: 'TOM' },
-                { name: 'QA Check - Blueprints / Specs', phase: 'qa' },
-                { name: 'Manufacture Stair Package & Parts', phase: 'fab' },
-                { name: 'QA Check - Package', phase: 'qa' },
-                { name: 'Const. Stair Drop Off Onsite', phase: 'install', site: true, esa: true },
-                { name: 'Upload Drop-off Photo (Theft Documentation)', phase: 'install', site: true }
+                { name: 'Schedule Production & Install', days: 1, phase: 'setup', owner: 'MATT' },
+                { name: 'Complete Site Measure', days: 1, phase: 'setup', owner: 'JOEL', site: true, esa: true, cond: s => s.needsMeasure },
+                { name: 'Existing Stair Removal', days: 1, phase: 'install', site: true, cond: s => s.isReno },
+                { name: 'Fill Spec Sheet / Takeoff (Verify Sheet Name with Tom)', days: 1, phase: 'setup', owner: 'TOM' },
+                { name: 'QA Check - Blueprints / Specs', days: 1, phase: 'qa' },
+                { name: 'Manufacture Stair Package & Parts', days: 5, phase: 'fab' },
+                { name: 'QA Check - Package', days: 1, phase: 'qa' },
+                { name: 'Const. Stair Drop Off Onsite', days: 1, phase: 'install', site: true, esa: true },
+                { name: 'Upload Drop-off Photo (Theft Documentation)', days: 1, phase: 'install', site: true }
               ] },
             { key: 'finished-stair', abbrev: 'FS', title: 'Finished Stair', list: 'Stair Production & Install', owner: 'TOM',
               when: s => s.finStair,
               tasks: [
-                { name: 'Fill Out Stair Spec Sheet', phase: 'setup', owner: 'SALES' },
-                { name: 'Create Stair Drawing', phase: 'setup' },
-                { name: 'Create Stair Take Off Sheet', phase: 'setup' },
-                { name: 'Existing Stair Removal', phase: 'install', site: true, cond: s => s.isReno },
-                { name: 'Order Finished Stair Materials (Stair Kit)', phase: 'fab', owner: 'TOM' },
-                { name: 'Schedule Delivery & Receiving', phase: 'fab' },
-                { name: 'Stair Assembly - Manufacture Package & Parts', phase: 'fab' },
-                { name: 'Site Measure + Schedule Install', phase: 'install', owner: 'TOM', site: true, esa: true },
-                { name: 'QA Inspection - Pass / Fail', phase: 'qa' },
-                { name: 'Finished Stair Installation', phase: 'install', site: true, esa: true }
+                { name: 'Fill Out Stair Spec Sheet', days: 1, phase: 'setup', owner: 'SALES' },
+                { name: 'Create Stair Drawing', days: 1, phase: 'setup' },
+                { name: 'Create Stair Take Off Sheet', days: 1, phase: 'setup' },
+                { name: 'Existing Stair Removal', days: 1, phase: 'install', site: true, cond: s => s.isReno },
+                { name: 'Order Finished Stair Materials (Stair Kit)', days: 2, phase: 'fab', owner: 'TOM' },
+                { name: 'Schedule Delivery & Receiving', days: 2, phase: 'fab' },
+                { name: 'Stair Assembly - Manufacture Package & Parts', days: 5, phase: 'fab' },
+                { name: 'Site Measure + Schedule Install', days: 1, phase: 'install', owner: 'TOM', site: true, esa: true },
+                { name: 'QA Inspection - Pass / Fail', days: 1, phase: 'qa' },
+                { name: 'Finished Stair Installation', days: 2, phase: 'install', site: true, esa: true }
               ] },
             { key: 'pickup', abbrev: 'PU', title: 'Customer Pickup', list: 'Railing Production & Install', owner: 'TOM',
               when: s => s.supplyOnly && s.anyArchetype,
               tasks: [
-                { name: 'Final QA Check', phase: 'qa' },
-                { name: 'Package for Customer Pickup', phase: 'wrap' },
-                { name: 'Customer Pickup Complete', phase: 'wrap' }
+                { name: 'Final QA Check', days: 1, phase: 'qa' },
+                { name: 'Package for Customer Pickup', days: 1, phase: 'wrap' },
+                { name: 'Customer Pickup Complete', days: 1, phase: 'wrap' }
               ] },
             { key: 'accounting', abbrev: 'AC', title: 'Accounting Close Out', list: 'Railing Production & Install', owner: 'JEFFERY',
               when: s => s.anyArchetype,
               tasks: [
-                { name: 'Job & Invoice - Zoho Books Close Out', phase: 'wrap', owner: 'JEFFERY' }
+                { name: 'Job & Invoice - Zoho Books Close Out', days: 1, phase: 'wrap', owner: 'JEFFERY' }
               ] }
         ];
 
@@ -1890,13 +1929,17 @@
                 const taskId = `task-arch-${arch.key}-${i}`;
                 const esaPrefix = (t.esa && state.esa) ? '[ESA] ' : '';
                 return `
-                <li data-ti="${i}" data-phase="${t.phase}"${t.list ? ` data-list="${t.list}"` : ''} class="task-phase-${t.phase} flex items-center group relative">
+                <li data-ti="${i}" data-phase="${t.phase}" data-days="${t.days || 1}"${t.list ? ` data-list="${t.list}"` : ''} class="task-phase-${t.phase} flex items-center group relative">
                     <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
                     </span>
                     <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${escapeHtml(esaPrefix + t.name)}</span>
+                    <span class="ml-auto mr-1 flex items-center gap-0.5 flex-shrink-0 opacity-60 group-hover:opacity-100 transition-opacity" title="Working days for this task (drives the project timeline)">
+                        <input type="number" min="1" max="99" value="${t.days || 1}" class="task-days-input w-8 text-center text-[9px] bg-slate-900 border border-slate-700 rounded px-0.5 py-0 text-slate-300 focus:outline-none focus:border-sky-500">
+                        <span class="text-[8px] text-slate-500 font-bold uppercase">d</span>
+                    </span>
                     <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid=""${t.owner ? ` data-role="${t.owner}"` : ''}>
-                    <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
+                    <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
                         <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                     </button>
                     <span class="delete-btn" onclick="this.parentElement.remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();">&times;</span>
@@ -1955,6 +1998,27 @@
         }
 
         window.dismissArchetype = (key) => { dismissedArchetypes.add(key); };
+
+        // Shows each section's total working days next to its title, live.
+        function updateBlockDayTotals() {
+            document.querySelectorAll('#projectPreviewList > div').forEach(block => {
+                let badge = block.querySelector('.block-days-total');
+                const titleEl = block.querySelector('p');
+                if (!titleEl) return;
+                if (!badge) {
+                    badge = document.createElement('span');
+                    badge.className = 'block-days-total text-[9px] font-bold text-sky-400/80 bg-sky-500/10 border border-sky-500/20 rounded px-1.5 py-0.5 ml-1';
+                    badge.title = 'Total working days in this section (edit the "d" field on any task)';
+                    titleEl.insertAdjacentElement('afterend', badge);
+                }
+                let total = 0;
+                block.querySelectorAll('li:not(.hidden)').forEach(li => {
+                    total += parseInt(li.getAttribute('data-days'), 10) || 1;
+                });
+                badge.textContent = total + 'd';
+                badge.classList.toggle('hidden', total === 0);
+            });
+        }
 
         const updateBlueprintPreview = () => {
             const state = getSelectionState();
@@ -2019,6 +2083,8 @@
                 let currentText = el.textContent.replace(/^\[Supply Only\] /, '').replace(/^\[Supply & Install\] /, '');
                 el.textContent = scopePrefix + currentText;
             });
+
+            updateBlockDayTotals();
         };
 
         // One delegated listener re-derives the blueprint for every checkbox/radio in
@@ -2054,9 +2120,24 @@
             };
 
             const milestones = [];
+            // Timeline: each task list is its own lane (stair and railing lanes run
+            // in parallel); tasks within a lane run sequentially by working days,
+            // anchored on today. chain_group marks section boundaries so the
+            // backend can wire block-to-block dependencies.
+            const listCursors = {};
+            const laneStart = (list) => {
+                if (!listCursors[list]) {
+                    let d = new Date();
+                    while (isWeekend(d)) d = nextBusinessDay(d);
+                    listCursors[list] = d;
+                }
+                return listCursors[list];
+            };
+            let chainGroupIndex = -1;
             const blocks = document.querySelectorAll('#projectPreviewList > div');
             blocks.forEach(block => {
                 if (!block.classList.contains('hidden')) {
+                    chainGroupIndex++;
                     const blockDefaultList = block.getAttribute('data-default-list') || "Railing Production & Install";
                     
                     const titleEl = block.querySelector('p');
@@ -2094,18 +2175,31 @@
                                 finalAssigneeZuid = taskAssigneeInput.getAttribute('data-zuid') || "";
                             }
                             
-                            // Legacy task_lists
+                            // Working-day schedule for this task within its lane
+                            const taskDays = parseInt(item.getAttribute('data-days'), 10) || 1;
+                            const startDate = laneStart(targetList);
+                            const endDate = addBusinessDays(startDate, taskDays - 1);
+                            listCursors[targetList] = nextBusinessDay(endDate);
+
                             task_lists[targetList].push({
                                 "name": taskName,
                                 "person_responsible": finalAssigneeId === "UNASSIGNED" ? "" : finalAssigneeId,
-                                "zuid": finalAssigneeZuid
+                                "zuid": finalAssigneeZuid,
+                                "start_date": fmtProjectsDate(startDate),
+                                "end_date": fmtProjectsDate(endDate),
+                                "days": taskDays,
+                                "chain_group": chainGroupIndex
                             });
-                            
+
                             // New milestones logic
                             milestoneTasks.push({
                                 "name": taskName,
                                 "person_responsible": finalAssigneeId === "UNASSIGNED" ? "" : finalAssigneeId,
-                                "zuid": finalAssigneeZuid
+                                "zuid": finalAssigneeZuid,
+                                "start_date": fmtProjectsDate(startDate),
+                                "end_date": fmtProjectsDate(endDate),
+                                "days": taskDays,
+                                "chain_group": chainGroupIndex
                             });
                         }
                     });

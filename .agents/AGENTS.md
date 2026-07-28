@@ -72,6 +72,13 @@ The right-panel blueprint is generated from `ARCHETYPES` in index.html — the t
 - Drafts carry `schema: 10`; pre-v10 drafts skip the right-panel snapshot and regenerate fresh.
 - Every job ends with the Accounting Close Out block (Jeffery / Zoho Books) — do not remove.
 
+## v11.0 Timeline & Dependencies
+- Every archetype task has `days: N` (default working days) rendered as an editable `.task-days-input` per task; `data-days` on the `<li>` is the payload source of truth (the input handler syncs both it and the `value` attribute so snapshots keep edits). Section headers show a live `.block-days-total` badge.
+- On Generate the widget computes start/end dates per task: each Zoho task list is a parallel lane, tasks sequential within the lane by working days (weekends skipped), anchored on the generation date, format MM-dd-yyyy. `chain_group` (per visible block) marks section boundaries.
+- The Deluge script passes start_date/end_date on task creation and wires finish-to-start dependencies at chain_group boundaries using captured task ids (existing-task fetch captures name→id_string so retries can wire too). Dependency calls are FAIL-OPEN with two endpoint attempts (task update with predecessor_ids, then /dependency/) — verify which one the portal accepts via execution logs on first live run.
+- Drafts carry `schema: 11`; older snapshots regenerate fresh.
+- Zoho admin side: portal dependency mode (strict vs flexible) and per-user "predecessor completed" notifications are configured in Zoho Projects, not the widget.
+
 ## v9.0 Architecture Contracts (do not regress these)
 1. **Event delegation on `#projectPreviewList`**: All "+ add task" buttons and contenteditable task edits are handled by ONE delegated listener on the persistent container. Never bind per-button listeners on preview-panel content — the auto-save snapshot (`previewListHTML` via innerHTML) destroys element listeners on restore, delegation survives. Inline `onclick` attributes are still valid inside the snapshot (they serialize) — that's why openUserModal/delete buttons keep them.
 2. **`window.triggerAutoSave`**: intentionally exposed globally. Inline onclick handlers execute in global scope, so a closure-only `triggerAutoSave` silently no-ops there (this was a real bug pre-v9.0).

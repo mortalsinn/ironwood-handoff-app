@@ -164,6 +164,7 @@ if(listsReady == "no")
 // instead of duplicating them.
 // =====================================
 existingTaskNames = List();
+existingTaskIdsMap = Map();
 existingTasksResponse = invokeurl
 [
 	url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/?index=1&range=200"
@@ -176,6 +177,7 @@ if(existingTasks != null)
 	for each  existingTask in existingTasks
 	{
 		existingTaskNames.add(existingTask.get("name"));
+		existingTaskIdsMap.put(existingTask.get("name"),existingTask.get("id_string"));
 	}
 }
 // =====================================
@@ -221,13 +223,20 @@ for each  listName in keys
 		else
 		{
 			taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
+			prevTaskId = "";
+			prevChainGroup = -999;
 			for each  taskObj in tasksInList
 			{
 				taskName = taskObj.get("name");
+				thisTaskId = "";
 				if(existingTaskNames.contains(taskName))
 				{
 					skippedCount = skippedCount + 1;
 					info "SKIPPED (already exists): " + taskName;
+					if(existingTaskIdsMap.get(taskName) != null)
+					{
+						thisTaskId = existingTaskIdsMap.get(taskName);
+					}
 				}
 				else
 				{
@@ -236,6 +245,18 @@ for each  listName in keys
 					if(taskObj.get("person_responsible") != "" && taskObj.get("person_responsible") != null)
 					{
 						taskParams.put("person_responsible",taskObj.get("person_responsible"));
+					}
+					// =====================================
+					// TIMELINE: working-day schedule computed by the widget
+					// (MM-dd-yyyy). Drives the Gantt in Zoho Projects.
+					// =====================================
+					if(taskObj.get("start_date") != null && taskObj.get("start_date") != "")
+					{
+						taskParams.put("start_date",taskObj.get("start_date"));
+					}
+					if(taskObj.get("end_date") != null && taskObj.get("end_date") != "")
+					{
+						taskParams.put("end_date",taskObj.get("end_date"));
 					}
 					taskParams.put("tasklist_id",createdTaskListId);
 					taskResponse = invokeurl
@@ -253,7 +274,50 @@ for each  listName in keys
 					else
 					{
 						createdCount = createdCount + 1;
+						thisTaskId = taskResponse.get("tasks").get(0).get("id_string");
 					}
+				}
+				// =====================================
+				// DEPENDENCIES: chain section boundaries (finish-to-start).
+				// chain_group marks the widget section each task came from;
+				// when it changes, the new section waits on the previous one.
+				// Fail-open: a failed dependency call never fails the handoff.
+				// =====================================
+				thisChainGroup = -999;
+				if(taskObj.get("chain_group") != null)
+				{
+					thisChainGroup = taskObj.get("chain_group");
+				}
+				if(thisTaskId != "")
+				{
+					if(prevTaskId != "" && thisChainGroup != -999 && prevChainGroup != -999 && thisChainGroup != prevChainGroup)
+					{
+						depParams = Map();
+						depParams.put("predecessor_ids",prevTaskId);
+						depResponse = invokeurl
+						[
+							url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/" + thisTaskId + "/"
+							type :POST
+							parameters:depParams
+							connection:"zoho_projects_connection"
+						];
+						info "DEPENDENCY UPDATE (" + prevTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
+						if(depResponse.get("tasks") == null)
+						{
+							depAltParams = Map();
+							depAltParams.put("predecessor_ids",prevTaskId);
+							depAltResponse = invokeurl
+							[
+								url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/" + thisTaskId + "/dependency/"
+								type :POST
+								parameters:depAltParams
+								connection:"zoho_projects_connection"
+							];
+							info "DEPENDENCY ALT (" + prevTaskId + " -> " + thisTaskId + ") RESULT: " + depAltResponse.toString();
+						}
+					}
+					prevTaskId = thisTaskId;
+					prevChainGroup = thisChainGroup;
 				}
 			}
 		}
