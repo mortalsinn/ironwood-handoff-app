@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v8.35</title>
+    <title>Ironwood Handoff Form v9.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         .sortable-list li { cursor: grab; position: relative; padding-right: 20px; }
@@ -48,7 +48,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v8.35</h1>>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v9.0</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -188,7 +188,7 @@
                             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">4. Finished Stairs</h3>
                         </div>
                         
-                        <div class="bg-slate-800/30 p-3 rounded-xl border border-slate-700/50 space-y-3">
+                        <div id="stairCustomContainer" class="bg-slate-800/30 p-3 rounded-xl border border-slate-700/50 space-y-3">
                             <div>
                                 <p class="text-[9px] font-bold text-violet-500/70 uppercase tracking-widest mb-1.5 ml-1">Step 1. Select Shape</p>
                                 <div id="stairFinShapeGrid" class="grid grid-cols-2 gap-2">
@@ -266,7 +266,7 @@
                             </div>
                         </details>
                         
-                        <div class="pt-3 mt-1 border-t border-slate-700/50">
+                        <div id="spindleCustomContainer" class="pt-3 mt-1 border-t border-slate-700/50">
                             <h4 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">Spindle / Infill Material</h4>
                             <div id="spindleCustomGrid" class="grid grid-cols-2 gap-2">
                                 <label class="flex items-center p-2 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2">
@@ -664,7 +664,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v8.35 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v9.0 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -729,7 +729,7 @@
             <div class="w-20 h-20 bg-rose-500/20 rounded-full flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(225,29,72,0.3)]">
                 <svg class="w-10 h-10 text-rose-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
             </div>
-            <h3 class="text-3xl font-black mb-2 tracking-tight">Handoff Failed</h3>
+            <h3 id="errorOverlayTitle" class="text-3xl font-black mb-2 tracking-tight">Handoff Failed</h3>
             <p id="errorMessageDetails" class="text-slate-400 text-center max-w-md text-sm mb-6 break-words px-8">An error occurred while connecting to Zoho Projects.</p>
             <button type="button" onclick="document.getElementById('errorOverlay').classList.add('hidden')" class="px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm font-bold transition-colors border border-slate-700">Dismiss</button>
         </div>
@@ -743,10 +743,25 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v8.35 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v9.0 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v9.0 - The Reliability Overhaul</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Custom Blocks Fixed:</strong> Adding a custom task inside a user-created custom block no longer fails silently — all "add task" buttons now share one bulletproof handler that also survives draft restores.</li>
+                            <li><strong class="text-slate-300">@Mentions Hardened:</strong> The mention dropdown no longer crashes when the CRM user list hasn't loaded; it now falls back to the live Zoho Projects roster.</li>
+                            <li><strong class="text-slate-300">No More Duplicate Notes:</strong> Production notes are now pushed to the Deal only after the project generates successfully, so a failed handoff retry no longer duplicates notes in CRM.</li>
+                            <li><strong class="text-slate-300">Duplicate-Project Protection:</strong> The backend now detects an existing "&lt;Deal&gt; - Production" project and re-uses it, only creating missing task lists and tasks. Retrying a partial handoff fills in the gaps instead of creating a second project.</li>
+                            <li><strong class="text-slate-300">Honest Error Reporting:</strong> If the project is created but some tasks fail, you now get a "Handoff Incomplete" warning listing exactly which tasks failed, instead of a false success.</li>
+                            <li><strong class="text-slate-300">Third-Party Delay Removed:</strong> Replaced the external postman-echo delay with a real readiness poll against Zoho Projects task lists.</li>
+                            <li><strong class="text-slate-300">Custom-Only Blueprints:</strong> Selecting only a custom item now correctly activates the preview and the Generate button.</li>
+                            <li><strong class="text-slate-300">Deletes Now Auto-Save:</strong> Removing tasks or whole blocks reliably triggers the auto-save (previously it silently didn't).</li>
+                            <li><strong class="text-slate-300">Edits Respected:</strong> Manually renamed tasks are no longer overwritten by ESA/option toggles, and inline edits now auto-save.</li>
+                            <li><strong class="text-slate-300">Stability:</strong> Pinned SortableJS to a fixed version, removed double drag-and-drop bindings after draft restore, fixed custom-item restore collisions, and sanitized custom names against layout-breaking characters.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v8.35 - Line-Level Assignments</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1158,6 +1173,41 @@
         let crmUsers = [];
         let dynamicProjectUsers = [];
 
+        // Escape user-supplied text before injecting it into innerHTML templates
+        const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+        // Strip characters that would break inline onclick attributes (used only for modal context labels)
+        const sanitizeLabel = (s) => String(s).replace(/['"<>\\]/g, '');
+
+        // Idempotent SortableJS binding: destroys any previous instance on the element
+        // before creating a new one, so draft restores never double-bind drag handlers.
+        const initSortable = (el, options) => {
+            if (!el) return null;
+            if (el._sortable) {
+                try { el._sortable.destroy(); } catch (e) { /* detached element */ }
+            }
+            el._sortable = new Sortable(el, options);
+            return el._sortable;
+        };
+
+        const bindAllSortables = () => {
+            initSortable(document.getElementById('projectPreviewList'), {
+                animation: 150,
+                handle: '.block-handle',
+                ghostClass: 'opacity-50',
+                onEnd: () => { if (typeof triggerAutoSave === 'function') triggerAutoSave(); }
+            });
+            document.querySelectorAll('.sortable-list').forEach(el => {
+                initSortable(el, {
+                    group: 'shared-tasks',
+                    animation: 150,
+                    handle: '.task-drag-handle',
+                    ghostClass: 'opacity-50',
+                    onEnd: () => { if (typeof triggerAutoSave === 'function') triggerAutoSave(); }
+                });
+            });
+        };
+
         document.addEventListener('DOMContentLoaded', () => {
 
             if (typeof ZOHO !== 'undefined') {
@@ -1204,24 +1254,62 @@
                 ZOHO.embeddedApp.init();
             }
 
-            // Make the main list sortable
-            new Sortable(document.getElementById('projectPreviewList'), {
-                animation: 150,
-                handle: '.block-handle',
-                ghostClass: 'opacity-50',
-                onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); }
+            // Make the main list and all task lists sortable (idempotent helper)
+            bindAllSortables();
+
+            // ---- DELEGATED PREVIEW-PANEL HANDLERS ----
+            // Bound once on the persistent container so they survive draft-restore
+            // innerHTML swaps and automatically cover dynamically created custom blocks.
+            const previewListEl = document.getElementById('projectPreviewList');
+
+            const addTaskToBlock = (blockEl, rawName) => {
+                if (!blockEl) return false;
+                const name = String(rawName || '').trim();
+                if (!name) return false;
+                const displayVal = name.toLowerCase().startsWith('[custom]') ? name : `[Custom] ${name}`;
+                const ul = blockEl.querySelector('ul.sortable-list') || blockEl.querySelector('ul');
+                if (!ul) return false;
+                const li = document.createElement('li');
+                li.className = "task-custom flex items-center group relative";
+                li.setAttribute('data-list', blockEl.getAttribute('data-default-list') || "Railing Production & Install");
+                const taskId = 'task-inline-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                li.innerHTML = `
+                    <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
+                    </span>
+                    <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${escapeHtml(displayVal)}</span>
+                    <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
+                    <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
+                        <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    </button>
+                    <span class="delete-btn" onclick="this.parentElement.remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();">&times;</span>
+                `;
+                ul.appendChild(li);
+                triggerAutoSave();
+                return true;
+            };
+
+            previewListEl.addEventListener('click', (e) => {
+                const addBtn = e.target.closest('.add-task-btn');
+                if (addBtn) {
+                    const input = addBtn.previousElementSibling;
+                    if (input && addTaskToBlock(addBtn.closest('div[id^="block-"]'), input.value)) {
+                        input.value = "";
+                    }
+                }
             });
 
-
-            document.querySelectorAll('.sortable-list').forEach(el => {
-                new Sortable(el, {
-                    group: 'shared-tasks',
-                    animation: 150,
-                    handle: '.task-drag-handle',
-                    ghostClass: 'opacity-50',
-                    onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); }
-                });
+            // Mark manual renames so ESA/option toggles never overwrite them,
+            // and make inline edits trigger the auto-save (they previously didn't).
+            previewListEl.addEventListener('input', (e) => {
+                const span = e.target && e.target.closest ? e.target.closest('.editable-task') : null;
+                if (span) {
+                    const li = span.closest('li');
+                    if (li) li.setAttribute('data-user-edited', '1');
+                    triggerAutoSave();
+                }
             });
+            // ---- END DELEGATED HANDLERS ----
 
             // @mention autocomplete logic
             const mentionDropdown = document.getElementById('mentionDropdown');
@@ -1239,7 +1327,11 @@
                     
                     if (match) {
                         currentMentionQuery = match[1].toLowerCase();
-                        const users = (typeof crmUsers !== 'undefined' && crmUsers.length > 0) ? crmUsers : fallbackRoster;
+                        // Prefer CRM users (real mention IDs); fall back to the live Projects
+                        // roster so the dropdown still works if the CRM fetch failed.
+                        const users = (crmUsers.length > 0)
+                            ? crmUsers
+                            : dynamicProjectUsers.map(u => ({ full_name: u.name, id: u.id, zuid: u.zuid || '' }));
                         const filtered = users.filter(u => {
                             const name = (u.full_name || (u.first_name + " " + u.last_name)).toLowerCase();
                             return name.includes(currentMentionQuery);
@@ -1248,8 +1340,9 @@
                         if (filtered.length > 0) {
                             mentionDropdown.innerHTML = filtered.map(u => {
                                 const name = u.full_name || (u.first_name + " " + u.last_name);
-                                return `<button type="button" class="mention-item block w-full text-left px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-sky-600 hover:text-white transition-colors border-b border-slate-700/50 last:border-0" data-id="${u.id}" data-zuid="${u.zuid || ''}" data-name="${name}">
-                                    ${name}
+                                const safe = escapeHtml(name);
+                                return `<button type="button" class="mention-item block w-full text-left px-4 py-2 text-xs font-semibold text-slate-300 hover:bg-sky-600 hover:text-white transition-colors border-b border-slate-700/50 last:border-0" data-id="${escapeHtml(u.id || '')}" data-zuid="${escapeHtml(u.zuid || '')}" data-name="${safe}">
+                                    ${safe}
                                 </button>`;
                             }).join('');
                             
@@ -1369,7 +1462,9 @@
                     customOptionsData: Array.from(document.querySelectorAll('.custom-option-cb')).map(cb => ({
                         value: cb.value,
                         targetList: document.getElementById(cb.getAttribute('data-block-target'))?.getAttribute('data-default-list') || "Railing Production & Install",
-                        gridId: cb.closest('.grid')?.id || cb.closest('div').id,
+                        // The label's parent is exactly where restore must re-append it;
+                        // legacy fallbacks kept for older container structures.
+                        gridId: cb.closest('label')?.parentElement?.id || cb.closest('.grid')?.id || cb.closest('div')?.id || "",
                         blockId: cb.getAttribute('data-block-target')
                     })),
                     customBlockCounter: customBlockCounter
@@ -1392,6 +1487,8 @@
                 }
             };
 
+            // Exposed on window so inline onclick handlers (which run in global scope,
+            // and survive the innerHTML draft snapshot) can trigger it too.
             const triggerAutoSave = () => {
                 if(autoSaveIndicator) {
                     const text = document.getElementById('autoSaveText');
@@ -1408,6 +1505,7 @@
                 clearTimeout(autoSaveTimeout);
                 autoSaveTimeout = setTimeout(window.saveDraftState, 1500);
             };
+            window.triggerAutoSave = triggerAutoSave;
 
             form.addEventListener('input', triggerAutoSave);
             form.addEventListener('change', triggerAutoSave);
@@ -1429,6 +1527,37 @@
                     }
                 });
             }
+
+            // Shared builder for left-panel custom option rows. Used by both the
+            // "add custom item" flow and draft restore, so the two paths can never
+            // drift apart (the checkbox toggle listener is always attached).
+            const createCustomOptionLabel = (value, blockId, grid) => {
+                const label = document.createElement('label');
+                label.className = "flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2 relative";
+                label.innerHTML = `
+                    <input type="checkbox" name="customOpt" value="${escapeHtml(value)}" class="w-3.5 h-3.5 text-sky-400 bg-slate-900 border-slate-600 rounded form-checkbox custom-option-cb" data-block-target="${blockId}">
+                    <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">${escapeHtml(value)}</span>
+                    <span class="custom-opt-delete absolute right-3 top-1/2 -translate-y-1/2 text-red-500 font-black text-lg hidden group-hover:block px-2 cursor-pointer hover:scale-125 transition-transform" title="Delete Custom Item">&times;</span>
+                `;
+                const cb = label.querySelector('input');
+                cb.addEventListener('change', (ev) => {
+                    const target = document.getElementById(ev.target.getAttribute('data-block-target'));
+                    if (target) target.classList.toggle('hidden', !ev.target.checked);
+                });
+                label.querySelector('.custom-opt-delete').addEventListener('click', (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    const blockEl = document.getElementById(blockId);
+                    if (blockEl) blockEl.remove();
+                    const hiddenInp = document.getElementById(blockId.replace('block-custom-', 'customAssignee') + 'Input');
+                    if (hiddenInp) hiddenInp.remove();
+                    label.remove();
+                    if (typeof updateBlueprintPreview === 'function') updateBlueprintPreview();
+                    triggerAutoSave();
+                });
+                grid.appendChild(label);
+                return label;
+            };
 
             window.restoreDraftState = (dealId) => {
                 const draftStr = localStorage.getItem('ironwood_draft_' + dealId);
@@ -1454,18 +1583,14 @@
                         }
 
                         // 1. Restore Custom Options Checkboxes (Left Side)
+                        // Dedup is scoped to custom-option inputs only, so a custom item
+                        // named e.g. "Straight" can't collide with a built-in checkbox.
                         if (draft.customOptionsData) {
                             draft.customOptionsData.forEach(opt => {
                                 const grid = document.getElementById(opt.gridId);
-                                if (grid && !document.querySelector(`input[value="${opt.value}"]`)) {
-                                    const label = document.createElement('label');
-                                    label.className = "flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2 relative";
-                                    label.innerHTML = `
-                                        <input type="checkbox" name="customOpt" value="${opt.value}" class="w-3.5 h-3.5 text-sky-400 bg-slate-900 border-slate-600 rounded form-checkbox custom-option-cb" data-block-target="${opt.blockId}">
-                                        <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">${opt.value}</span>
-                                        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 font-black text-lg hidden group-hover:block px-2 cursor-pointer hover:scale-125 transition-transform" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('${opt.blockId}').remove(); const inpId = '${opt.blockId}'.replace('block-custom-', 'customAssignee') + 'Input'; const hiddenInp = document.getElementById(inpId); if(hiddenInp) hiddenInp.remove(); this.parentElement.remove();" title="Delete Custom Item">&times;</span>
-                                    `;
-                                    grid.appendChild(label);
+                                const alreadyExists = Array.from(document.querySelectorAll('input[name="customOpt"]')).some(i => i.value === opt.value);
+                                if (grid && opt.blockId && !alreadyExists) {
+                                    createCustomOptionLabel(opt.value, opt.blockId, grid);
                                 }
                             });
                         }
@@ -1531,45 +1656,11 @@
                                     }
                                 });
                                 
-                                // 5. Rebind SortableJS
-                                new Sortable(document.getElementById('projectPreviewList'), {
-                                    animation: 150, handle: '.block-handle', ghostClass: 'opacity-50', onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); }
-                                });
-                                document.querySelectorAll('.sortable-list').forEach(el => {
-                                    new Sortable(el, {
-                                        group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50', onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); }
-                                    });
-                                });
-
-                                // 6. Rebind Add Custom Task buttons
-                                document.querySelectorAll('.add-task-btn').forEach(btn => {
-                                    btn.addEventListener('click', (ev) => {
-                                        const tInput = ev.target.previousElementSibling;
-                                        const tVal = tInput.value.trim();
-                                        if (tVal) {
-                                            const targetList = ev.target.closest('div[id^="block-"]').getAttribute('data-default-list');
-                                            const ul = ev.target.closest('div[id^="block-"]').querySelector('ul');
-                                            const li = document.createElement('li');
-                                            li.className = "task-custom flex items-center group relative";
-                                            li.setAttribute('data-list', targetList);
-                                            const taskId = 'task-inline-' + Date.now() + '-' + Math.floor(Math.random()*1000);
-                                            li.innerHTML = `
-                                                <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
-                                                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
-                                                </span>
-                                                <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${tVal}</span> 
-                                                <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
-                                                <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
-                                                    <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                                </button>
-                                                <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>
-                                            `;
-                                            ul.appendChild(li);
-                                            tInput.value = "";
-                                            triggerAutoSave();
-                                        }
-                                    });
-                                });
+                                // 5. Rebind SortableJS (idempotent — destroys stale instances
+                                // first, so restores never stack duplicate drag handlers).
+                                // "+ add task" buttons need no rebinding: the delegated
+                                // handler on #projectPreviewList covers the restored DOM.
+                                bindAllSortables();
                             }, 50);
                         }
 
@@ -1588,18 +1679,11 @@
                     if (val) {
                         customBlockCounter++;
                         const blockId = `block-custom-${customBlockCounter}`;
-                        
-                        // 1. Create Checkbox on Left
+
+                        // 1. Create Checkbox on Left (shared builder attaches all listeners)
                         const grid = e.target.closest('details').previousElementSibling;
-                        const label = document.createElement('label');
-                        label.className = "flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2 relative";
-                        label.innerHTML = `
-                            <input type="checkbox" name="customOpt" value="${val}" class="w-3.5 h-3.5 text-sky-400 bg-slate-900 border-slate-600 rounded form-checkbox custom-option-cb" data-block-target="${blockId}">
-                            <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">${val}</span>
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-red-500 font-black text-lg hidden group-hover:block px-2 cursor-pointer hover:scale-125 transition-transform" onclick="event.preventDefault(); event.stopPropagation(); document.getElementById('${blockId}').remove(); const inpId = '${blockId}'.replace('block-custom-', 'customAssignee') + 'Input'; const hiddenInp = document.getElementById(inpId); if(hiddenInp) hiddenInp.remove(); this.parentElement.remove();" title="Delete Custom Item">&times;</span>
-                        `;
-                        grid.appendChild(label);
-                        
+                        const label = createCustomOptionLabel(val, blockId, grid);
+
                         // 2. Create Block on Right
                         const previewList = document.getElementById('projectPreviewList');
                         const block = document.createElement('div');
@@ -1610,13 +1694,13 @@
                             <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
                                 <div class="flex items-center gap-2">
                                     <div class="w-5 h-5 rounded bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-[9px]">CU</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">${val}</p>
+                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">${escapeHtml(val)}</p>
                                     <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                     </button>
                                 </div>
                                 <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-customAssignee${customBlockCounter}Input" onclick="openUserModal('customAssignee${customBlockCounter}Input', '${val.replace(/'/g, "\\'")}')" class="override-btn">
+                                    <button type="button" id="btn-customAssignee${customBlockCounter}Input" onclick="openUserModal('customAssignee${customBlockCounter}Input', '${sanitizeLabel(val)}')" class="override-btn">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
                                     </button>
                                 </div>
@@ -1636,36 +1720,13 @@
                             </details>
                         `;
                         previewList.appendChild(block);
-                        
-                        // Re-initialize Sortable and Add Task for the new block
-                        new Sortable(block.querySelector('.sortable-list'), { group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50', onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); } });
-                        block.querySelector('.add-task-btn').addEventListener('click', (ev) => {
-                            const tInput = ev.target.previousElementSibling;
-                            const tVal = tInput.value.trim();
-                            if (tVal) {
-                                const displayVal = tVal.toLowerCase().startsWith('[custom]') ? tVal : `[Custom] ${tVal}`;
-                                const ul = ev.target.closest('div[id^="customBlock"]').querySelector('ul');
-                                const li = document.createElement('li');
-                                li.className = "task-custom flex items-center group relative";
-                                li.setAttribute('data-list', targetList);
-                                const taskId = 'task-inline-' + Date.now() + '-' + Math.floor(Math.random()*1000);
-                                li.innerHTML = `
-                                    <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
-                                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
-                                    </span>
-                                    <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${displayVal}</span> 
-                                    <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
-                                    <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
-                                        <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                    </button>
-                                    <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>
-                                `;
-                                ul.appendChild(li);
-                                tInput.value = "";
-                            }
-                        });
-                        
-                        // 3. Add Event Listener to Checkbox
+
+                        // Drag-and-drop for the new block's list. The "+ add task"
+                        // button needs no binding — the delegated handler on
+                        // #projectPreviewList covers every block, custom or built-in.
+                        initSortable(block.querySelector('.sortable-list'), { group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50', onEnd: () => { if(typeof triggerAutoSave === 'function') triggerAutoSave(); } });
+
+                        // 3. Hidden assignee input backing validation and the payload
                         const hiddenInput = document.createElement('input');
                         hiddenInput.type = "hidden";
                         hiddenInput.name = `customAssignee${customBlockCounter}Input`;
@@ -1673,44 +1734,17 @@
                         hiddenInput.value = "UNASSIGNED";
                         document.getElementById('handoffForm').appendChild(hiddenInput);
 
-                        const cb = label.querySelector('input');
-                        cb.addEventListener('change', (ev) => {
-                            document.getElementById(ev.target.getAttribute('data-block-target')).classList.toggle('hidden', !ev.target.checked);
-                        });
-                        
                         input.value = "";
+                        const cb = label.querySelector('input');
                         cb.checked = true;
-                        cb.dispatchEvent(new Event('change'));
+                        // Bubbles so the form-level listeners (preview refresh + auto-save) fire too
+                        cb.dispatchEvent(new Event('change', { bubbles: true }));
                     }
                 });
             });
 
-            document.querySelectorAll('.add-task-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const input = e.target.previousElementSibling;
-                    const val = input.value.trim();
-                    if (val) {
-                        const displayVal = val.toLowerCase().startsWith('[custom]') ? val : `[Custom] ${val}`;
-                        const ul = e.target.closest('div[id^="block-"]').querySelector('ul');
-                        const li = document.createElement('li');
-                        li.className = "task-custom flex items-center group relative";
-                        const taskId = 'task-inline-' + Date.now() + '-' + Math.floor(Math.random()*1000);
-                        li.innerHTML = `
-                            <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
-                                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
-                            </span>
-                            <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${displayVal}</span> 
-                            <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
-                            <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
-                                <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                            </button>
-                            <span class="delete-btn" onclick="this.parentElement.remove()">&times;</span>
-                        `;
-                        ul.appendChild(li);
-                        input.value = "";
-                    }
-                });
-            });
+            // NOTE: "+ add task" buttons are handled by the delegated click handler
+            // on #projectPreviewList above — no per-button binding needed.
 
             document.querySelectorAll('.sortable-list li').forEach((li, idx) => {
                 const text = li.innerHTML;
@@ -1805,9 +1839,7 @@
         });
 
         const form = document.getElementById('handoffForm');
-        const allCheckboxes = document.querySelectorAll('input[type="checkbox"]');
-        const projectRadios = document.querySelectorAll('input[name="projectType"]');
-        
+
         // MODAL LOGIC
         let currentTargetInputId = null;
 
@@ -1822,9 +1854,7 @@
         function renderDynamicUserModal(users) {
             const container = document.getElementById('dynamicUserList');
             if (!container) return;
-            
-            let html = '';
-            
+
             const styles = [
                 { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', hoverBg: 'group-hover:bg-blue-500' },
                 { bg: 'bg-emerald-500/20', text: 'text-emerald-400', border: 'border-emerald-500/30', hoverBg: 'group-hover:bg-emerald-500' },
@@ -1837,19 +1867,23 @@
                 { bg: 'bg-fuchsia-500/20', text: 'text-fuchsia-400', border: 'border-fuchsia-500/30', hoverBg: 'group-hover:bg-fuchsia-500' }
             ];
             
+            // Built with DOM APIs + real listeners (this modal is never part of the
+            // draft snapshot), so names with quotes or symbols can't break markup.
+            container.innerHTML = '';
             users.forEach((u, idx) => {
                 const name = u.name || "Unknown User";
                 const initials = name.split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
                 const s = styles[idx % styles.length];
-                const safeName = name.replace(/'/g, "\\'");
-                
-                html += `<button type="button" onclick="selectUser('${u.id}', '${safeName}', '${u.email || u.zuid || ''}')" class="flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group">
-                    <div class="w-8 h-8 rounded-full ${s.bg} flex items-center justify-center ${s.text} font-bold text-xs mr-3 border ${s.border} ${s.hoverBg} group-hover:text-white transition-colors">${initials}</div>
-                    <div><p class="text-sm font-bold text-slate-200 group-hover:text-white">${name}</p></div>
-                </button>`;
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = "flex items-center p-3 rounded-xl hover:bg-slate-800 border border-transparent hover:border-brand-accent/50 transition-all text-left group";
+                btn.innerHTML = `
+                    <div class="w-8 h-8 rounded-full ${s.bg} flex items-center justify-center ${s.text} font-bold text-xs mr-3 border ${s.border} ${s.hoverBg} group-hover:text-white transition-colors">${escapeHtml(initials)}</div>
+                    <div><p class="text-sm font-bold text-slate-200 group-hover:text-white">${escapeHtml(name)}</p></div>`;
+                btn.addEventListener('click', () => selectUser(u.id, name, u.email || u.zuid || ''));
+                container.appendChild(btn);
             });
-            
-            container.innerHTML = html;
         }
 
         function closeUserModal() {
@@ -1898,6 +1932,16 @@
             }
         };
 
+        // Rewrites a task's label unless the user manually renamed it
+        // (data-user-edited is stamped by the delegated contenteditable handler).
+        const setTaskText = (id, text) => {
+            const li = document.getElementById(id);
+            if (!li || li.hasAttribute('data-user-edited')) return;
+            const span = li.querySelector('.editable-task');
+            if (span) span.textContent = text;
+            else li.textContent = text;
+        };
+
         const updateBlueprintPreview = () => {
             const safeToggle = (id, condition) => {
                 const el = document.getElementById(id);
@@ -1908,7 +1952,8 @@
                 if (el) el.classList.remove(cls);
             };
 
-            const anyRequirementChecked = Array.from(allCheckboxes).some(cb => cb.checked);
+            // Queried live (not cached at load) so custom options added later count too
+            const anyRequirementChecked = Array.from(form.querySelectorAll('input[type="checkbox"]')).some(cb => cb.checked);
             const projectPreviewList = document.getElementById('projectPreviewList');
             const emptyStatePreview = document.getElementById('emptyStatePreview');
             const saveBtn = document.getElementById('saveBtn');
@@ -2041,9 +2086,7 @@
             
             const taskStandardMeasure = document.getElementById('task-standard-measure');
             taskStandardMeasure.classList.toggle('hidden', railFullMetal);
-            const smEditable = taskStandardMeasure.querySelector('.editable-task');
-            if (smEditable) smEditable.textContent = esaPrefix + "Railing Site Measure";
-            else taskStandardMeasure.textContent = esaPrefix + "Railing Site Measure";
+            setTaskText('task-standard-measure', esaPrefix + "Railing Site Measure");
 
             document.getElementById('task-order-materials-generic').classList.toggle('hidden', !needsWoodMaterials);
             document.getElementById('task-customMetal-order').classList.toggle('hidden', !railFullMetal && !spindleCustom);
@@ -2067,10 +2110,8 @@
 
             const taskRailingInstall = document.getElementById('task-railing-install');
             taskRailingInstall.classList.toggle('hidden', !railingAny && !spindleAny);
-            const rEditable = taskRailingInstall.querySelector('.editable-task');
             const railingText = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
-            if (rEditable) rEditable.textContent = esaPrefix + railingText;
-            else taskRailingInstall.textContent = esaPrefix + railingText;
+            setTaskText('task-railing-install', esaPrefix + railingText);
 
             document.getElementById('task-dryfit-task').classList.toggle('hidden', !railFullMetal);
             document.getElementById('task-const-stair-drop').classList.toggle('hidden', !(stairConst && !isReno));
@@ -2078,9 +2119,7 @@
             
             const taskFinishedStairInstall = document.getElementById('task-finished-stair-install');
             taskFinishedStairInstall.classList.toggle('hidden', !stairFinished);
-            const fsiEditable = taskFinishedStairInstall.querySelector('.editable-task');
-            if (fsiEditable) fsiEditable.textContent = esaPrefix + "Finished Stair Installation";
-            else taskFinishedStairInstall.textContent = esaPrefix + "Finished Stair Installation";
+            setTaskText('task-finished-stair-install', esaPrefix + "Finished Stair Installation");
 
             document.getElementById('task-glass-schedule').classList.toggle('hidden', !spindleGlass);
             document.getElementById('task-glass-install').classList.toggle('hidden', !spindleGlass);
@@ -2100,9 +2139,7 @@
             
             const taskConstStairSchedule = document.getElementById('task-const-stair-schedule');
             taskConstStairSchedule.classList.toggle('hidden', !stairConst);
-            const sEditable = taskConstStairSchedule.querySelector('.editable-task');
-            if (sEditable) sEditable.textContent = isReno ? "Schedule Const. Stair Installation" : "Schedule Const. Stair Drop Off";
-            else taskConstStairSchedule.textContent = isReno ? "Schedule Const. Stair Installation" : "Schedule Const. Stair Drop Off";
+            setTaskText('task-const-stair-schedule', isReno ? "Schedule Const. Stair Installation" : "Schedule Const. Stair Drop Off");
             
             document.getElementById('task-finished-stair-schedule').classList.toggle('hidden', !stairFinished);
             
@@ -2125,12 +2162,15 @@
         };
 
 
-        const scopeRadios = document.querySelectorAll('input[name="scopeOfWork"]');
-        scopeRadios.forEach(radio => radio.addEventListener('change', updateBlueprintPreview));
+        // One delegated listener re-derives the blueprint for every checkbox/radio in
+        // the form — including custom options created after load, which the previous
+        // per-element bindings missed (custom-only selections couldn't generate).
+        form.addEventListener('change', (e) => {
+            if (e.target && e.target.matches && e.target.matches('input[type="checkbox"], input[type="radio"]')) {
+                updateBlueprintPreview();
+            }
+        });
 
-        allCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateBlueprintPreview));
-        projectRadios.forEach(radio => radio.addEventListener('change', updateBlueprintPreview));
-        
         // Dynamic defaults set after API loads
         function setDynamicDefaultAssignees(users) {
             const findUser = (name) => users.find(u => u.name && u.name.toLowerCase().includes(name.toLowerCase()));
@@ -2254,18 +2294,7 @@
             };
             console.log("Payload ready for Zoho CRM:", capturedData);
 
-            const originalHTML = saveBtn.innerHTML;
-            let loadingStep = 0;
-            const loadingMessages = ["Initializing Project...", "Building Blueprint...", "Assigning Teams...", "Syncing Logistics...", "Finalizing Tasks..."];
-            saveBtn.innerHTML = `<div class="flex items-center gap-3"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>${loadingMessages[0]}</span></div>`;
-            saveBtn.disabled = true;
-            
-            const loadingInterval = setInterval(() => {
-                loadingStep++;
-                if (loadingStep < loadingMessages.length) {
-                    saveBtn.innerHTML = `<div class="flex items-center gap-3"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>${loadingMessages[loadingStep]}</span></div>`;
-                }
-            }, 1800);
+            // Validate assignments BEFORE any loading UI or API work
             let validationFailed = false;
             let validationMsg = "";
             const blocksToValidate = document.querySelectorAll('#projectPreviewList > div');
@@ -2291,12 +2320,22 @@
             });
 
             if (validationFailed) {
-                clearInterval(loadingInterval);
                 alert(validationMsg);
-                saveBtn.innerHTML = originalHTML;
-                saveBtn.disabled = false;
                 return;
             }
+
+            const originalHTML = saveBtn.innerHTML;
+            let loadingStep = 0;
+            const loadingMessages = ["Initializing Project...", "Building Blueprint...", "Assigning Teams...", "Syncing Logistics...", "Finalizing Tasks..."];
+            saveBtn.innerHTML = `<div class="flex items-center gap-3"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>${loadingMessages[0]}</span></div>`;
+            saveBtn.disabled = true;
+
+            const loadingInterval = setInterval(() => {
+                loadingStep++;
+                if (loadingStep < loadingMessages.length) {
+                    saveBtn.innerHTML = `<div class="flex items-center gap-3"><svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg><span>${loadingMessages[loadingStep]}</span></div>`;
+                }
+            }, 1800);
 
             if (isZohoEnvironment) {
                 try {
@@ -2321,11 +2360,47 @@
                         console.warn("Failed to verify Deal Stage:", stageErr);
                     }
                     
-                    // Push Production Notes to Deals module
+                    var func_name = "create_handoff_tasks";
+                    var req_data = { "arguments": JSON.stringify({ "dealId": dealId, "payload": JSON.stringify(capturedData) }) };
+
+                    const response = await ZOHO.CRM.FUNCTIONS.execute(func_name, req_data);
+
+                    const output = (response && response.details && typeof response.details.output === 'string') ? response.details.output : "";
+                    let hasError = false;
+                    let isWarning = false;
+                    let errorMsg = "";
+
+                    if (response && response.code && response.code.toUpperCase() !== "SUCCESS") {
+                        hasError = true;
+                        errorMsg = response.message || JSON.stringify(response);
+                    } else if (output.startsWith("Error")) {
+                        hasError = true;
+                        errorMsg = output;
+                    } else if (output.startsWith("Warning")) {
+                        // Project exists but some tasks failed. The backend is idempotent,
+                        // so retrying Generate will re-use the project and only create the
+                        // missing tasks. Keep the draft so nothing is lost.
+                        isWarning = true;
+                        errorMsg = output + " You can click Generate Production Run again to retry just the missing pieces.";
+                    }
+
+                    if (hasError || isWarning) {
+                        clearInterval(loadingInterval);
+                        console.error("Function returned " + (isWarning ? "warning" : "error") + ":", response);
+                        document.getElementById('errorOverlayTitle').innerText = isWarning ? "Handoff Incomplete" : "Handoff Failed";
+                        document.getElementById('errorMessageDetails').innerText = errorMsg;
+                        document.getElementById('errorOverlay').classList.remove('hidden');
+                        saveBtn.innerHTML = originalHTML;
+                        saveBtn.disabled = false;
+                        return;
+                    }
+
+                    // Push Production Notes to the Deal only AFTER the handoff succeeded,
+                    // so a failed attempt + retry can never duplicate notes in CRM.
                     const notesToPush = allNotes.filter(n => n.trim() !== '');
                     if (notesToPush.length > 0) {
                         let usersToParse = (typeof crmUsers !== 'undefined' && crmUsers.length > 0) ? crmUsers : [];
-                        
+
                         const notePromises = notesToPush.map(noteText => {
                             let parsedNote = noteText;
                             usersToParse.forEach(u => {
@@ -2333,7 +2408,7 @@
                                 if (!name) return;
                                 const safeName = name.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                                 const regex = new RegExp(`@${safeName}\\b`, 'gi');
-                                
+
                                 if (u.id) {
                                     parsedNote = parsedNote.replace(regex, `[@${name}](zohocrm://user/${u.id})`);
                                 }
@@ -2347,7 +2422,7 @@
                             };
                             return ZOHO.CRM.API.insertRecord({ Entity: "Notes", APIData: noteRecordData, Trigger: [] });
                         });
-                        
+
                         try {
                             await Promise.all(notePromises);
                         } catch (e) {
@@ -2355,32 +2430,6 @@
                         }
                     }
 
-                    var func_name = "create_handoff_tasks";
-                    var req_data = { "arguments": JSON.stringify({ "dealId": dealId, "payload": JSON.stringify(capturedData) }) };
-                    
-                    const response = await ZOHO.CRM.FUNCTIONS.execute(func_name, req_data);
-                    
-                    let hasError = false;
-                    let errorMsg = "";
-                    
-                    if (response && response.code && response.code.toUpperCase() !== "SUCCESS") {
-                        hasError = true;
-                        errorMsg = response.message || JSON.stringify(response);
-                    } else if (response && response.details && response.details.output && response.details.output.startsWith("Error")) {
-                        hasError = true;
-                        errorMsg = response.details.output;
-                    }
-                    
-                    if (hasError) {
-                        clearInterval(loadingInterval);
-                        console.error("Function returned error:", response);
-                        document.getElementById('errorMessageDetails').innerText = errorMsg;
-                        document.getElementById('errorOverlay').classList.remove('hidden');
-                        saveBtn.innerHTML = originalHTML;
-                        saveBtn.disabled = false;
-                        return;
-                    }
-                    
                     clearInterval(loadingInterval);
                     document.getElementById('successOverlay').classList.remove('hidden');
                     if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
@@ -2392,6 +2441,7 @@
                 } catch (error) {
                     clearInterval(loadingInterval);
                     console.error("Fatal exception calling CRM function:", error);
+                    document.getElementById('errorOverlayTitle').innerText = "Handoff Failed";
                     document.getElementById('errorMessageDetails').innerText = error.message || JSON.stringify(error);
                     document.getElementById('errorOverlay').classList.remove('hidden');
                     saveBtn.innerHTML = originalHTML;

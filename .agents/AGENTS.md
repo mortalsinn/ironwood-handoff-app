@@ -25,7 +25,7 @@
   4. Instruct the user to "hard refresh" the app in their browser.
 
 ## Zoho CRM Integration
-- **SDK**: Uses the Zoho Embedded App SDK (`https://live.zwidgets.com/js-sdk/1.1/ZohoEmbededAppSDK.min.js`).
+- **SDK**: Uses the Zoho Embedded App SDK (`https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js`).
 - **Initialization**: `ZOHO.embeddedApp.init()` must be called to bind context.
 - **Context Fetching**: `ZOHO.embeddedApp.on("PageLoad", function(data){...})` is used to fetch the active Entity and EntityId (e.g., the Deal record ID).
 - **Functions**: To generate the project structure, the app invokes a Deluge function via `ZOHO.CRM.FUNCTIONS.execute("create_handoff_tasks", { arguments: JSON.stringify({...}) })`.
@@ -51,6 +51,17 @@
 ## Output Formatting for External Scripts
 When providing code updates or modifications for external scripts that the user must copy and paste manually (e.g., Zoho Deluge functions, external APIs), **always provide the full, complete code block** containing the entire script with the new updates incorporated. 
 Do not provide partial snippets or diffs (e.g., "add this line here"). The user should be able to Ctrl+A and Ctrl+C the entire block to replace their existing code instantly.
+
+## v9.0 Architecture Contracts (do not regress these)
+1. **Event delegation on `#projectPreviewList`**: All "+ add task" buttons and contenteditable task edits are handled by ONE delegated listener on the persistent container. Never bind per-button listeners on preview-panel content — the auto-save snapshot (`previewListHTML` via innerHTML) destroys element listeners on restore, delegation survives. Inline `onclick` attributes are still valid inside the snapshot (they serialize) — that's why openUserModal/delete buttons keep them.
+2. **`window.triggerAutoSave`**: intentionally exposed globally. Inline onclick handlers execute in global scope, so a closure-only `triggerAutoSave` silently no-ops there (this was a real bug pre-v9.0).
+3. **Idempotent SortableJS**: always bind drag-and-drop through `initSortable()`/`bindAllSortables()` (they destroy the previous instance stored on `el._sortable` first). Direct `new Sortable(...)` after a restore double-binds.
+4. **`data-user-edited`**: stamped on a task `<li>` when the user renames it inline. `setTaskText()` skips those tasks — never overwrite a user's manual rename from `updateBlueprintPreview`.
+5. **Live checkbox queries**: `updateBlueprintPreview` derives `anyRequirementChecked` from a live `form.querySelectorAll` and change events are delegated on the form — custom options added after load must keep working.
+6. **Escape user input**: run any user-typed text through `escapeHtml()` before inserting into innerHTML templates; `sanitizeLabel()` for strings embedded in inline onclick attributes.
+7. **Backend result contract**: the Deluge function returns strings prefixed `"Error"` (hard failure — nothing usable created), `"Warning"` (project exists but some tasks failed — widget shows "Handoff Incomplete", keeps the draft, retry is safe) or `"Success"`. The frontend parses these prefixes; keep them stable.
+8. **Backend idempotency**: `create_handoff_tasks` re-uses an existing project with the same name and skips tasks whose names already exist, so retries fill gaps instead of duplicating. Do not reintroduce blind delays (the old postman-echo call) — readiness is polled against the real tasklists endpoint.
+9. **Notes after success**: production notes are pushed to the Deal only AFTER the Deluge function succeeds, so failed attempts + retries can't duplicate notes.
 
 ## Zoho Projects API & User IDs
 - **API Fetching**: Do NOT rely on standalone Deluge functions to fetch Zoho Projects data into the frontend widget if REST API access isn't explicitly configured. Instead, use `ZOHO.CRM.CONNECTION.invoke("zoho_projects_connection", { url: "...", method: "GET" })` directly in the frontend. This securely bypasses CORS and permission walls.

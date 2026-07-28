@@ -7,160 +7,277 @@ dealInfo = zoho.crm.getRecordById("Deals",dealId.toLong());
 dealName = dealInfo.get("Deal_Name");
 projectName = dealName + " - Production";
 portalId = "ironwoodstairs";
-projectData = Map();
-projectData.put("name",projectName);
-projectData.put("template_id","1768463000007543025");
-projectData.put("description","Auto-generated from Ironwood Handoff Widget. Notes: " + payloadData.get("notes"));
-projectData.put("public","yes");
 // =====================================
-// INJECT PROJECT OWNER IF ASSIGNED
+// IDEMPOTENCY GUARD: RE-USE AN EXISTING PROJECT IF ONE MATCHES
+// A retried or double-clicked handoff must never create a duplicate
+// project. If the lookup fails we fail open and create normally.
 // =====================================
-if(payloadData.get("project_owner") != null && payloadData.get("project_owner") != "UNASSIGNED" && payloadData.get("project_owner") != "")
+newProjectId = null;
+isReusedProject = false;
+existingProjectsResponse = invokeurl
+[
+	url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/?index=1&range=200"
+	type :GET
+	connection:"zoho_projects_connection"
+];
+existingProjects = existingProjectsResponse.get("projects");
+if(existingProjects != null)
 {
-	projectData.put("owner",payloadData.get("project_owner"));
-}
-createResponse = zoho.projects.createProject(portalId,projectData,"zoho_projects_connection");
-if(createResponse.get("projects") == null)
-{
-	return "Error creating project in Zoho: " + createResponse.toString();
-}
-newProjectId = createResponse.get("projects").get(0).get("id_string");
-if(newProjectId != null)
-{
-	delay_response = invokeurl
-	[
-		url :"https://postman-echo.com/delay/2"
-		type :GET
-	];
-	taskListsMap = payloadData.get("task_lists");
-	if(taskListsMap != null)
+	for each  existingProj in existingProjects
 	{
-		// ==========================================
-		// BRUTE FORCE: EXTRACT IDS/EMAILS & FORCE-INVITE
-		// ==========================================
-		uniqueUsers = List();
-		userEmailsMap = Map();
-		for each  listName in taskListsMap.keys()
+		if(newProjectId == null && existingProj.get("name") == projectName)
 		{
-			tasksInList = taskListsMap.get(listName);
-			if(tasksInList != null)
-			{
-				for each  taskObj in tasksInList
-				{
-					uid = taskObj.get("person_responsible");
-					email = taskObj.get("zuid");
-					if(uid != "" && uid != null && !uniqueUsers.contains(uid))
-					{
-						uniqueUsers.add(uid);
-						if(email != null && email != "")
-						{
-							userEmailsMap.put(uid,email);
-						}
-					}
-				}
-			}
+			newProjectId = existingProj.get("id_string");
+			isReusedProject = true;
+			info "IDEMPOTENCY: Re-using existing project " + newProjectId + " (" + projectName + ")";
 		}
-		if(uniqueUsers.size() > 0)
+	}
+}
+if(newProjectId == null)
+{
+	projectData = Map();
+	projectData.put("name",projectName);
+	projectData.put("template_id","1768463000007543025");
+	projectData.put("description","Auto-generated from Ironwood Handoff Widget. Notes: " + payloadData.get("notes"));
+	projectData.put("public","yes");
+	// =====================================
+	// INJECT PROJECT OWNER IF ASSIGNED
+	// =====================================
+	if(payloadData.get("project_owner") != null && payloadData.get("project_owner") != "UNASSIGNED" && payloadData.get("project_owner") != "")
+	{
+		projectData.put("owner",payloadData.get("project_owner"));
+	}
+	createResponse = zoho.projects.createProject(portalId,projectData,"zoho_projects_connection");
+	if(createResponse.get("projects") == null)
+	{
+		return "Error creating project in Zoho: " + createResponse.toString();
+	}
+	newProjectId = createResponse.get("projects").get(0).get("id_string");
+}
+if(newProjectId == null)
+{
+	return "Error: Could not create Zoho Project.";
+}
+taskListsMap = payloadData.get("task_lists");
+if(taskListsMap == null)
+{
+	return "Success: Project created in Zoho Projects (no tasks in payload).";
+}
+// =====================================
+// USERS: EXTRACT UNIQUE ASSIGNEES & INVITE
+// ID-based invite first; the e-mail invite only fires as a fallback
+// when the ID attempt fails (halves the API calls in the common case
+// while keeping the fix for API error 6831).
+// =====================================
+uniqueUsers = List();
+userEmailsMap = Map();
+for each  listName in taskListsMap.keys()
+{
+	tasksInList = taskListsMap.get(listName);
+	if(tasksInList != null)
+	{
+		for each  taskObj in tasksInList
 		{
-			for each  uid in uniqueUsers
+			uid = taskObj.get("person_responsible");
+			email = taskObj.get("zuid");
+			if(uid != "" && uid != null && !uniqueUsers.contains(uid))
 			{
-				// Attempt 1: Brute force via URL parameters with User ID
-				addUsersResponse = invokeurl
-				[
-					url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/users/?users_list=" + uid + "&role=employee"
-					type :POST
-					connection:"zoho_projects_connection"
-				];
-				info "BRUTE FORCE ADD USER ID (" + uid + ") RESULT: " + addUsersResponse.toString();
-				// Attempt 2: Brute force via payload with Email Address
-				email = userEmailsMap.get(uid);
+				uniqueUsers.add(uid);
 				if(email != null && email != "")
 				{
-					addUserEmailParams = Map();
-					addUserEmailParams.put("email",email);
-					addUserEmailParams.put("role","employee");
-					addUsersEmailResponse = invokeurl
-					[
-						url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/users/"
-						type :POST
-						parameters:addUserEmailParams
-						connection:"zoho_projects_connection"
-					];
-					info "BRUTE FORCE ADD USER EMAIL (" + email + ") RESULT: " + addUsersEmailResponse.toString();
+					userEmailsMap.put(uid,email);
 				}
 			}
 		}
-		// ==========================================
+	}
+}
+for each  uid in uniqueUsers
+{
+	addUsersResponse = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/users/?users_list=" + uid + "&role=employee"
+		type :POST
+		connection:"zoho_projects_connection"
+	];
+	info "ADD USER BY ID (" + uid + ") RESULT: " + addUsersResponse.toString();
+	if(addUsersResponse.get("users") == null)
+	{
+		email = userEmailsMap.get(uid);
+		if(email != null && email != "")
+		{
+			addUserEmailParams = Map();
+			addUserEmailParams.put("email",email);
+			addUserEmailParams.put("role","employee");
+			addUsersEmailResponse = invokeurl
+			[
+				url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/users/"
+				type :POST
+				parameters:addUserEmailParams
+				connection:"zoho_projects_connection"
+			];
+			info "ADD USER BY EMAIL (" + email + ") RESULT: " + addUsersEmailResponse.toString();
+		}
+	}
+}
+// =====================================
+// TASK LIST READINESS POLL
+// Replaces the old postman-echo delay: template task lists provision
+// asynchronously right after project creation, so poll the real
+// endpoint — each round trip both waits and confirms readiness.
+// (Deluge has no break; the listsReady flag skips finished attempts.)
+// =====================================
+existingListsMap = Map();
+listsReady = false;
+for each  attempt in {1,2,3,4,5}
+{
+	if(!listsReady)
+	{
 		existingListsResponse = invokeurl
 		[
 			url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
 			type :GET
 			connection:"zoho_projects_connection"
 		];
-		existingListsMap = Map();
 		existingTaskLists = existingListsResponse.get("tasklists");
-		if(existingTaskLists != null)
+		if(existingTaskLists != null && existingTaskLists.size() > 0)
 		{
 			for each  elist in existingTaskLists
 			{
 				existingListsMap.put(elist.get("name"),elist.get("id_string"));
 			}
+			listsReady = true;
 		}
-		keys = taskListsMap.keys();
-		for each  listName in keys
+	}
+}
+if(!listsReady)
+{
+	info "READINESS: task lists still not provisioned after polling; proceeding with fresh list creation.";
+}
+// =====================================
+// EXISTING TASK NAMES
+// Lets a retried handoff skip tasks that already made it in,
+// instead of duplicating them.
+// =====================================
+existingTaskNames = List();
+existingTasksResponse = invokeurl
+[
+	url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/?index=1&range=200"
+	type :GET
+	connection:"zoho_projects_connection"
+];
+existingTasks = existingTasksResponse.get("tasks");
+if(existingTasks != null)
+{
+	for each  existingTask in existingTasks
+	{
+		existingTaskNames.add(existingTask.get("name"));
+	}
+}
+// =====================================
+// CREATE TASK LISTS & TASKS
+// Every failure is collected so the widget can show an honest result
+// instead of a false success.
+// =====================================
+failedItems = List();
+skippedCount = 0;
+createdCount = 0;
+keys = taskListsMap.keys();
+for each  listName in keys
+{
+	tasksInList = taskListsMap.get(listName);
+	if(tasksInList != null && tasksInList.size() > 0)
+	{
+		createdTaskListId = existingListsMap.get(listName);
+		if(createdTaskListId == null)
 		{
-			tasksInList = taskListsMap.get(listName);
-			if(tasksInList != null && tasksInList.size() > 0)
+			taskListParams = Map();
+			taskListParams.put("name",listName);
+			taskListResponse = invokeurl
+			[
+				url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+				type :POST
+				parameters:taskListParams
+				connection:"zoho_projects_connection"
+			];
+			if(taskListResponse.get("tasklists") != null)
 			{
-				createdTaskListId = existingListsMap.get(listName);
-				if(createdTaskListId == null)
+				createdTaskListId = taskListResponse.get("tasklists").get(0).get("id_string");
+				existingListsMap.put(listName,createdTaskListId);
+			}
+		}
+		if(createdTaskListId == null)
+		{
+			info "FAILED TO CREATE TASK LIST: " + listName;
+			for each  taskObj in tasksInList
+			{
+				failedItems.add(taskObj.get("name") + " (list '" + listName + "' could not be created)");
+			}
+		}
+		else
+		{
+			taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
+			for each  taskObj in tasksInList
+			{
+				taskName = taskObj.get("name");
+				if(existingTaskNames.contains(taskName))
 				{
-					taskListParams = Map();
-					taskListParams.put("name",listName);
-					taskListResponse = invokeurl
+					skippedCount = skippedCount + 1;
+					info "SKIPPED (already exists): " + taskName;
+				}
+				else
+				{
+					taskParams = Map();
+					taskParams.put("name",taskName);
+					if(taskObj.get("person_responsible") != "" && taskObj.get("person_responsible") != null)
+					{
+						taskParams.put("person_responsible",taskObj.get("person_responsible"));
+					}
+					taskParams.put("tasklist_id",createdTaskListId);
+					taskResponse = invokeurl
 					[
-						url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+						url :taskUrl
 						type :POST
-						parameters:taskListParams
+						parameters:taskParams
 						connection:"zoho_projects_connection"
 					];
-					if(taskListResponse.get("tasklists") != null)
+					if(taskResponse.get("tasks") == null)
 					{
-						createdTaskListId = taskListResponse.get("tasklists").get(0).get("id_string");
+						info "FAILED TO CREATE TASK: " + taskName + " | ERROR: " + taskResponse.toString();
+						failedItems.add(taskName);
 					}
-				}
-				if(createdTaskListId != null)
-				{
-					taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
-					for each  taskObj in tasksInList
+					else
 					{
-						taskParams = Map();
-						taskParams.put("name",taskObj.get("name"));
-						if(taskObj.get("person_responsible") != "")
-						{
-							taskParams.put("person_responsible",taskObj.get("person_responsible"));
-						}
-						taskParams.put("tasklist_id",createdTaskListId);
-						taskResponse = invokeurl
-						[
-							url :taskUrl
-							type :POST
-							parameters:taskParams
-							connection:"zoho_projects_connection"
-						];
-						if(taskResponse.get("tasks") == null)
-						{
-							info "FAILED TO CREATE TASK: " + taskObj.get("name").toString() + " | ERROR: " + taskResponse.toString();
-						}
+						createdCount = createdCount + 1;
 					}
 				}
 			}
 		}
 	}
-	return "Success: Project and Tasks created in Zoho Projects.";
 }
-else
+// =====================================
+// HONEST RESULT
+// The widget parses these prefixes: "Error" -> failure overlay,
+// "Warning" -> incomplete overlay (retry fills the gaps), else success.
+// =====================================
+if(failedItems.size() > 0)
 {
-	return "Error: Could not create Zoho Project.";
+	failedNames = "";
+	for each  failedItem in failedItems
+	{
+		if(failedNames == "")
+		{
+			failedNames = failedItem;
+		}
+		else
+		{
+			failedNames = failedNames + "; " + failedItem;
+		}
+	}
+	return "Warning: The project is in Zoho Projects, but " + failedItems.size() + " task(s) could not be created: " + failedNames + ".";
 }
+if(isReusedProject)
+{
+	return "Success: Existing project updated in Zoho Projects (" + createdCount + " task(s) created, " + skippedCount + " already existed).";
+}
+return "Success: Project and Tasks created in Zoho Projects.";
 }
