@@ -63,6 +63,15 @@ The Zoho CRM function editor rejected a script with "Improper code format" until
 - **No `break`/`while`** — use a for-each over a fixed list with a guard flag for retry loops.
 - Paste over the existing standalone function; never create a new function (the widget calls it by name via ZOHO.CRM.FUNCTIONS.execute).
 
+## v10.0 Workflow (Archetype) Engine
+The right-panel blueprint is generated from `ARCHETYPES` in index.html — the team's six production workflows (compiled from the July 2026 Miro sessions; spec artifact referenced in project memory). Rules:
+- Each archetype block reconciles (created when its `when(state)` is true, removed when false) — existing blocks are NEVER re-rendered, so user edits survive. Change task definitions in `ARCHETYPES`, not in DOM code.
+- Task fields: `phase` (setup/fab/qa/install/wrap — drives color), `owner` (role: SALES/TOM/MATT/JOEL/JEFFERY — resolved against the live Projects roster; SALES = the Deal owner), `site` (hidden on Supply Only jobs), `esa` ([ESA] prefix when travel flagged), `cond(state)` (e.g. Needs Site Measure checkbox, Renovation removal tasks).
+- Blocks whose tasks are all hidden hide entirely (no empty milestones/validation).
+- `applyRoleDefaults()` only fills UNASSIGNED inputs — never overwrite a human assignment.
+- Drafts carry `schema: 10`; pre-v10 drafts skip the right-panel snapshot and regenerate fresh.
+- Every job ends with the Accounting Close Out block (Jeffery / Zoho Books) — do not remove.
+
 ## v9.0 Architecture Contracts (do not regress these)
 1. **Event delegation on `#projectPreviewList`**: All "+ add task" buttons and contenteditable task edits are handled by ONE delegated listener on the persistent container. Never bind per-button listeners on preview-panel content — the auto-save snapshot (`previewListHTML` via innerHTML) destroys element listeners on restore, delegation survives. Inline `onclick` attributes are still valid inside the snapshot (they serialize) — that's why openUserModal/delete buttons keep them.
 2. **`window.triggerAutoSave`**: intentionally exposed globally. Inline onclick handlers execute in global scope, so a closure-only `triggerAutoSave` silently no-ops there (this was a real bug pre-v9.0).

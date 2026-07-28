@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v9.0</title>
+    <title>Ironwood Handoff Form v10.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -33,6 +33,12 @@
         .task-finished { color: #a78bfa; font-weight: 700; }
         .task-standard { color: #94a3b8; }
         .task-custom { color: #d946ef; font-weight: 700; }
+        /* Workflow phase colors (v10 archetype engine) */
+        .task-phase-setup { color: #a78bfa; font-weight: 700; }
+        .task-phase-fab { color: #38bdf8; font-weight: 700; }
+        .task-phase-qa { color: #fb923c; font-weight: 700; }
+        .task-phase-install { color: #f43f5e; font-weight: 700; }
+        .task-phase-wrap { color: #94a3b8; font-weight: 600; }
         
         .override-btn {
             font-size: 9px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
@@ -48,7 +54,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v9.0</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v10.0</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -93,15 +99,7 @@
             <div id="leftPanel" class="h-full overflow-y-auto px-6 py-6 border-r border-slate-700/50" style="width: 35%;">
                 <form id="handoffForm" class="space-y-6">
                     
-                    <!-- Hidden inputs to store Stage-Based Assignee States -->
-                    <input type="hidden" id="railingSheetAssigneeInput" name="railingSheetAssignee" value="UNASSIGNED">
-                    <input type="hidden" id="stairSheetAssigneeInput" name="stairSheetAssignee" value="UNASSIGNED">
-                    <input type="hidden" id="schedulingAssigneeInput" name="schedulingAssignee" value="UNASSIGNED">
-                    <input type="hidden" id="materialsAssigneeInput" name="materialsAssignee" value="UNASSIGNED">
-                    <input type="hidden" id="railingMfgAssigneeInput" name="railingMfgAssignee" value="UNASSIGNED">
-                    <input type="hidden" id="stairMfgAssigneeInput" name="stairMfgAssignee" value="UNASSIGNED">
-                    <input type="hidden" id="qaAssigneeInput" name="qaAssignee" value="UNASSIGNED">
-                    <input type="hidden" id="installAssigneeInput" name="installAssignee" value="UNASSIGNED">
+                    <!-- Project Owner override (workflow-block assignee inputs are created dynamically by the archetype engine) -->
                     <input type="hidden" id="projectOwnerAssigneeInput" name="projectOwnerAssignee" value="UNASSIGNED">
 
                     <div class="space-y-3">
@@ -180,6 +178,12 @@
                                     </label>
                                 </div>
                             </div>
+                            <div class="pt-2 border-t border-slate-700/50">
+                                <label class="flex items-center p-2 bg-slate-800/40 border border-emerald-800/40 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                    <input type="checkbox" name="constNeedsMeasure" value="Yes" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                    <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Needs Site Measure? <span class="text-slate-500">(adds a Joel/Tom measure task)</span></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
@@ -253,6 +257,10 @@
                             <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2">
                                 <input type="checkbox" id="railFullMetal" name="railingType" value="FullMetal" class="w-3.5 h-3.5 text-sky-400 bg-slate-900 border-slate-600 rounded form-checkbox">
                                 <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Full Metal Railing (Welded)</span>
+                            </label>
+                            <label class="flex items-center p-2 bg-slate-800/30 border border-amber-800/40 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2">
+                                <input type="checkbox" name="woodAddon" value="Yes" class="w-3 h-3 text-amber-400 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Wood Components Add-On <span class="text-slate-500">(e.g. wood cap rail on a welded job)</span></span>
                             </label>
                         </div>
                         <details class="mt-2 group">
@@ -363,291 +371,7 @@
 
                     <div class="space-y-3 hidden pb-4" id="projectPreviewList">
                         
-                        <!-- Block 1: Railing Sheet -->
-                        <div id="block-railing-installer-sheet" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
-                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded bg-sky-500/20 border border-sky-500/30 flex items-center justify-center text-sky-400 font-bold text-[9px]">RI</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Railing Setup & Design</p>
-                                    <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-railingSheetAssigneeInput" onclick="openUserModal('railingSheetAssigneeInput', 'Railing Setup')" class="override-btn">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li id="task-standard-measure" class="task-standard">Railing Site Measure</li>
-                                <li id="task-metal-measure" class="task-metal hidden">Metal Template Measure</li>
-                                <li id="task-railing-drawing" class="task-standard">Create Railing Site Drawing</li>
-                                <li id="task-railing-takeoff" class="task-standard">Create Railing Take Off Sheet</li>
-                            </ul>
-                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
-                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                    Click to add custom task...
-                                </summary>
-                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
-                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
-                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                                </div>
-                            </details>
-                        </div>
-
-                        <!-- Block 2: Stair Sheet -->
-                        <div id="block-stair-installer-sheet" data-default-list="Stair Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
-                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-[9px]">SI</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Stair Setup & Design</p>
-                                    <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-stairSheetAssigneeInput" onclick="openUserModal('stairSheetAssigneeInput', 'Stair Setup')" class="override-btn">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li id="task-const-stair-measure" class="task-framing hidden">Stair Measure (Framing Stage)</li>
-                                <li id="task-reno-stair-measure" class="task-standard hidden">Stair Site Measure</li>
-                                <li id="task-stair-spec" class="task-standard hidden">Fill Out Stair Spec Sheet</li>
-                                <li id="task-stair-drawing" class="task-standard hidden">Create Stair Drawing</li>
-                                <li id="task-stair-takeoff" class="task-standard hidden">Create Stair Take Off Sheet</li>
-                            </ul>
-                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
-                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                    Click to add custom task...
-                                </summary>
-                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
-                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
-                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                                </div>
-                            </details>
-                        </div>
-
-                        <!-- Block 3: Scheduling -->
-                        <div id="block-scheduling" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
-                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold text-[9px]">SC</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Project Scheduling</p>
-                                    <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-schedulingAssigneeInput" onclick="openUserModal('schedulingAssigneeInput', 'Scheduling')" class="override-btn">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li id="task-reno-stair-removal-schedule" class="task-standard hidden" data-list="Stair Production & Install">Schedule Stair Removal</li>
-                                <li id="task-const-stair-schedule" class="task-framing hidden" data-list="Stair Production & Install">Schedule Const. Stair Drop</li>
-                                <li id="task-finished-stair-schedule" class="task-finished hidden" data-list="Stair Production & Install">Schedule Finished Stair Installation</li>
-                                <li id="task-reno-railing-removal-schedule" class="task-standard hidden">Schedule Railing Removal</li>
-                                <li id="task-schedule-generic-mfg" class="task-standard hidden">Schedule Manufacturing</li>
-                                <li id="task-schedule-metal-fab" class="task-metal hidden">Schedule Metal Fabrication</li>
-                                <li id="task-glass-schedule" class="task-glass hidden">Schedule Glass Templating</li>
-                                <li id="task-dryfit-schedule" class="task-metal hidden">Schedule Metal Dry Fit</li>
-                                <li id="task-powder-schedule" class="task-metal hidden">Schedule Powder Coating</li>
-                                <li id="task-railing-install-date" class="task-standard hidden">Schedule Railing Installation Date</li>
-                            </ul>
-                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
-                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                    Click to add custom task...
-                                </summary>
-                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
-                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
-                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                                </div>
-                            </details>
-                        </div>
-
-                        <!-- Block 4: Materials -->
-                        <div id="block-materials-ordering" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
-                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded bg-purple-500/20 border border-purple-500/30 flex items-center justify-center text-purple-400 font-bold text-[9px]">MO</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Materials Ordering</p>
-                                    <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-materialsAssigneeInput" onclick="openUserModal('materialsAssigneeInput', 'Purchasing')" class="override-btn">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li id="task-customMetal-order" class="task-metal hidden">Order Custom Metal / Steel</li>
-                                <li id="task-order-materials-generic" class="task-standard hidden">Order Standard Railing Materials</li>
-                                <li id="task-wall-brackets" class="task-metal-spindle hidden">Order Metal Wall Brackets</li>
-                                <li id="task-wood-order" class="task-wood-spindle hidden">Order Wood Spindles</li>
-                                <li id="task-metal-order" class="task-metal-spindle hidden">Order Metal Spindles</li>
-                                <li id="task-glass-order" class="task-glass hidden">Order Glass Panels</li>
-                                <li id="task-finished-stair-order" class="task-finished hidden" data-list="Stair Production & Install">Order Finished Stair Materials</li>
-                                <li id="task-receive-materials" class="task-standard">Receive Materials (QA)</li>
-                            </ul>
-                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
-                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                    Click to add custom task...
-                                </summary>
-                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
-                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
-                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                                </div>
-                            </details>
-                        </div>
-
-                        <!-- Block 5: Railing Mfg -->
-                        <div id="block-railing-mfg" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
-                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400 font-bold text-[9px]">RM</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Railing Fabrication</p>
-                                    <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-railingMfgAssigneeInput" onclick="openUserModal('railingMfgAssigneeInput', 'Railing Mfg')" class="override-btn">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li id="task-slice" class="task-curved hidden">Generate Slice Package (Curved)</li>
-                                <li id="task-mfg-package-railing" class="task-standard hidden">Manufacture Railing Package</li>
-                                <li id="task-fullMetal-mfg" class="task-metal hidden">Fabricate Welded Structure</li>
-                                <li id="task-wood-mfg" class="task-wood-spindle hidden">Manufacture Wood Spindles</li>
-                                <li id="task-metal-mfg" class="task-metal-spindle hidden">Cut Metal Spindles</li>
-                                <li id="task-customMetal-mfg" class="task-metal hidden">Fabricate Custom Metal Parts</li>
-                            </ul>
-                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
-                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                    Click to add custom task...
-                                </summary>
-                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
-                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
-                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                                </div>
-                            </details>
-                        </div>
-
-                        <!-- Block 6: Stair Mfg -->
-                        <div id="block-stair-mfg" data-default-list="Stair Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
-                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-[9px]">SM</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Stair Fabrication</p>
-                                    <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-stairMfgAssigneeInput" onclick="openUserModal('stairMfgAssigneeInput', 'Stair Mfg')" class="override-btn">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li id="task-mfg-package-stair" class="task-finished hidden">Manufacture Stair Package</li>
-                                <li id="task-finished-stair-mfg" class="task-finished hidden">Manufacture Finished Stair Parts</li>
-                            </ul>
-                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
-                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                    Click to add custom task...
-                                </summary>
-                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
-                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
-                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                                </div>
-                            </details>
-                        </div>
-
-                        <!-- Block 7: QA Wrapup -->
-                        <div id="block-assembly-wrapup" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
-                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded bg-orange-500/20 border border-orange-500/30 flex items-center justify-center text-orange-400 font-bold text-[9px]">QA</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Assembly & Wrap Up</p>
-                                    <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-qaAssigneeInput" onclick="openUserModal('qaAssigneeInput', 'Quality Assurance')" class="override-btn">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li id="task-qa-check" class="task-standard">Quality Assurance Check</li>
-                                <li id="task-wrap-generic" class="task-standard">Materials Wrap Up</li>
-                            </ul>
-                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
-                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                    Click to add custom task...
-                                </summary>
-                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
-                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
-                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                                </div>
-                            </details>
-                        </div>
-
-                        <!-- Block 8: Install -->
-                        <div id="block-install-qa" data-default-list="Railing Production & Install" class="bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg hidden">
-                            <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
-                                <div class="flex items-center gap-2">
-                                    <div class="w-5 h-5 rounded bg-rose-500/20 border border-rose-500/30 flex items-center justify-center text-rose-400 font-bold text-[9px]">IN</div>
-                                    <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">Installation</p>
-                                    <button type="button" onclick="this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                                    </button>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <button type="button" id="btn-installAssigneeInput" onclick="openUserModal('installAssigneeInput', 'Installation')" class="override-btn">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
-                                    </button>
-                                </div>
-                            </div>
-                            <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">
-                                <li id="task-reno-stair-removal" class="task-standard hidden" data-list="Stair Production & Install">Existing Stair Removal</li>
-                                <li id="task-reno-railing-removal" class="task-standard hidden">Existing Railing Removal</li>
-                                <li id="task-const-stair-drop" class="task-framing hidden" data-list="Stair Production & Install">Const. Stair Drop Off</li>
-                                <li id="task-const-stair-install" class="task-framing hidden" data-list="Stair Production & Install">Const. Stair Installation</li>
-                                <li id="task-dryfit-task" class="task-metal hidden">Onsite Metal Dry Fit</li>
-                                <li id="task-finished-stair-install" class="task-finished hidden" data-list="Stair Production & Install">Finished Stair Installation</li>
-                                <li id="task-railing-install" class="task-standard hidden">Railing Installation</li>
-                                <li id="task-glass-install" class="task-glass hidden">Glass Panel Installation</li>
-                                <li id="task-qa-turnover" class="task-standard hidden">QA & Turnover</li>
-                            </ul>
-                            <details class="mt-2 pt-2 border-t border-slate-700/50 group">
-                                <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
-                                    <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                                    Click to add custom task...
-                                </summary>
-                                <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
-                                    <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
-                                    <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
-                                </div>
-                            </details>
-                        </div>
+                        <!-- Workflow blocks are generated dynamically by the archetype engine (see ARCHETYPES in the script) -->
 
                     </div>
                 </div>
@@ -664,7 +388,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v9.0 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v10.0 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -743,10 +467,24 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v9.0 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v10.0 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v10.0 - The Workflow Engine</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Six Job-Type Workflows:</strong> The blueprint is now generated from the team's real production workflows (from the Miro sessions): Railing Setup &amp; Fabrication, Spindles Install, Glass, Custom Welding, Construction Grade Stairs, and Finished Stair — each with its meeting-approved task order and QA gates.</li>
+                            <li><strong class="text-slate-300">Default Owners Per Step:</strong> Tasks pre-assign to the right people automatically — Sales (the Deal owner), Tom, Matt, Joel, and Jeffery — pulled live from the Zoho Projects roster.</li>
+                            <li><strong class="text-slate-300">Accounting Close Out:</strong> Every job now ends with a "Job &amp; Invoice" task for Jeffery so Zoho Books always gets the handoff.</li>
+                            <li><strong class="text-slate-300">Supply Only Done Right:</strong> Supply Only jobs hide all site work (measures &amp; installs) and add a Customer Pickup wrap-up instead.</li>
+                            <li><strong class="text-slate-300">Needs Site Measure?:</strong> New checkbox on Construction Grade stairs — the measure task (Joel/Tom) only appears when the job actually needs one.</li>
+                            <li><strong class="text-slate-300">Wood Components Add-On:</strong> New checkbox for custom welded jobs capped with wood rail — injects wood ordering, lathe work, and cap rail install.</li>
+                            <li><strong class="text-slate-300">Sequencing Fixes:</strong> Glass is templated/ordered only after the framework is installed (one merged task, per the team), Finished Stair site measure moved to after shop assembly (Tom), and Const. Grade drop-offs get a theft-documentation photo task.</li>
+                            <li><strong class="text-slate-300">Phase Colors:</strong> Tasks are color-coded by phase — setup (violet), fabrication (blue), QA (orange), install (red), wrap-up (slate).</li>
+                            <li><strong class="text-slate-300">Note on old drafts:</strong> Drafts saved before v10 regenerate a fresh blueprint from your selections (custom left-panel items are preserved).</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v9.0 - The Reliability Overhaul</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1172,6 +910,11 @@
         let wasTriggeredByGenerate = false;
         let crmUsers = [];
         let dynamicProjectUsers = [];
+        let dealOwnerName = "";
+        let roleUserMap = {};
+        // Archetype blocks the user explicitly trashed this session — the engine
+        // won't recreate them until their driving checkbox is toggled off and on.
+        const dismissedArchetypes = new Set();
 
         // Escape user-supplied text before injecting it into innerHTML templates
         const escapeHtml = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -1223,7 +966,6 @@
                             if (parsedOutput.users) {
                                 dynamicProjectUsers = parsedOutput.users;
                                 renderDynamicUserModal(dynamicProjectUsers);
-                                setDynamicDefaultAssignees(dynamicProjectUsers);
                             }
                         }
                     } catch(e) { console.warn("Could not fetch dynamic project users via connection", e); }
@@ -1236,13 +978,26 @@
                     } else if (data && data.recordId) {
                         currentDealId = data.recordId;
                     }
-                    
+
                     document.getElementById('appContainer').classList.remove('hidden');
                     ZOHO.CRM.UI.Resize({height: currentWindowHeight, width: currentWindowWidth});
 
                     if(currentDealId) {
                         setTimeout(() => { if (typeof window.restoreDraftState === 'function') window.restoreDraftState(currentDealId); }, 500);
                     }
+
+                    // The Deal owner backs the SALES role in the workflow engine
+                    if (currentDealId) {
+                        try {
+                            const dealRes = await ZOHO.CRM.API.getRecord({Entity: "Deals", RecordID: currentDealId});
+                            if (dealRes && dealRes.data && dealRes.data[0] && dealRes.data[0].Owner) {
+                                dealOwnerName = dealRes.data[0].Owner.name || "";
+                            }
+                        } catch(e) { console.warn("Could not load deal owner", e); }
+                    }
+                    buildRoleUserMap();
+                    applyRoleDefaults();
+                    updateBlueprintPreview();
 
                     try {
                         const usersRes = await ZOHO.CRM.API.getAllUsers({Type:"ActiveUsers"});
@@ -1440,21 +1195,23 @@
                     }
                 }
                 
+                // Every hidden assignee input in the form: project owner, archetype
+                // block inputs (archAssignee_*), and custom block inputs.
                 const assignees = {};
-                ['railingSheetAssigneeInput', 'stairSheetAssigneeInput', 'schedulingAssigneeInput', 'materialsAssigneeInput', 'railingMfgAssigneeInput', 'stairMfgAssigneeInput', 'qaAssigneeInput', 'installAssigneeInput', 'projectOwnerAssigneeInput'].forEach(id => {
-                    const el = document.getElementById(id);
-                    if (el) {
-                        const btn = document.getElementById('btn-' + id);
-                        assignees[id] = {
-                            value: el.value,
-                            email: el.getAttribute('data-zuid'),
-                            html: btn ? btn.innerHTML : '',
-                            className: btn ? btn.className : ''
-                        };
-                    }
+                document.querySelectorAll('#handoffForm input[type="hidden"]').forEach(el => {
+                    if (!el.id) return;
+                    const btn = document.getElementById('btn-' + el.id);
+                    assignees[el.id] = {
+                        value: el.value,
+                        email: el.getAttribute('data-zuid'),
+                        role: el.getAttribute('data-role') || '',
+                        html: btn ? btn.innerHTML : '',
+                        className: btn ? btn.className : ''
+                    };
                 });
 
                 const draft = {
+                    schema: 10,
                     form: formState,
                     assignees: assignees,
                     timestamp: new Date().getTime(),
@@ -1565,22 +1322,7 @@
                     try {
                         const draft = JSON.parse(draftStr);
                         const formState = draft.form || {};
-                        
-                        // Restore Assignee Overrides
-                        if (draft.assignees) {
-                            for (const [id, data] of Object.entries(draft.assignees)) {
-                                const el = document.getElementById(id);
-                                if (el) {
-                                    el.value = data.value;
-                                    el.setAttribute('data-zuid', data.email || '');
-                                    const btn = document.getElementById('btn-' + id);
-                                    if (btn && data.html) {
-                                        btn.innerHTML = data.html;
-                                        btn.className = data.className;
-                                    }
-                                }
-                            }
-                        }
+                        const isV10Draft = (draft.schema || 0) >= 10;
 
                         // 1. Restore Custom Options Checkboxes (Left Side)
                         // Dedup is scoped to custom-option inputs only, so a custom item
@@ -1623,12 +1365,34 @@
                             }
                         }
                         
-                        // 3. Trigger recalculation
+                        // 3. Trigger recalculation — this also creates the archetype
+                        // blocks (and their hidden assignee inputs) for the restored
+                        // selections, which step 3b then fills in.
                         if (typeof updateBlueprintPreview === 'function') updateBlueprintPreview();
                         form.dispatchEvent(new Event('change', { bubbles: true }));
-                        
-                        // 4. Override Right Panel with UI Snapshot (after a tiny delay so updateBlueprintPreview finishes)
-                        if (draft.previewListHTML) {
+
+                        // 3b. Restore Assignee Overrides (after the engine has created
+                        // the archetype hidden inputs they belong to)
+                        if (draft.assignees) {
+                            for (const [id, data] of Object.entries(draft.assignees)) {
+                                const el = document.getElementById(id);
+                                if (el) {
+                                    el.value = data.value;
+                                    el.setAttribute('data-zuid', data.email || '');
+                                    const btn = document.getElementById('btn-' + id);
+                                    if (btn && data.html) {
+                                        btn.innerHTML = data.html;
+                                        btn.className = data.className;
+                                    }
+                                }
+                            }
+                        }
+
+                        // 4. Override Right Panel with UI Snapshot (after a tiny delay so
+                        // updateBlueprintPreview finishes). Pre-v10 snapshots contain the
+                        // old stage-based blocks — skip them and let the engine's freshly
+                        // generated workflow blueprint stand instead.
+                        if (draft.previewListHTML && isV10Draft) {
                             setTimeout(() => {
                                 document.getElementById('projectPreviewList').innerHTML = draft.previewListHTML;
                                 
@@ -1744,25 +1508,9 @@
             });
 
             // NOTE: "+ add task" buttons are handled by the delegated click handler
-            // on #projectPreviewList above — no per-button binding needed.
-
-            document.querySelectorAll('.sortable-list li').forEach((li, idx) => {
-                const text = li.innerHTML;
-                const taskId = 'task-static-' + idx + '-' + Math.floor(Math.random()*1000);
-                li.innerHTML = `
-                    <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
-                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
-                    </span>
-                    <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${text}</span>
-                    <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
-                    <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
-                        <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    </button>
-                    <span class="delete-btn" onclick="this.parentElement.remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();">&times;</span>
-                `;
-                
-                li.className += " flex items-center group relative";
-            });
+            // on #projectPreviewList above — no per-button binding needed. Workflow
+            // blocks and their tasks are generated by the archetype engine, which
+            // renders drag handles and assign buttons directly.
         });
 
 
@@ -1924,236 +1672,315 @@
             closeUserModal();
         }
 
-        const setTaskColor = (id, colorClass) => {
-            const el = document.getElementById(id);
-            if (el) {
-                el.className = el.className.replace(/task-\w+(-\w+)?/g, '');
-                el.classList.add(colorClass);
-            }
+        // ============================================================
+        // v10 WORKFLOW (ARCHETYPE) ENGINE
+        // The blueprint is generated from the team's six production
+        // workflows (Miro sessions, July 2026). Each archetype renders
+        // one block; reconciliation adds/removes blocks as selections
+        // change WITHOUT re-rendering blocks that already exist, so
+        // user edits, custom tasks, and drag ordering always survive.
+        // ============================================================
+
+        const getSelectionState = () => {
+            const checked = (sel) => { const el = document.querySelector(sel); return el ? el.checked : false; };
+            const anyChecked = (sel) => Array.from(document.querySelectorAll(sel)).some(cb => cb.checked);
+            const scopeEl = document.querySelector('input[name="scopeOfWork"]:checked');
+            const s = {
+                scope: scopeEl ? scopeEl.value : 'Supply & Install',
+                isReno: checked('input[name="projectType"][value="Renovation"]'),
+                constStair: anyChecked('input[name="constStairShape"], input[name="constStairType"]'),
+                finStair: anyChecked('input[name="finStairShape"], input[name="finStairType"]'),
+                railStraight: checked('#railStraight'),
+                railCurved: checked('#railCurved'),
+                railFullMetal: checked('#railFullMetal'),
+                spindleWood: checked('input[name="spindleType"][value="Wood"]'),
+                spindleMetal: checked('input[name="spindleType"][value="Metal"]'),
+                spindleCustom: checked('input[name="spindleType"][value="CustomMetal"]'),
+                spindleGlass: checked('input[name="spindleType"][value="Glass"]'),
+                spindleWall: checked('input[name="spindleType"][value="WallMount"]'),
+                woodAddon: checked('input[name="woodAddon"]'),
+                needsMeasure: checked('input[name="constNeedsMeasure"]'),
+                esa: document.getElementById('travelRequired').value === 'Yes'
+            };
+            s.supplyOnly = s.scope === 'Supply Only';
+            s.railingGeneral = s.railStraight || s.railCurved || s.spindleWood || s.spindleMetal || s.spindleWall || s.spindleGlass;
+            s.spindlesInstall = s.railStraight || s.railCurved || s.spindleWood || s.spindleMetal || s.spindleWall;
+            s.welding = s.railFullMetal || s.spindleCustom;
+            s.anyArchetype = s.railingGeneral || s.welding || s.constStair || s.finStair || s.woodAddon;
+            return s;
         };
 
-        // Rewrites a task's label unless the user manually renamed it
-        // (data-user-edited is stamped by the delegated contenteditable handler).
-        const setTaskText = (id, text) => {
-            const li = document.getElementById(id);
-            if (!li || li.hasAttribute('data-user-edited')) return;
-            const span = li.querySelector('.editable-task');
-            if (span) span.textContent = text;
-            else li.textContent = text;
+        // Task fields: name, phase (setup|fab|qa|install|wrap), owner (role),
+        // site (physical site visit — hidden on Supply Only jobs),
+        // esa (gets the [ESA] prefix when travel is flagged),
+        // cond (visibility fn of state), list (Zoho task-list override).
+        const ARCHETYPES = [
+            { key: 'railing-setup', abbrev: 'RF', title: 'Railing Setup & Fabrication', list: 'Railing Production & Install', owner: 'SALES',
+              when: s => s.railingGeneral,
+              tasks: [
+                { name: 'Railing Site Measure', phase: 'setup', owner: 'SALES', site: true, esa: true },
+                { name: 'Existing Railing Removal', phase: 'install', site: true, cond: s => s.isReno },
+                { name: 'Create Railing Site Drawing', phase: 'setup' },
+                { name: 'Create Railing Take Off Sheet', phase: 'setup', owner: 'MATT' },
+                { name: 'Order Railing Materials', phase: 'fab', owner: 'TOM' },
+                { name: 'Receive Materials (QA)', phase: 'fab' },
+                { name: 'Schedule Manufacturing', phase: 'fab' },
+                { name: 'Manufacture Railing Package (incl. Lathe Work)', phase: 'fab' }
+              ] },
+            { key: 'spindles-install', abbrev: 'SP', title: 'Railing Install - Spindles', list: 'Railing Production & Install', owner: 'JOEL',
+              when: s => s.spindlesInstall,
+              tasks: [
+                { name: 'Install Spindles', phase: 'install', site: true, esa: true },
+                { name: 'Install Handrail', phase: 'install', site: true, esa: true },
+                { name: 'QC - Pass / Fail', phase: 'qa', site: true },
+                { name: 'Install Plugs', phase: 'install', site: true }
+              ] },
+            { key: 'glass', abbrev: 'GL', title: 'Railing - Glass', list: 'Railing Production & Install', owner: 'JOEL',
+              when: s => s.spindleGlass,
+              tasks: [
+                { name: 'Install Railing Framework', phase: 'install', site: true, esa: true },
+                { name: 'QC Frame, Template Glass, Draw / Order Glass', phase: 'qa', site: true },
+                { name: 'Install Glass Panels', phase: 'install', site: true, esa: true }
+              ] },
+            { key: 'welding', abbrev: 'CW', title: 'Railing - Custom Welding', list: 'Railing Production & Install', owner: 'JEFFERY',
+              when: s => s.welding,
+              tasks: [
+                { name: 'Job Proof', phase: 'setup', owner: 'JEFFERY' },
+                { name: 'Metal Template Measure', phase: 'setup', site: true, esa: true },
+                { name: 'Order Custom Metal / Steel', phase: 'fab', owner: 'JEFFERY' },
+                { name: 'Schedule Materials Delivery', phase: 'fab', owner: 'JEFFERY' },
+                { name: 'Fabricate Welded Structure', phase: 'fab' },
+                { name: 'QA - Weld / Fabrication Check', phase: 'qa' },
+                { name: 'Send to Powder Coating', phase: 'fab', owner: 'JEFFERY' },
+                { name: 'Schedule Coating Pick Up', phase: 'fab', owner: 'JEFFERY' },
+                { name: 'Powder Coat QA - at the Coaters', phase: 'qa', owner: 'JEFFERY' },
+                { name: 'Install Welded Railing', phase: 'install', owner: 'JOEL', site: true, esa: true }
+              ] },
+            { key: 'wood-addon', abbrev: 'WD', title: 'Wood Components Add-On', list: 'Railing Production & Install', owner: 'TOM',
+              when: s => s.woodAddon,
+              tasks: [
+                { name: 'Order Wood Components', phase: 'fab', owner: 'TOM' },
+                { name: 'Lathe / Manufacture Wood Components', phase: 'fab' },
+                { name: 'Install Wood Cap Rail', phase: 'install', site: true, esa: true }
+              ] },
+            { key: 'const-stair', abbrev: 'CG', title: 'Construction Grade Stairs', list: 'Stair Production & Install', owner: 'MATT',
+              when: s => s.constStair,
+              tasks: [
+                { name: 'Schedule Production & Install', phase: 'setup', owner: 'MATT' },
+                { name: 'Complete Site Measure', phase: 'setup', owner: 'JOEL', site: true, esa: true, cond: s => s.needsMeasure },
+                { name: 'Existing Stair Removal', phase: 'install', site: true, cond: s => s.isReno },
+                { name: 'Fill Spec Sheet / Takeoff (Verify Sheet Name with Tom)', phase: 'setup', owner: 'TOM' },
+                { name: 'QA Check - Blueprints / Specs', phase: 'qa' },
+                { name: 'Manufacture Stair Package & Parts', phase: 'fab' },
+                { name: 'QA Check - Package', phase: 'qa' },
+                { name: 'Const. Stair Drop Off Onsite', phase: 'install', site: true, esa: true },
+                { name: 'Upload Drop-off Photo (Theft Documentation)', phase: 'install', site: true }
+              ] },
+            { key: 'finished-stair', abbrev: 'FS', title: 'Finished Stair', list: 'Stair Production & Install', owner: 'TOM',
+              when: s => s.finStair,
+              tasks: [
+                { name: 'Fill Out Stair Spec Sheet', phase: 'setup', owner: 'SALES' },
+                { name: 'Create Stair Drawing', phase: 'setup' },
+                { name: 'Create Stair Take Off Sheet', phase: 'setup' },
+                { name: 'Existing Stair Removal', phase: 'install', site: true, cond: s => s.isReno },
+                { name: 'Order Finished Stair Materials (Stair Kit)', phase: 'fab', owner: 'TOM' },
+                { name: 'Schedule Delivery & Receiving', phase: 'fab' },
+                { name: 'Stair Assembly - Manufacture Package & Parts', phase: 'fab' },
+                { name: 'Site Measure + Schedule Install', phase: 'install', owner: 'TOM', site: true, esa: true },
+                { name: 'QA Inspection - Pass / Fail', phase: 'qa' },
+                { name: 'Finished Stair Installation', phase: 'install', site: true, esa: true }
+              ] },
+            { key: 'pickup', abbrev: 'PU', title: 'Customer Pickup', list: 'Railing Production & Install', owner: 'TOM',
+              when: s => s.supplyOnly && s.anyArchetype,
+              tasks: [
+                { name: 'Final QA Check', phase: 'qa' },
+                { name: 'Package for Customer Pickup', phase: 'wrap' },
+                { name: 'Customer Pickup Complete', phase: 'wrap' }
+              ] },
+            { key: 'accounting', abbrev: 'AC', title: 'Accounting Close Out', list: 'Railing Production & Install', owner: 'JEFFERY',
+              when: s => s.anyArchetype,
+              tasks: [
+                { name: 'Job & Invoice - Zoho Books Close Out', phase: 'wrap', owner: 'JEFFERY' }
+              ] }
+        ];
+
+        // Role -> live roster user. SALES resolves to the Deal owner.
+        function buildRoleUserMap() {
+            const find = (terms) => dynamicProjectUsers.find(u => u.name && terms.some(t => u.name.toLowerCase().includes(t)));
+            roleUserMap = {
+                TOM: find(['thomas', 'tom']),
+                MATT: find(['matthew', 'matt']),
+                JOEL: find(['joel']),
+                JEFFERY: find(['jeffery', 'jeffrey'])
+            };
+            if (dealOwnerName) {
+                const ownerLc = dealOwnerName.toLowerCase();
+                roleUserMap.SALES = dynamicProjectUsers.find(u => u.name && (
+                    u.name.toLowerCase() === ownerLc ||
+                    ownerLc.includes(u.name.toLowerCase()) ||
+                    u.name.toLowerCase().includes(ownerLc.split(' ')[0])
+                ));
+            }
+        }
+
+        // Fill every UNASSIGNED role-tagged input (block-level and task-level)
+        // from the roster map. Safe to call repeatedly; never overwrites a choice.
+        function applyRoleDefaults() {
+            document.querySelectorAll('input[data-role]').forEach(inp => {
+                if (inp.value !== 'UNASSIGNED' || !inp.id) return;
+                const user = roleUserMap[inp.getAttribute('data-role')];
+                if (!user) return;
+                currentTargetInputId = inp.id;
+                selectUser(user.id, user.name, user.email || user.zuid || '');
+            });
+            currentTargetInputId = null;
+        }
+
+        const PHASE_BADGE = {
+            setup: 'bg-violet-500/20 border-violet-500/30 text-violet-400',
+            fab: 'bg-sky-500/20 border-sky-500/30 text-sky-400',
+            qa: 'bg-orange-500/20 border-orange-500/30 text-orange-400',
+            install: 'bg-rose-500/20 border-rose-500/30 text-rose-400',
+            wrap: 'bg-slate-500/20 border-slate-500/30 text-slate-400'
         };
+
+        function createArchetypeBlock(arch, state) {
+            const previewList = document.getElementById('projectPreviewList');
+            const inputId = `archAssignee_${arch.key}_Input`;
+            const block = document.createElement('div');
+            block.id = `block-arch-${arch.key}`;
+            block.setAttribute('data-archetype', arch.key);
+            block.setAttribute('data-default-list', arch.list);
+            block.className = "bg-slate-800/60 p-3 border border-slate-700 rounded-xl shadow-lg";
+            const badge = PHASE_BADGE[arch.tasks[0] ? arch.tasks[0].phase : 'setup'] || PHASE_BADGE.setup;
+            const tasksHtml = arch.tasks.map((t, i) => {
+                const taskId = `task-arch-${arch.key}-${i}`;
+                const esaPrefix = (t.esa && state.esa) ? '[ESA] ' : '';
+                return `
+                <li data-ti="${i}" data-phase="${t.phase}"${t.list ? ` data-list="${t.list}"` : ''} class="task-phase-${t.phase} flex items-center group relative">
+                    <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
+                        <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
+                    </span>
+                    <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${escapeHtml(esaPrefix + t.name)}</span>
+                    <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid=""${t.owner ? ` data-role="${t.owner}"` : ''}>
+                    <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn ml-auto mr-2 text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
+                        <svg class="w-3 h-3 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    </button>
+                    <span class="delete-btn" onclick="this.parentElement.remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();">&times;</span>
+                </li>`;
+            }).join('');
+            block.innerHTML = `
+                <div class="flex items-center justify-between mb-2 pb-2 border-b border-slate-700/50 block-handle cursor-move">
+                    <div class="flex items-center gap-2">
+                        <div class="w-5 h-5 rounded ${badge} border flex items-center justify-center font-bold text-[9px]">${arch.abbrev}</div>
+                        <p class="text-[11px] font-bold text-slate-200 uppercase tracking-wider">${escapeHtml(arch.title)}</p>
+                        <button type="button" onclick="dismissArchetype('${arch.key}'); this.closest('[id^=block-]').remove(); if(typeof triggerAutoSave === 'function') triggerAutoSave();" class="text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 transition-colors p-1 rounded ml-1" title="Delete Section">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" id="btn-${inputId}" onclick="openUserModal('${inputId}', '${sanitizeLabel(arch.title)}')" class="override-btn">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Assign User
+                        </button>
+                    </div>
+                </div>
+                <ul class="text-[10px] text-slate-400 ml-7 list-disc space-y-1 sortable-list">${tasksHtml}</ul>
+                <details class="mt-2 pt-2 border-t border-slate-700/50 group">
+                    <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
+                        <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        Click to add custom task...
+                    </summary>
+                    <div class="mt-2 flex gap-1 items-center pl-3 border-l-2 border-slate-800 ml-1.5 mb-1">
+                        <input type="text" class="custom-task-input flex-grow text-[10px] bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-300 focus:outline-none focus:border-sky-500" placeholder="Task name...">
+                        <button type="button" class="add-task-btn bg-slate-700 hover:bg-slate-600 text-slate-300 text-[10px] px-2 py-1 rounded">+</button>
+                    </div>
+                </details>
+            `;
+            // Insert respecting ARCHETYPES order relative to other archetype blocks
+            // (custom blocks and drag re-ordering are left untouched).
+            const myIndex = ARCHETYPES.findIndex(a => a.key === arch.key);
+            let inserted = false;
+            for (const other of previewList.querySelectorAll('[data-archetype]')) {
+                const otherIndex = ARCHETYPES.findIndex(a => a.key === other.getAttribute('data-archetype'));
+                if (otherIndex > myIndex) { previewList.insertBefore(block, other); inserted = true; break; }
+            }
+            if (!inserted) previewList.appendChild(block);
+
+            // Block-level assignee input lives in the form so it survives
+            // right-panel snapshot swaps during draft restore.
+            if (!document.getElementById(inputId)) {
+                const hidden = document.createElement('input');
+                hidden.type = 'hidden';
+                hidden.id = inputId;
+                hidden.name = inputId;
+                hidden.value = 'UNASSIGNED';
+                if (arch.owner) hidden.setAttribute('data-role', arch.owner);
+                document.getElementById('handoffForm').appendChild(hidden);
+            }
+            initSortable(block.querySelector('.sortable-list'), { group: 'shared-tasks', animation: 150, handle: '.task-drag-handle', ghostClass: 'opacity-50', onEnd: () => { if (typeof triggerAutoSave === 'function') triggerAutoSave(); } });
+            return block;
+        }
+
+        window.dismissArchetype = (key) => { dismissedArchetypes.add(key); };
 
         const updateBlueprintPreview = () => {
-            const safeToggle = (id, condition) => {
-                const el = document.getElementById(id);
-                if (el) el.classList.toggle('hidden', condition);
-            };
-            const safeRemove = (id, cls) => {
-                const el = document.getElementById(id);
-                if (el) el.classList.remove(cls);
-            };
-
-            // Queried live (not cached at load) so custom options added later count too
-            const anyRequirementChecked = Array.from(form.querySelectorAll('input[type="checkbox"]')).some(cb => cb.checked);
-            const projectPreviewList = document.getElementById('projectPreviewList');
+            const state = getSelectionState();
+            const previewList = document.getElementById('projectPreviewList');
             const emptyStatePreview = document.getElementById('emptyStatePreview');
             const saveBtn = document.getElementById('saveBtn');
 
+            // Queried live (not cached at load) so custom options added later count too
+            const anyRequirementChecked = Array.from(form.querySelectorAll('input[type="checkbox"]')).some(cb => cb.checked);
+
             if (anyRequirementChecked) {
                 emptyStatePreview.classList.add('hidden');
-                projectPreviewList.classList.remove('hidden');
+                previewList.classList.remove('hidden');
                 saveBtn.disabled = false;
             } else {
                 emptyStatePreview.classList.remove('hidden');
-                projectPreviewList.classList.add('hidden');
+                previewList.classList.add('hidden');
                 saveBtn.disabled = true;
-                return;
             }
 
-            const isReno = document.querySelector('input[name="projectType"][value="Renovation"]').checked;
-            const railStraight = document.getElementById('railStraight').checked;
-            const railCurved = document.getElementById('railCurved').checked;
-            const railFullMetal = document.getElementById('railFullMetal').checked;
-            const woodRailingAny = railStraight || railCurved;
-            const railingAny = woodRailingAny || railFullMetal;
+            // Reconcile archetype blocks: create newly selected, remove deselected.
+            // Existing blocks are never re-rendered, so user edits always survive.
+            ARCHETYPES.forEach(arch => {
+                const active = arch.when(state);
+                let block = previewList.querySelector(`[data-archetype="${arch.key}"]`);
+                if (!active) {
+                    dismissedArchetypes.delete(arch.key); // toggling off clears a manual dismissal
+                    if (block) {
+                        block.remove();
+                        const hidden = document.getElementById(`archAssignee_${arch.key}_Input`);
+                        if (hidden) hidden.remove();
+                    }
+                    return;
+                }
+                if (!block && !dismissedArchetypes.has(arch.key)) {
+                    block = createArchetypeBlock(arch, state);
+                }
+                if (!block) return;
+                // Per-task visibility + label sync (respects manual renames)
+                block.querySelectorAll('li[data-ti]').forEach(li => {
+                    const t = arch.tasks[parseInt(li.getAttribute('data-ti'), 10)];
+                    if (!t) return;
+                    const visible = (!t.cond || t.cond(state)) && !(state.supplyOnly && t.site);
+                    li.classList.toggle('hidden', !visible);
+                    if (!li.hasAttribute('data-user-edited')) {
+                        const span = li.querySelector('.editable-task');
+                        if (span) span.textContent = ((t.esa && state.esa) ? '[ESA] ' : '') + t.name;
+                    }
+                });
+                // A block with no visible tasks (e.g. an install-only block on a
+                // Supply Only job) hides entirely — no empty milestone, no
+                // assignee validation for work that doesn't exist.
+                const anyVisibleTask = Array.from(block.querySelectorAll('li')).some(li => !li.classList.contains('hidden'));
+                block.classList.toggle('hidden', !anyVisibleTask);
+            });
 
-            const spindleWood = document.querySelector('input[name="spindleType"][value="Wood"]').checked;
-            const spindleMetal = document.querySelector('input[name="spindleType"][value="Metal"]').checked;
-            const spindleCustom = document.querySelector('input[name="spindleType"][value="CustomMetal"]').checked;
-            const spindleGlass = document.querySelector('input[name="spindleType"][value="Glass"]').checked;
-            const spindleWall = document.querySelector('input[name="spindleType"][value="WallMount"]').checked;
-            const spindleAny = spindleWood || spindleMetal || spindleCustom || spindleGlass || spindleWall;
+            applyRoleDefaults();
 
-            const stairConst = Array.from(document.querySelectorAll('input[name="constStairShape"], input[name="constStairType"]')).some(cb => cb.checked);
-            const stairFinished = Array.from(document.querySelectorAll('input[name="finStairShape"], input[name="finStairType"]')).some(cb => cb.checked);
-            const stairAny = stairConst || stairFinished;
-
-            const isESA = document.getElementById('travelRequired').value === 'Yes';
-            const esaPrefix = isESA ? "[ESA] " : "";
-
-            // Colors
-            let stairColor = stairFinished ? 'task-finished' : (stairConst ? 'task-framing' : 'task-standard');
-            let railingColor = railFullMetal ? 'task-metal' : (railCurved ? 'task-curved' : (railStraight ? 'task-straight' : 'task-standard'));
-            
-            let baseColor = 'task-standard';
-            if (railFullMetal) baseColor = 'task-metal';
-            else if (railCurved) baseColor = 'task-curved';
-            else if (stairFinished) baseColor = 'task-finished';
-            else if (railStraight) baseColor = 'task-straight';
-            else if (stairConst) baseColor = 'task-framing';
-            else if (spindleGlass) baseColor = 'task-glass';
-            else if (spindleMetal || spindleCustom || spindleWall) baseColor = 'task-metal-spindle';
-            else if (spindleWood) baseColor = 'task-wood-spindle';
-
-            setTaskColor('task-reno-stair-measure', stairColor);
-            setTaskColor('task-stair-spec', stairColor);
-            setTaskColor('task-stair-drawing', stairColor);
-            setTaskColor('task-stair-takeoff', stairColor);
-            setTaskColor('task-reno-stair-removal-schedule', stairColor);
-            setTaskColor('task-reno-stair-removal', stairColor);
-
-            setTaskColor('task-reno-railing-removal-schedule', railingColor);
-            setTaskColor('task-reno-railing-removal', railingColor);
-            setTaskColor('task-standard-measure', railingColor);
-            setTaskColor('task-railing-drawing', railingColor);
-            setTaskColor('task-railing-takeoff', railingColor);
-            setTaskColor('task-railing-install-date', railingColor);
-            setTaskColor('task-schedule-generic-mfg', railingColor);
-            setTaskColor('task-mfg-package-railing', railingColor);
-            setTaskColor('task-railing-install', railingColor);
-
-            setTaskColor('task-order-materials-generic', baseColor);
-            setTaskColor('task-receive-materials', baseColor);
-            setTaskColor('task-qa-check', baseColor);
-            setTaskColor('task-wrap-generic', baseColor);
-            setTaskColor('task-qa-turnover', baseColor);
-
-            setTaskColor('task-slice', 'task-curved'); 
-            
-            const activeMetalColor = railFullMetal ? 'task-metal' : 'task-metal-spindle';
-            setTaskColor('task-schedule-metal-fab', activeMetalColor);
-            setTaskColor('task-powder-schedule', activeMetalColor);
-            setTaskColor('task-customMetal-order', activeMetalColor);
-            setTaskColor('task-customMetal-mfg', activeMetalColor);
-            
-            setTaskColor('task-metal-order', 'task-metal-spindle');
-            setTaskColor('task-metal-mfg', 'task-metal-spindle');
-            setTaskColor('task-wall-brackets', 'task-metal-spindle');
-            
-            setTaskColor('task-dryfit-schedule', 'task-metal');
-            setTaskColor('task-dryfit-task', 'task-metal');
-            setTaskColor('task-fullMetal-mfg', 'task-metal');
-            setTaskColor('task-metal-measure', 'task-metal');
-            
-            setTaskColor('task-wood-order', 'task-wood-spindle');
-            setTaskColor('task-wood-mfg', 'task-wood-spindle');
-            
-            setTaskColor('task-glass-order', 'task-glass');
-            setTaskColor('task-glass-schedule', 'task-glass');
-            setTaskColor('task-glass-install', 'task-glass');
-            
-            setTaskColor('task-finished-stair-order', 'task-finished');
-            setTaskColor('task-finished-stair-mfg', 'task-finished');
-            setTaskColor('task-mfg-package-stair', 'task-finished');
-            setTaskColor('task-finished-stair-install', 'task-finished');
-            setTaskColor('task-finished-stair-schedule', 'task-finished');
-
-            setTaskColor('task-const-stair-measure', 'task-framing');
-            setTaskColor('task-const-stair-drop', 'task-framing');
-            setTaskColor('task-const-stair-install', 'task-framing');
-            setTaskColor('task-const-stair-schedule', 'task-framing');
-
-            // Block Visibility
-            safeToggle('block-railing-installer-sheet', !railingAny && !spindleAny);
-            safeToggle('block-stair-installer-sheet', !stairAny);
-            safeToggle('block-scheduling', !railingAny && !spindleAny && !stairAny);
-            
-            const needsWoodMaterials = woodRailingAny || spindleWood || stairFinished || spindleWall;
-            const showMaterialsOrdering = railingAny || stairFinished || spindleAny || needsWoodMaterials;
-            safeToggle('block-materials-ordering', !showMaterialsOrdering);
-            
-            const showRailingMfg = railingAny || spindleWood || spindleMetal || spindleCustom || spindleWall;
-            safeToggle('block-railing-mfg', !showRailingMfg);
-            
-            const showStairMfg = stairFinished;
-            safeToggle('block-stair-mfg', !showStairMfg);
-            
-            const showProduction = showRailingMfg || showStairMfg || stairConst;
-            safeToggle('block-assembly-wrapup', !showProduction);
-            safeRemove('block-install-qa', 'hidden');
-
-            // Task Visibility
-            document.getElementById('task-metal-measure').classList.toggle('hidden', !railFullMetal);
-            
-            const taskStandardMeasure = document.getElementById('task-standard-measure');
-            taskStandardMeasure.classList.toggle('hidden', railFullMetal);
-            setTaskText('task-standard-measure', esaPrefix + "Railing Site Measure");
-
-            document.getElementById('task-order-materials-generic').classList.toggle('hidden', !needsWoodMaterials);
-            document.getElementById('task-customMetal-order').classList.toggle('hidden', !railFullMetal && !spindleCustom);
-
-            // Railing Mfg Tasks
-            document.getElementById('task-mfg-package-railing').classList.toggle('hidden', !woodRailingAny && !spindleWood && !spindleWall);
-            document.getElementById('task-fullMetal-mfg').classList.toggle('hidden', !railFullMetal);
-            document.getElementById('task-wood-mfg').classList.toggle('hidden', !spindleWood);
-            document.getElementById('task-metal-mfg').classList.toggle('hidden', !spindleMetal);
-            document.getElementById('task-customMetal-mfg').classList.toggle('hidden', !spindleCustom);
-            document.getElementById('task-slice').classList.toggle('hidden', !railCurved);
-            
-            // Stair Mfg Tasks
-            document.getElementById('task-mfg-package-stair').classList.toggle('hidden', !stairFinished);
-            document.getElementById('task-finished-stair-mfg').classList.toggle('hidden', !stairFinished);
-
-            document.getElementById('task-dryfit-schedule').classList.toggle('hidden', !railFullMetal);
-            document.getElementById('task-powder-schedule').classList.toggle('hidden', !(railFullMetal || spindleCustom));
-            document.getElementById('task-schedule-metal-fab').classList.toggle('hidden', !railFullMetal && !spindleCustom);
-            document.getElementById('task-schedule-generic-mfg').classList.toggle('hidden', !woodRailingAny && !stairFinished);
-
-            const taskRailingInstall = document.getElementById('task-railing-install');
-            taskRailingInstall.classList.toggle('hidden', !railingAny && !spindleAny);
-            const railingText = spindleGlass ? "Railing Framework Installation" : "Railing Installation";
-            setTaskText('task-railing-install', esaPrefix + railingText);
-
-            document.getElementById('task-dryfit-task').classList.toggle('hidden', !railFullMetal);
-            document.getElementById('task-const-stair-drop').classList.toggle('hidden', !(stairConst && !isReno));
-            document.getElementById('task-const-stair-install').classList.toggle('hidden', !(stairConst && isReno));
-            
-            const taskFinishedStairInstall = document.getElementById('task-finished-stair-install');
-            taskFinishedStairInstall.classList.toggle('hidden', !stairFinished);
-            setTaskText('task-finished-stair-install', esaPrefix + "Finished Stair Installation");
-
-            document.getElementById('task-glass-schedule').classList.toggle('hidden', !spindleGlass);
-            document.getElementById('task-glass-install').classList.toggle('hidden', !spindleGlass);
-            
-            document.getElementById('task-const-stair-measure').classList.toggle('hidden', !(stairConst && !isReno));
-            document.getElementById('task-reno-stair-measure').classList.toggle('hidden', !(stairAny && isReno));
-            document.getElementById('task-stair-spec').classList.toggle('hidden', !stairAny);
-            document.getElementById('task-stair-drawing').classList.toggle('hidden', !stairAny);
-            document.getElementById('task-stair-takeoff').classList.toggle('hidden', !stairAny);
-            
-            document.getElementById('task-reno-stair-removal-schedule').classList.toggle('hidden', !(stairAny && isReno));
-            document.getElementById('task-reno-stair-removal').classList.toggle('hidden', !(stairAny && isReno));
-            
-            const needsRailingRemoval = (railingAny || spindleAny) && isReno;
-            document.getElementById('task-reno-railing-removal-schedule').classList.toggle('hidden', !needsRailingRemoval);
-            document.getElementById('task-reno-railing-removal').classList.toggle('hidden', !needsRailingRemoval);
-            
-            const taskConstStairSchedule = document.getElementById('task-const-stair-schedule');
-            taskConstStairSchedule.classList.toggle('hidden', !stairConst);
-            setTaskText('task-const-stair-schedule', isReno ? "Schedule Const. Stair Installation" : "Schedule Const. Stair Drop Off");
-            
-            document.getElementById('task-finished-stair-schedule').classList.toggle('hidden', !stairFinished);
-            
-            document.getElementById('task-wood-order').classList.toggle('hidden', !spindleWood);
-            document.getElementById('task-metal-order').classList.toggle('hidden', !spindleMetal);
-            document.getElementById('task-glass-order').classList.toggle('hidden', !spindleGlass);
-            document.getElementById('task-wall-brackets').classList.toggle('hidden', !spindleWall);
-            
-            document.getElementById('task-railing-install-date').classList.toggle('hidden', !railingAny && !spindleAny);
-            document.getElementById('task-qa-turnover').classList.toggle('hidden', !showProduction);
-
-            const scopeVal = document.querySelector('input[name="scopeOfWork"]:checked').value;
-            const scopePrefix = scopeVal === 'Supply Only' ? '[Supply Only] ' : '[Supply & Install] ';
-            
+            const scopePrefix = state.supplyOnly ? '[Supply Only] ' : '[Supply & Install] ';
             document.querySelectorAll('#projectPreviewList li').forEach(li => {
                 const el = li.querySelector('.editable-task') || li;
                 let currentText = el.textContent.replace(/^\[Supply Only\] /, '').replace(/^\[Supply & Install\] /, '');
@@ -2161,38 +1988,13 @@
             });
         };
 
-
         // One delegated listener re-derives the blueprint for every checkbox/radio in
-        // the form — including custom options created after load, which the previous
-        // per-element bindings missed (custom-only selections couldn't generate).
+        // the form — including custom options created after load.
         form.addEventListener('change', (e) => {
             if (e.target && e.target.matches && e.target.matches('input[type="checkbox"], input[type="radio"]')) {
                 updateBlueprintPreview();
             }
         });
-
-        // Dynamic defaults set after API loads
-        function setDynamicDefaultAssignees(users) {
-            const findUser = (name) => users.find(u => u.name && u.name.toLowerCase().includes(name.toLowerCase()));
-            
-            const mapping = {
-                'schedulingAssigneeInput': findUser('Matthew'),
-                'materialsAssigneeInput': findUser('Thomas'),
-                'railingMfgAssigneeInput': findUser('Thomas'),
-                'qaAssigneeInput': findUser('Thomas'),
-                'installAssigneeInput': findUser('Joel')
-            };
-            for (const [inputId, user] of Object.entries(mapping)) {
-                const el = document.getElementById(inputId);
-                if (user && el && el.value === "UNASSIGNED") {
-                    currentTargetInputId = inputId;
-                    selectUser(user.id, user.name, user.email || user.zuid);
-                }
-            }
-            currentTargetInputId = null;
-            updateBlueprintPreview();
-        }
-
 
         const triggerBtn = document.getElementById('triggerBtn');
         const cancelBtn = document.getElementById('cancelBtn');
@@ -2459,30 +2261,10 @@
                         saveBtn.innerHTML = originalHTML;
                         saveBtn.disabled = false;
                         form.reset();
-                        
-                        // Reset all Assignees
-                        ['railingSheetAssigneeInput','stairSheetAssigneeInput','schedulingAssigneeInput','materialsAssigneeInput','railingMfgAssigneeInput','stairMfgAssigneeInput','qaAssigneeInput','installAssigneeInput'].forEach(id => {
-                            currentTargetInputId = id;
-                            selectUser('', '');
-                        });
-
-                        
-            // Set Default Assignees
-            const assignees = {
-                'schedulingAssigneeInput': { id: '1768463000002032001', name: 'Matthew De Man' },
-                'materialsAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
-                'railingMfgAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
-                'qaAssigneeInput': { id: '1768463000004225001', name: 'Thomas Macleod' },
-                'installAssigneeInput': { id: '1768463000003860001', name: 'Joel Nalder' }
-            };
-            
-            for (const [inputId, user] of Object.entries(assignees)) {
-                currentTargetInputId = inputId;
-                selectUser(user.id, user.name);
-            }
-            currentTargetInputId = null;
-
-            updateBlueprintPreview();
+                        // The archetype engine removes deselected blocks and their
+                        // assignee inputs on the next update; role defaults refill
+                        // automatically from the live roster when blocks return.
+                        updateBlueprintPreview();
                     }, 2000);
                 }, 1200);
             }
@@ -2809,9 +2591,9 @@
                     targetArea.dispatchEvent(new Event('input', { bubbles: true }));
                 }
                 
-                // Push as Task to Project Scheduling block
+                // Push as a task into the first visible workflow block
                 const taskString = `Travel Logistics: ESA: ${req} | KMs: ${kms || '0'} (One Way) | Hotel/Meals: ${hotel}`;
-                const schedulingUl = document.querySelector('#block-scheduling ul.sortable-list');
+                const schedulingUl = document.querySelector('#projectPreviewList > div:not(.hidden) ul.sortable-list');
                 if (schedulingUl) {
                     const li = document.createElement('li');
                     li.className = 'task-custom group/item relative pl-5 cursor-move list-none border-b border-transparent hover:border-slate-700/30 pb-0.5 transition-colors';
@@ -2826,8 +2608,6 @@
                         <button type="button" class="absolute -right-2 top-0.5 opacity-0 group-hover/item:opacity-100 text-rose-500 hover:text-rose-400 transition-opacity" onclick="this.parentElement.remove()"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg></button>
                     `;
                     schedulingUl.appendChild(li);
-                    
-                    document.getElementById('block-scheduling').classList.remove('hidden');
                 }
                 
                 updateBlueprintPreview();
