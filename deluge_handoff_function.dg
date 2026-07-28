@@ -12,7 +12,7 @@ portalId = "ironwoodstairs";
 // A retried or double-clicked handoff must never create a duplicate
 // project. If the lookup fails we fail open and create normally.
 // =====================================
-newProjectId = null;
+newProjectId = "";
 isReusedProject = false;
 existingProjectsResponse = invokeurl
 [
@@ -25,7 +25,7 @@ if(existingProjects != null)
 {
 	for each  existingProj in existingProjects
 	{
-		if(newProjectId == null && existingProj.get("name") == projectName)
+		if(newProjectId == "" && existingProj.get("name") == projectName)
 		{
 			newProjectId = existingProj.get("id_string");
 			isReusedProject = true;
@@ -33,7 +33,7 @@ if(existingProjects != null)
 		}
 	}
 }
-if(newProjectId == null)
+if(newProjectId == "")
 {
 	projectData = Map();
 	projectData.put("name",projectName);
@@ -54,7 +54,7 @@ if(newProjectId == null)
 	}
 	newProjectId = createResponse.get("projects").get(0).get("id_string");
 }
-if(newProjectId == null)
+if(newProjectId == null || newProjectId == "")
 {
 	return "Error: Could not create Zoho Project.";
 }
@@ -123,14 +123,15 @@ for each  uid in uniqueUsers
 // TASK LIST READINESS POLL
 // Replaces the old postman-echo delay: template task lists provision
 // asynchronously right after project creation, so poll the real
-// endpoint — each round trip both waits and confirms readiness.
+// endpoint - each round trip both waits and confirms readiness.
 // (Deluge has no break; the listsReady flag skips finished attempts.)
 // =====================================
 existingListsMap = Map();
 listsReady = false;
-for each  attempt in {1,2,3,4,5}
+pollAttempts = {1,2,3,4,5};
+for each  attempt in pollAttempts
 {
-	if(!listsReady)
+	if(listsReady == false)
 	{
 		existingListsResponse = invokeurl
 		[
@@ -149,7 +150,7 @@ for each  attempt in {1,2,3,4,5}
 		}
 	}
 }
-if(!listsReady)
+if(listsReady == false)
 {
 	info "READINESS: task lists still not provisioned after polling; proceeding with fresh list creation.";
 }
