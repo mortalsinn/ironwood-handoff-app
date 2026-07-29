@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.26</title>
+    <title>Ironwood Handoff Form v11.27</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -109,7 +109,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.26</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.27</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -457,7 +457,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.26 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.27 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                     <button type="button" id="themeToggle" onclick="window.toggleTheme()" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all" title="Switch between dark and light theme"></button>
                 </div>
@@ -537,10 +537,17 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.26 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.27 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.27 - Finished Stairs Broken Out</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Six Sections:</strong> Sales setup (spec, drawing, take off), Tom's spec QA, Tom's materials (stair kit order, delivery, QA), assembly + QA, Tom's post-assembly site measure + install scheduling, and Joel's install + QA. Install is always included.</li>
+                            <li><strong class="text-slate-300">Shape Tags:</strong> Assembly and install tasks carry the selected shape/type (e.g. [Curved, Mono]) as a heads-up.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.26 - Closed Won Live Check</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1497,7 +1504,7 @@
                 });
 
                 const draft = {
-                    schema: 21,
+                    schema: 22,
                     travel: {
                         address: (document.getElementById('travelAddress') || {}).value || '',
                         req: (document.getElementById('travelRequired') || {}).value || 'No',
@@ -1614,7 +1621,7 @@
                     try {
                         const draft = JSON.parse(draftStr);
                         const formState = draft.form || {};
-                        const isV10Draft = (draft.schema || 0) >= 21;
+                        const isV10Draft = (draft.schema || 0) >= 22;
 
                         // 1. Restore Custom Options Checkboxes (Left Side)
                         // Dedup is scoped to custom-option inputs only, so a custom item
@@ -1993,6 +2000,7 @@
                 constStair: anyChecked('input[name="constStairShape"], input[name="constStairType"]'),
                 constShapesTypes: Array.from(document.querySelectorAll('input[name="constStairShape"]:checked, input[name="constStairType"]:checked')).map(cb => cb.value),
                 finStair: anyChecked('input[name="finStairShape"], input[name="finStairType"]'),
+                finShapesTypes: Array.from(document.querySelectorAll('input[name="finStairShape"]:checked, input[name="finStairType"]:checked')).map(cb => cb.value),
                 railStraight: checked('#railStraight'),
                 railCurved: checked('#railCurved'),
                 railFullMetal: checked('#railFullMetal'),
@@ -2179,19 +2187,46 @@
                 { name: 'Install Const. Stairs', days: 1, phase: 'install', owner: 'JOEL', site: true, esa: true },
                 { name: 'QA - Const. Install', days: 1, phase: 'qa', owner: 'JOEL', site: true }
               ] },
-            { key: 'finished-stair', abbrev: 'FS', title: 'Finished Stair', list: 'Stair Production & Install', owner: 'TOM',
+            // Finished stair flow in the standard section structure. Confirmed
+            // sequencing kept: site measure happens AFTER shop assembly (Tom),
+            // right before install. Install is always included - finished stairs
+            // are never drop-off only.
+            { key: 'finstair-setup', abbrev: 'FD', title: 'Finished Stair Setup & Design (Sales)', list: 'Stair Production & Install',
               when: s => s.finStair,
               tasks: [
-                { name: 'Fill Out Stair Spec Sheet', days: 1, phase: 'setup', owner: 'SALES' },
-                { name: 'Create Stair Drawing', days: 1, phase: 'setup' },
-                { name: 'Create Stair Take Off Sheet', days: 1, phase: 'setup' },
-                { name: 'Existing Stair Removal', days: 1, phase: 'install', site: true, cond: s => s.isReno },
-                { name: 'Order Finished Stair Materials (Stair Kit)', days: 2, phase: 'fab', owner: 'TOM' },
-                { name: 'Schedule Delivery & Receiving', days: 2, phase: 'fab' },
-                { name: 'Stair Assembly - Manufacture Package & Parts', days: 5, phase: 'fab' },
-                { name: 'Site Measure + Schedule Install', days: 1, phase: 'install', owner: 'TOM', site: true, esa: true },
-                { name: 'QA Inspection - Pass / Fail', days: 1, phase: 'qa' },
-                { name: 'Finished Stair Installation', days: 2, phase: 'install', site: true, esa: true }
+                { name: 'Fill Out Stair Spec Sheet', days: 1, phase: 'setup' },
+                { name: 'Create Stair Drawing', days: 3, phase: 'setup' },
+                { name: 'Create Stair Take Off Sheet', days: 1, phase: 'setup' }
+              ] },
+            { key: 'finstair-spec-qa', abbrev: 'QF', title: 'QA - Stair Spec / Blueprints', list: 'Stair Production & Install', owner: 'TOM',
+              when: s => s.finStair,
+              tasks: [
+                { name: 'QA Stair Spec Package (Specs, Drawing, Take Off)', days: 1, phase: 'qa', owner: 'TOM' }
+              ] },
+            { key: 'finstair-materials', abbrev: 'FM', title: 'Finished Stair Materials', list: 'Stair Production & Install', owner: 'TOM',
+              when: s => s.finStair,
+              tasks: [
+                { name: 'Order Finished Stair Materials (Stair Kit)', days: 5, phase: 'fab', owner: 'TOM' },
+                { name: 'Schedule Delivery & Receiving', days: 2, phase: 'fab', owner: 'TOM' },
+                { name: 'QA Materials - Stair Kit', days: 1, phase: 'qa', owner: 'TOM' }
+              ] },
+            { key: 'finstair-production', abbrev: 'FA', title: 'Finished Stair Assembly', list: 'Stair Production & Install', owner: 'MATT',
+              when: s => s.finStair,
+              tasks: [
+                { name: 'Stair Assembly - Manufacture Package & Parts', days: 5, phase: 'fab', owner: 'MATT', note: s => s.finShapesTypes.length ? ' [' + s.finShapesTypes.join(', ') + ']' : '' },
+                { name: 'QA Check - Assembled Stairs', days: 1, phase: 'qa', owner: 'MATT' }
+              ] },
+            { key: 'finstair-install-sched', abbrev: 'FS', title: 'Finished Stair Install Scheduling', list: 'Stair Production & Install', owner: 'TOM',
+              when: s => s.finStair,
+              tasks: [
+                { name: 'Site Measure + Schedule Install', days: 1, phase: 'setup', owner: 'TOM', site: true, esa: true }
+              ] },
+            { key: 'finstair-install', abbrev: 'FI', title: 'Finished Stair Install', list: 'Stair Production & Install', owner: 'JOEL',
+              when: s => s.finStair,
+              tasks: [
+                { name: 'Remove Existing Stairs', days: 1, phase: 'install', site: true, cond: s => s.isReno },
+                { name: 'Finished Stair Installation', days: 2, phase: 'install', owner: 'JOEL', site: true, esa: true, note: s => s.finShapesTypes.length ? ' [' + s.finShapesTypes.join(', ') + ']' : '' },
+                { name: 'QA - Finished Install', days: 1, phase: 'qa', owner: 'JOEL', site: true }
               ] },
             { key: 'pickup', abbrev: 'PU', title: 'Customer Pickup', list: 'Railing Production & Install', owner: 'TOM',
               when: s => s.supplyOnly && s.anyArchetype,
