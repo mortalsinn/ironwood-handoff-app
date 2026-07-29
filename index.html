@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.20</title>
+    <title>Ironwood Handoff Form v11.21</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -64,7 +64,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.20</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.21</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -115,8 +115,8 @@
                     <div class="space-y-3">
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
                             <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">1. Scope of Work</h3>
-                            <button type="button" id="btn-projectOwnerAssigneeInput" onclick="openUserModal('projectOwnerAssigneeInput', 'Project Owner')" class="override-btn">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Set Owner
+                            <button type="button" id="btn-projectOwnerAssigneeInput" onclick="openUserModal('projectOwnerAssigneeInput', 'Project Owner')" class="override-btn" title="Optional: who owns the whole project in Zoho Projects (not a task assignee). Leave unset to use the default owner.">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg> Project Owner
                             </button>
                         </div>
                         <div class="grid grid-cols-2 gap-3">
@@ -385,8 +385,8 @@
                                 <path d="M2 3h20v20H2z" stroke-dasharray="2 4" class="opacity-20"></path>
                             </svg>
                         </div>
-                        <p class="text-base font-bold text-slate-200 tracking-wide">Awaiting Blueprint Constraints</p>
-                        <p class="text-xs text-slate-500 text-center mt-2 max-w-[240px] leading-relaxed">Select your structural options on the left to automatically draft the production run.</p>
+                        <p class="text-base font-bold text-slate-200 tracking-wide">Select Job Components to Begin</p>
+                        <p class="text-xs text-slate-500 text-center mt-2 max-w-[240px] leading-relaxed">Check off the job's stairs, railing, or metalwork on the left &mdash; the production workflow builds itself here.</p>
                     </div>
 
                     <div class="space-y-3 hidden pb-4" id="projectPreviewList">
@@ -408,7 +408,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.20 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.21 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -487,10 +487,16 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.20 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.21 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.21 - Copy Clarity</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Plain English:</strong> The empty preview now says "Select Job Components to Begin", and "Set Owner" is renamed "Project Owner" with a tooltip explaining it sets the Zoho Projects project owner (optional).</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.20 - Clean Start</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -2957,6 +2963,7 @@
                         <li><strong>Automatic owners:</strong> Tasks pre-assign to the right people (Tom, Matt, Joel, Jeffery) from the live roster — you'll see their initials chip on each task.</li>
                         <li><strong>The Sales section is intentionally blank</strong> — use its "Assign User" button to pick the salesperson. Generating is blocked until every section has an owner.</li>
                         <li><strong>Overrides:</strong> "Assign User" on a section header sets that whole section; the small person icon on any single task overrides just that task.</li>
+                        <li><strong>Project Owner</strong> (top of Scope of Work) optionally sets who owns the whole project in Zoho Projects &mdash; separate from task assignees. Leave unset for the default.</li>
                     </ul>
                 </div>
 
