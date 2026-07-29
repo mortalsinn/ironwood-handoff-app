@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.17</title>
+    <title>Ironwood Handoff Form v11.19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -33,6 +33,10 @@
         .task-finished { color: #a78bfa; font-weight: 700; }
         .task-standard { color: #94a3b8; }
         .task-custom { color: #d946ef; font-weight: 700; }
+        /* Collapsible left-panel sections */
+        .sec-collapsed > *:not(:first-child) { display: none !important; }
+        .sec-chev { display: inline-block; transition: transform .15s ease; }
+        .sec-collapsed .sec-chev { transform: rotate(-90deg); }
         /* Task-row control column: day box + assignee chip align across rows */
         .task-days-wrap { margin-left: auto; margin-right: 6px; display: inline-flex; align-items: center; gap: 3px; flex-shrink: 0; }
         .task-days-input { width: 34px; text-align: center; }
@@ -60,7 +64,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.17</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.19</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -404,7 +408,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.17 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.19 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -483,10 +487,23 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.17 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.19 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.19 - Full QA Sweep</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">27 Combinations Verified:</strong> Every selection combo checked for duplicate tasks, missing owners, empty projects, weekend dates, overlapping schedules, and dependency-chain order.</li>
+                            <li><strong class="text-slate-300">Unique QA Names:</strong> "Schedule Welded Install", "QA - Welded Install", and "QA - Glass Install" replace colliding generic names on mixed jobs &mdash; keeps safe re-runs reliable.</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.18 - Collapsible Sections</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Fold What You Don't Need:</strong> Click any left-panel section header to collapse it &mdash; e.g. fold both stair sections on a railing-only job. Selections inside stay active while collapsed.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.17 - Custom Metal Rethought</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1107,6 +1124,27 @@
 
             // Make the main list and all task lists sortable (idempotent helper)
             bindAllSortables();
+
+            // ---- COLLAPSIBLE LEFT-PANEL SECTIONS ----
+            // Click a section header to fold it (e.g. hide the stair sections on a
+            // railing-only job). Checkbox state is untouched while collapsed.
+            document.querySelectorAll('#handoffForm > div').forEach(sec => {
+                const header = sec.firstElementChild;
+                if (!header) return;
+                const title = header.matches('label') ? header : header.querySelector('h3');
+                if (!title) return;
+                const chev = document.createElement('span');
+                chev.className = 'sec-chev mr-1.5 text-slate-500';
+                chev.textContent = '\u25be';
+                title.prepend(chev);
+                header.classList.add('cursor-pointer', 'select-none');
+                header.setAttribute('title', 'Click to collapse / expand this section');
+                header.addEventListener('click', (e) => {
+                    if (e.target.closest('button, input, textarea, details')) return;
+                    sec.classList.toggle('sec-collapsed');
+                });
+            });
+            // ---- END COLLAPSIBLE SECTIONS ----
 
             // ---- DELEGATED PREVIEW-PANEL HANDLERS ----
             // Bound once on the persistent container so they survive draft-restore
@@ -1893,7 +1931,7 @@
                 { name: 'Install Railing (Framework)', days: 1, phase: 'install', owner: 'JOEL', site: true, esa: true },
                 { name: 'QC Frame, Template Glass, Draw / Order Glass', days: 7, phase: 'qa', owner: 'JOEL', site: true },
                 { name: 'Install Glass Panels', days: 1, phase: 'install', owner: 'JOEL', site: true, esa: true },
-                { name: 'QA - Install', days: 1, phase: 'qa', owner: 'JOEL', site: true }
+                { name: 'QA - Glass Install', days: 1, phase: 'qa', owner: 'JOEL', site: true }
               ] },
             // Welding flow per review 2026-07-29: Joel designs, Sales approves,
             // Jeffery orchestrates materials/fabrication/coating via scheduling
@@ -1932,13 +1970,13 @@
             { key: 'welding-install-sched', abbrev: 'WS', title: 'Welding Install Scheduling', list: 'Railing Production & Install', owner: 'JEFFERY',
               when: s => s.welding,
               tasks: [
-                { name: 'Schedule Install', days: 1, phase: 'setup', owner: 'JEFFERY', site: true, esa: true }
+                { name: 'Schedule Welded Install', days: 1, phase: 'setup', owner: 'JEFFERY', site: true, esa: true }
               ] },
             { key: 'welding-install', abbrev: 'WI', title: 'Welded Railing Install', list: 'Railing Production & Install', owner: 'JOEL',
               when: s => s.welding,
               tasks: [
                 { name: 'Install Welded Railing', days: 2, phase: 'install', owner: 'JOEL', site: true, esa: true, curved: true },
-                { name: 'QA - Install', days: 1, phase: 'qa', owner: 'JOEL', site: true }
+                { name: 'QA - Welded Install', days: 1, phase: 'qa', owner: 'JOEL', site: true }
               ] },
             { key: 'wood-addon', abbrev: 'WC', title: 'Wood Components Add-On', list: 'Railing Production & Install', owner: 'TOM',
               when: s => s.woodAddon,
