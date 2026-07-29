@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.27</title>
+    <title>Ironwood Handoff Form v11.28</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -109,7 +109,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.27</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.28</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -178,31 +178,24 @@
                                 </div>
                             </label>
                         </div>
-                    </div>
-
-                    <div class="space-y-3">
-                        <div class="flex items-center justify-between border-b border-slate-700 pb-2">
-                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">2. Project Context</h3>
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <label class="flex items-start p-3 bg-slate-800/40 backdrop-blur-sm border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative overflow-hidden">
-                                <input type="radio" name="projectType" value="NewBuild" checked class="mt-0.5 w-3.5 h-3.5 text-brand-accent bg-slate-900 border-slate-600 form-radio relative z-10">
-                                <div class="ml-2 relative z-10">
-                                    <p class="text-xs font-semibold text-slate-200 group-has-[:checked]:text-white">New Build</p>
-                                </div>
-                            </label>
-                            <label class="flex items-start p-3 bg-slate-800/40 backdrop-blur-sm border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 relative overflow-hidden">
-                                <input type="radio" name="projectType" value="Renovation" class="mt-0.5 w-3.5 h-3.5 text-brand-accent bg-slate-900 border-slate-600 form-radio relative z-10">
-                                <div class="ml-2 relative z-10">
-                                    <p class="text-xs font-semibold text-slate-200 group-has-[:checked]:text-white">Renovation</p>
-                                </div>
-                            </label>
+                        <div class="pt-2 border-t border-slate-700/50">
+                            <p class="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 ml-1">Project Context</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex items-center p-2 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                    <input type="radio" name="projectType" value="NewBuild" checked class="w-3 h-3 text-brand-accent bg-slate-900 border-slate-600 form-radio">
+                                    <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">New Build</span>
+                                </label>
+                                <label class="flex items-center p-2 bg-slate-800/30 border border-slate-700/50 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                    <input type="radio" name="projectType" value="Renovation" class="w-3 h-3 text-brand-accent bg-slate-900 border-slate-600 form-radio">
+                                    <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Renovation <span class="text-slate-500">(adds removal tasks)</span></span>
+                                </label>
+                            </div>
                         </div>
                     </div>
 
                     <div class="space-y-3">
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
-                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">3. Construction Grade Stairs</h3>
+                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">2. Construction Grade Stairs</h3>
                         </div>
                         
                         <div class="bg-slate-800/30 p-3 rounded-xl border border-slate-700/50 space-y-3">
@@ -248,7 +241,7 @@
 
                     <div class="space-y-3">
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
-                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">4. Finished Stairs</h3>
+                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">3. Finished Stairs</h3>
                         </div>
                         
                         <div id="stairCustomContainer" class="bg-slate-800/30 p-3 rounded-xl border border-slate-700/50 space-y-3">
@@ -302,7 +295,7 @@
 
                     <div class="space-y-3">
                         <div class="flex items-center justify-between border-b border-slate-700 pb-2">
-                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">5. Railing Assembly</h3>
+                            <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">4. Railing Assembly</h3>
                         </div>
                         <div id="railingCustomGrid" class="grid grid-cols-2 gap-3">
                             <label class="flex items-center p-3 bg-slate-800/40 border border-slate-700 rounded-xl cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
@@ -374,7 +367,7 @@
                     </div>
 
                     <div class="pb-4 pt-2">
-                        <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">6. Production Notes</label>
+                        <label class="block text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-widest">5. Production Notes</label>
                         <div id="notesContainer" class="space-y-3">
                             <div class="relative w-full note-block group">
                                 <textarea name="notes[]" rows="2" class="w-full p-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none text-slate-200 placeholder-slate-500 italic text-sm transition-all note-textarea pr-10" placeholder="Type production notes here... (Use @ to tag a team member)"></textarea>
@@ -457,17 +450,13 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.27 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.28 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                     <button type="button" id="themeToggle" onclick="window.toggleTheme()" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all" title="Switch between dark and light theme"></button>
                 </div>
             </div>
             
             <div class="flex gap-3">
-                <button id="miroBtn" type="button" onclick="generateMiroFlowchart()" class="px-3 py-1.5 text-[11px] font-bold text-emerald-400 bg-transparent border border-emerald-600 rounded-lg hover:bg-emerald-900/50 hover:text-white transition-all flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
-                    Copy Miro Code
-                </button>
                 <button id="cancelBtn" class="px-5 py-2.5 text-sm font-bold text-slate-300 bg-transparent border border-slate-600 rounded-lg hover:bg-slate-800 hover:text-white transition-all">Cancel</button>
                 <button id="saveBtn" disabled class="px-6 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-sky-500 to-blue-600 rounded-lg hover:from-sky-400 hover:to-blue-500 shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
                     Generate Production Run
@@ -537,10 +526,17 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.27 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.28 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.28 - Finished Stairs Per Review + Cleanup</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Finished Stair Chain:</strong> Sales spec sheet &rarr; Tom's drawing + take off &rarr; Matt schedules manufacturing &amp; install &rarr; manufacture + stair QA &rarr; install + QA. Shape/type selections are tags only.</li>
+                            <li><strong class="text-slate-300">Simpler Left Panel:</strong> New Build / Renovation now lives inside Scope of Work; the Copy Miro Code development button is retired.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.27 - Finished Stairs Broken Out</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1504,7 +1500,7 @@
                 });
 
                 const draft = {
-                    schema: 22,
+                    schema: 23,
                     travel: {
                         address: (document.getElementById('travelAddress') || {}).value || '',
                         req: (document.getElementById('travelRequired') || {}).value || 'No',
@@ -1621,7 +1617,7 @@
                     try {
                         const draft = JSON.parse(draftStr);
                         const formState = draft.form || {};
-                        const isV10Draft = (draft.schema || 0) >= 22;
+                        const isV10Draft = (draft.schema || 0) >= 23;
 
                         // 1. Restore Custom Options Checkboxes (Left Side)
                         // Dedup is scoped to custom-option inputs only, so a custom item
@@ -2191,35 +2187,31 @@
             // sequencing kept: site measure happens AFTER shop assembly (Tom),
             // right before install. Install is always included - finished stairs
             // are never drop-off only.
-            { key: 'finstair-setup', abbrev: 'FD', title: 'Finished Stair Setup & Design (Sales)', list: 'Stair Production & Install',
+            // Finished stair flow per review: Sales spec sheet, Tom designs,
+            // Matt schedules manufacturing + install, manufacture with QA, then
+            // install. Install is always included. Shape/type selections are tags
+            // only - the details live in the spec sheets.
+            { key: 'finstair-spec', abbrev: 'FD', title: 'Finished Stair Spec (Sales)', list: 'Stair Production & Install',
               when: s => s.finStair,
               tasks: [
-                { name: 'Fill Out Stair Spec Sheet', days: 1, phase: 'setup' },
-                { name: 'Create Stair Drawing', days: 3, phase: 'setup' },
-                { name: 'Create Stair Take Off Sheet', days: 1, phase: 'setup' }
+                { name: 'Fill Out Stair Spec Sheet', days: 1, phase: 'setup' }
               ] },
-            { key: 'finstair-spec-qa', abbrev: 'QF', title: 'QA - Stair Spec / Blueprints', list: 'Stair Production & Install', owner: 'TOM',
+            { key: 'finstair-design', abbrev: 'FT', title: 'Finished Stair Design', list: 'Stair Production & Install', owner: 'TOM',
               when: s => s.finStair,
               tasks: [
-                { name: 'QA Stair Spec Package (Specs, Drawing, Take Off)', days: 1, phase: 'qa', owner: 'TOM' }
+                { name: 'Create Stair Drawing', days: 3, phase: 'setup', owner: 'TOM' },
+                { name: 'Create Stair Take Off Sheet', days: 1, phase: 'setup', owner: 'TOM' }
               ] },
-            { key: 'finstair-materials', abbrev: 'FM', title: 'Finished Stair Materials', list: 'Stair Production & Install', owner: 'TOM',
+            { key: 'finstair-scheduling', abbrev: 'FS', title: 'Finished Stair Scheduling', list: 'Stair Production & Install', owner: 'MATT',
               when: s => s.finStair,
               tasks: [
-                { name: 'Order Finished Stair Materials (Stair Kit)', days: 5, phase: 'fab', owner: 'TOM' },
-                { name: 'Schedule Delivery & Receiving', days: 2, phase: 'fab', owner: 'TOM' },
-                { name: 'QA Materials - Stair Kit', days: 1, phase: 'qa', owner: 'TOM' }
+                { name: 'Schedule Manufacturing & Install', days: 1, phase: 'setup', owner: 'MATT', site: true, note: s => s.finShapesTypes.length ? ' [' + s.finShapesTypes.join(', ') + ']' : '' }
               ] },
-            { key: 'finstair-production', abbrev: 'FA', title: 'Finished Stair Assembly', list: 'Stair Production & Install', owner: 'MATT',
+            { key: 'finstair-production', abbrev: 'FA', title: 'Finished Stair Manufacturing', list: 'Stair Production & Install', owner: 'MATT',
               when: s => s.finStair,
               tasks: [
-                { name: 'Stair Assembly - Manufacture Package & Parts', days: 5, phase: 'fab', owner: 'MATT', note: s => s.finShapesTypes.length ? ' [' + s.finShapesTypes.join(', ') + ']' : '' },
-                { name: 'QA Check - Assembled Stairs', days: 1, phase: 'qa', owner: 'MATT' }
-              ] },
-            { key: 'finstair-install-sched', abbrev: 'FS', title: 'Finished Stair Install Scheduling', list: 'Stair Production & Install', owner: 'TOM',
-              when: s => s.finStair,
-              tasks: [
-                { name: 'Site Measure + Schedule Install', days: 1, phase: 'setup', owner: 'TOM', site: true, esa: true }
+                { name: 'Manufacture / Assemble Finished Stair', days: 5, phase: 'fab', owner: 'MATT', note: s => s.finShapesTypes.length ? ' [' + s.finShapesTypes.join(', ') + ']' : '' },
+                { name: 'QA Check - Finished Stair', days: 1, phase: 'qa', owner: 'MATT' }
               ] },
             { key: 'finstair-install', abbrev: 'FI', title: 'Finished Stair Install', list: 'Stair Production & Install', owner: 'JOEL',
               when: s => s.finStair,
@@ -2775,107 +2767,6 @@
             }
         });
 
-        function generateMiroFlowchart() {
-            let mermaidText = "%%{init: {'flowchart': {'nodeSpacing': 50, 'rankSpacing': 60, 'curve': 'linear'}}}%%\n";
-            mermaidText += "flowchart LR\n";
-            mermaidText += "classDef fab fill:#0c4a6e,stroke:#38bdf8,color:#fff;\n";
-            mermaidText += "classDef inst fill:#4c0519,stroke:#f43f5e,color:#fff;\n";
-            mermaidText += "classDef qa fill:#7c2d12,stroke:#fb923c,color:#fff;\n";
-            mermaidText += "classDef cust fill:#3b0764,stroke:#c084fc,color:#fff;\n";
-            mermaidText += "classDef defaultNode fill:#1e293b,stroke:#475569,color:#fff;\n";
-            
-            mermaidText += "    subgraph ProjectFrame [\"Ironwood Project Handoff Flowchart\"]\n";
-            mermaidText += "        direction LR\n";
-            
-            let lastNode = null;
-            let nodeIndex = 0;
-            let styleBlocks = "";
-            
-            const blocks = document.querySelectorAll('#projectPreviewList > div');
-            blocks.forEach((block) => {
-                if (!block.classList.contains('hidden')) {
-                    const titleEl = block.querySelector('p');
-                    const blockName = titleEl ? titleEl.innerText.trim() : "Stage";
-                    const safeId = blockName.replace(/[^a-zA-Z0-9]/g, '');
-                    
-                    let nodeClass = "defaultNode";
-                    if (blockName.toLowerCase().includes("fabrication") || blockName.toLowerCase().includes("mfg") || blockName.toLowerCase().includes("order")) {
-                        nodeClass = "fab";
-                        styleBlocks += `style ${safeId} fill:#0c4a6e,stroke:#38bdf8,stroke-width:2px,color:#fff\n`;
-                    } else if (blockName.toLowerCase().includes("install")) {
-                        nodeClass = "inst";
-                        styleBlocks += `style ${safeId} fill:#4c0519,stroke:#f43f5e,stroke-width:2px,color:#fff\n`;
-                    } else if (blockName.toLowerCase().includes("qa") || blockName.toLowerCase().includes("wrap")) {
-                        nodeClass = "qa";
-                        styleBlocks += `style ${safeId} fill:#7c2d12,stroke:#fb923c,stroke-width:2px,color:#fff\n`;
-                    } else {
-                        nodeClass = "cust";
-                        styleBlocks += `style ${safeId} fill:#3b0764,stroke:#c084fc,stroke-width:2px,color:#fff\n`;
-                    }
-                    
-                    mermaidText += `    subgraph ${safeId} ["${blockName}"]\n`;
-                    mermaidText += `        direction LR\n`;
-                    
-                    const items = block.querySelectorAll('li');
-                    let visibleNodes = [];
-                    items.forEach((item) => {
-                        if (!item.classList.contains('hidden')) {
-                            const nodeName = `N${nodeIndex++}`;
-                            const taskName = item.querySelector('.editable-task') ? item.querySelector('.editable-task').textContent.trim() : item.textContent.trim().replace('×','');
-                            
-                            let nodeFormat = `["${taskName}"]`;
-                            if (taskName.toLowerCase().includes("quality assurance check")) {
-                                nodeFormat = `{"${taskName}"}`;
-                            }
-                            
-                            mermaidText += `        ${nodeName}${nodeFormat}:::${nodeClass}\n`;
-                            visibleNodes.push({id: nodeName, name: taskName});
-                        }
-                    });
-                    
-                    for (let i = 0; i < visibleNodes.length - 1; i++) {
-                        if (visibleNodes[i].name.toLowerCase().includes("quality assurance check")) {
-                            mermaidText += `        ${visibleNodes[i].id} -->|Pass| ${visibleNodes[i+1].id}\n`;
-                            if (lastNode) {
-                                mermaidText += `        ${visibleNodes[i].id} -.->|Fail| ${lastNode}\n`;
-                            }
-                        } else {
-                            mermaidText += `        ${visibleNodes[i].id} --> ${visibleNodes[i+1].id}\n`;
-                        }
-                    }
-                    mermaidText += `    end\n`;
-                    
-                    if (lastNode && visibleNodes.length > 0) {
-                        mermaidText += `    ${lastNode} ===> ${visibleNodes[0].id}\n`;
-                    }
-                    
-                    if (visibleNodes.length > 0) {
-                        lastNode = visibleNodes[visibleNodes.length - 1].id;
-                    }
-                }
-            });
-            
-            if (lastNode) {
-                mermaidText += `    EndNode(((End))):::defaultNode\n`;
-                mermaidText += `    ${lastNode} ===> EndNode\n`;
-            }
-            
-            mermaidText += "    end\n";
-            
-            mermaidText += styleBlocks;
-            if (nodeIndex === 0) {
-                alert("No tasks selected! Please choose your project options first.");
-                return;
-            }
-            
-            navigator.clipboard.writeText(mermaidText).then(() => {
-                alert("Miro (Mermaid) Flowchart code copied to clipboard!\n\nIn Miro, use the 'Mermaid' tool and paste this code to generate your flowchart.");
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                alert("Failed to copy to clipboard. Check console.");
-            });
-        }
-
         // Closed Won Logic
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('cwDate').value = today;
@@ -3222,7 +3113,6 @@
                         <li><strong>Safe to re-run:</strong> generating again on the same Deal re-uses the existing project and only fills in missing pieces — no duplicates.</li>
                         <li><strong>"Handoff Incomplete"</strong> means the project exists but some tasks failed — it lists exactly which; click Generate again to retry just those.</li>
                         <li>Your work <strong>auto-saves</strong> as a draft per Deal — close and reopen anytime. <strong>Reset</strong> (top right) clears the draft and starts fresh.</li>
-                        <li><strong>Copy Miro Code</strong> exports the blueprint as a color-coded Mermaid flowchart for Miro.</li>
                     </ul>
                 </div>
 
