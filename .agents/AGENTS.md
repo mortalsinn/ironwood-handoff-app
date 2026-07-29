@@ -38,7 +38,7 @@
    - Top-level blocks are sortable via `.block-handle`.
    - Task items inside blocks are sortable and transferrable between blocks using `group: 'shared-tasks'` and `handle: '.task-drag-handle'`. Always preserve the drag handle SVG when modifying DOM innerHTML dynamically.
 2. **Dynamic UI Generation**: Tasks and checkboxes build dynamically based on conditional rules (e.g., Glass Spindles changes "Railing Installation" to "Railing Framework Installation").
-3. **Miro (Mermaid) Flowchart**: The app can compile the active project blocks and tasks into a Mermaid JS flowchart string, color-coded by department (e.g., Fabrication=Blue, Installation=Red, QA=Orange, Custom=Purple), and copy it to the clipboard.
+3. **Miro export removed (v11.28)**: The Copy Miro Code / Mermaid flowchart generator was a development-era tool and has been deleted.
 4. **Data Validation**: Prior to generating the production run, the UI enforces that every block has an assigned user (checking against `"UNASSIGNED"`). It will glow red if verification fails.
 5. **Default Assignees**: specific users (Matthew De Man, Thomas Macleod, Joel Nalder) are auto-populated to specific stages on DOM load.
 
