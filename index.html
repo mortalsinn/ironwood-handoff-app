@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.22</title>
+    <title>Ironwood Handoff Form v11.23</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -74,15 +74,25 @@
         html.light [class*="text-slate-4"] { color: #475569 !important; }
         html.light [class*="text-slate-5"] { color: #64748b !important; }
         html.light [class*="text-slate-6"] { color: #94a3b8 !important; }
-        /* colored buttons and chips keep white text/icons */
-        html.light [class*="bg-emerald-5"], html.light [class*="bg-emerald-6"],
-        html.light [class*="bg-sky-5"], html.light [class*="bg-sky-6"],
-        html.light [class*="bg-amber-5"], html.light [class*="bg-amber-6"],
-        html.light [class*="from-sky-500"],
-        html.light [class*="bg-emerald-5"] *, html.light [class*="bg-emerald-6"] *,
-        html.light [class*="bg-sky-5"] *, html.light [class*="bg-sky-6"] *,
-        html.light [class*="bg-amber-5"] *, html.light [class*="bg-amber-6"] *,
-        html.light [class*="from-sky-500"] * { color: #ffffff !important; }
+        /* accent text darkens for readability on light grounds */
+        html.light [class*="text-sky-4"], html.light [class*="text-sky-5"] { color: #0369a1 !important; }
+        html.light [class*="text-violet-4"] { color: #6d28d9 !important; }
+        html.light [class*="text-orange-4"] { color: #c2410c !important; }
+        html.light [class*="text-rose-4"] { color: #be123c !important; }
+        html.light [class*="text-emerald-4"] { color: #047857 !important; }
+        html.light [class*="text-amber-4"] { color: #b45309 !important; }
+        html.light [class*="text-teal-4"] { color: #0f766e !important; }
+        html.light .block-days-total { color: #0369a1 !important; background: rgba(2,132,199,.08) !important; border-color: rgba(2,132,199,.35) !important; }
+        /* solid colored buttons and chips keep white text/icons
+           (token-exact class selectors so translucent /10-/20 badges stay dark) */
+        html.light .bg-emerald-600, html.light .bg-emerald-500,
+        html.light .bg-sky-600, html.light .bg-sky-500,
+        html.light .bg-amber-600, html.light .bg-amber-500,
+        html.light .bg-blue-600, html.light [class*="from-sky-500"],
+        html.light .bg-emerald-600 *, html.light .bg-emerald-500 *,
+        html.light .bg-sky-600 *, html.light .bg-sky-500 *,
+        html.light .bg-amber-600 *, html.light .bg-amber-500 *,
+        html.light .bg-blue-600 *, html.light [class*="from-sky-500"] * { color: #ffffff !important; }
         /* modal scrims stay as translucent gray */
         html.light [class*="bg-slate-950/"], html.light [class*="bg-slate-900/9"] { background-color: rgba(100,116,139,.45) !important; }
         /* phase colors darkened for a light ground */
@@ -99,7 +109,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.22</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.23</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -223,10 +233,14 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="pt-2 border-t border-slate-700/50">
+                            <div class="pt-2 border-t border-slate-700/50 space-y-2">
                                 <label class="flex items-center p-2 bg-slate-800/40 border border-emerald-800/40 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
                                     <input type="checkbox" name="constNeedsMeasure" value="Yes" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
                                     <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Needs Site Measure? <span class="text-slate-500">(adds a Joel/Tom measure task)</span></span>
+                                </label>
+                                <label class="flex items-center p-2 bg-slate-800/40 border border-emerald-800/40 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                    <input type="checkbox" name="constInstall" value="Yes" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                    <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Install Required? <span class="text-slate-500">(extra charge - stairs are normally drop-off only)</span></span>
                                 </label>
                             </div>
                         </div>
@@ -443,7 +457,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.22 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.23 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                     <button type="button" id="themeToggle" onclick="window.toggleTheme()" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all" title="Switch between dark and light theme"></button>
                 </div>
@@ -523,10 +537,18 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.22 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.23 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.23 - Const. Grade Stairs Broken Out</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Six Sections:</strong> Matt schedules production + drop off up front, Sales fills the spec sheet, Tom QAs specs/blueprints, manufacturing + package QA, then drop off with the theft-documentation photo.</li>
+                            <li><strong class="text-slate-300">Install Sub-Option:</strong> New "Install Required?" checkbox (extra charge) dynamically adds Matt's install scheduling and Joel's install + QA section.</li>
+                            <li><strong class="text-slate-300">Light Mode Contrast:</strong> Section day-total badges and accent text are now readable in the light theme.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.22 - Day Theme &amp; Travel Fixes</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1438,7 +1460,7 @@
                 });
 
                 const draft = {
-                    schema: 19,
+                    schema: 20,
                     travel: {
                         address: (document.getElementById('travelAddress') || {}).value || '',
                         req: (document.getElementById('travelRequired') || {}).value || 'No',
@@ -1555,7 +1577,7 @@
                     try {
                         const draft = JSON.parse(draftStr);
                         const formState = draft.form || {};
-                        const isV10Draft = (draft.schema || 0) >= 19;
+                        const isV10Draft = (draft.schema || 0) >= 20;
 
                         // 1. Restore Custom Options Checkboxes (Left Side)
                         // Dedup is scoped to custom-option inputs only, so a custom item
@@ -1943,6 +1965,7 @@
                 spindleWall: checked('input[name="spindleType"][value="WallMount"]'),
                 woodAddon: checked('input[name="woodAddon"]'),
                 needsMeasure: checked('input[name="constNeedsMeasure"]'),
+                constInstall: checked('input[name="constInstall"]'),
                 esa: document.getElementById('travelRequired').value === 'Yes'
             };
             s.supplyOnly = s.scope === 'Supply Only';
@@ -2078,18 +2101,44 @@
                 { name: 'Order Wood Components (Rail)', days: 2, phase: 'fab', owner: 'TOM' },
                 { name: 'Install Wood Cap Rail', days: 1, phase: 'install', owner: 'JOEL', site: true, esa: true }
               ] },
-            { key: 'const-stair', abbrev: 'CG', title: 'Construction Grade Stairs', list: 'Stair Production & Install', owner: 'MATT',
+            // Const. grade flow per review 2026-07-29: build time is quick, so
+            // Matt schedules production + drop off up front. Stairs are normally
+            // dropped off only; onsite install is an extra-charge sub-option.
+            { key: 'conststair-scheduling', abbrev: 'CS', title: 'Const. Stair Scheduling', list: 'Stair Production & Install', owner: 'MATT',
               when: s => s.constStair,
               tasks: [
-                { name: 'Schedule Production & Install', days: 1, phase: 'setup', owner: 'MATT' },
+                { name: 'Schedule Production & Drop Off', days: 1, phase: 'setup', owner: 'MATT' },
+                { name: 'Schedule Const. Stair Install', days: 1, phase: 'setup', owner: 'MATT', site: true, cond: s => s.constInstall }
+              ] },
+            { key: 'conststair-setup', abbrev: 'CD', title: 'Const. Stair Setup & Design (Sales)', list: 'Stair Production & Install',
+              when: s => s.constStair,
+              tasks: [
                 { name: 'Complete Site Measure', days: 1, phase: 'setup', owner: 'JOEL', site: true, esa: true, cond: s => s.needsMeasure },
+                { name: 'Fill Out Const. Stair Spec Sheet', days: 1, phase: 'setup' }
+              ] },
+            { key: 'conststair-spec-qa', abbrev: 'QC', title: 'QA - Spec / Blueprints', list: 'Stair Production & Install', owner: 'TOM',
+              when: s => s.constStair,
+              tasks: [
+                { name: 'QA Spec Package (Measure, Specs, Blueprints)', days: 1, phase: 'qa', owner: 'TOM' }
+              ] },
+            { key: 'conststair-production', abbrev: 'CM', title: 'Const. Stair Manufacturing', list: 'Stair Production & Install', owner: 'MATT',
+              when: s => s.constStair,
+              tasks: [
+                { name: 'Manufacture Stair Package & Parts', days: 3, phase: 'fab', owner: 'MATT', curved: true },
+                { name: 'QA Check - Stair Package', days: 1, phase: 'qa', owner: 'MATT' }
+              ] },
+            { key: 'conststair-dropoff', abbrev: 'DO', title: 'Const. Stair Drop Off', list: 'Stair Production & Install', owner: 'MATT',
+              when: s => s.constStair,
+              tasks: [
                 { name: 'Existing Stair Removal', days: 1, phase: 'install', site: true, cond: s => s.isReno },
-                { name: 'Fill Spec Sheet / Takeoff (Verify Sheet Name with Tom)', days: 1, phase: 'setup', owner: 'TOM' },
-                { name: 'QA Check - Blueprints / Specs', days: 1, phase: 'qa' },
-                { name: 'Manufacture Stair Package & Parts', days: 5, phase: 'fab' },
-                { name: 'QA Check - Package', days: 1, phase: 'qa' },
-                { name: 'Const. Stair Drop Off Onsite', days: 1, phase: 'install', site: true, esa: true },
-                { name: 'Upload Drop-off Photo (Theft Documentation)', days: 1, phase: 'install', site: true }
+                { name: 'Const. Stair Drop Off Onsite', days: 1, phase: 'install', owner: 'MATT', site: true, esa: true },
+                { name: 'Upload Drop-off Photo (Theft Documentation)', days: 1, phase: 'install', owner: 'MATT', site: true }
+              ] },
+            { key: 'conststair-install', abbrev: 'CI', title: 'Const. Stair Install (Extra Charge)', list: 'Stair Production & Install', owner: 'JOEL',
+              when: s => s.constStair && s.constInstall,
+              tasks: [
+                { name: 'Install Const. Stairs', days: 1, phase: 'install', owner: 'JOEL', site: true, esa: true },
+                { name: 'QA - Const. Install', days: 1, phase: 'qa', owner: 'JOEL', site: true }
               ] },
             { key: 'finished-stair', abbrev: 'FS', title: 'Finished Stair', list: 'Stair Production & Install', owner: 'TOM',
               when: s => s.finStair,
