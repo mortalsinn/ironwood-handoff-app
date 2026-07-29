@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.23</title>
+    <title>Ironwood Handoff Form v11.24</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -109,7 +109,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.23</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.24</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -236,7 +236,7 @@
                             <div class="pt-2 border-t border-slate-700/50 space-y-2">
                                 <label class="flex items-center p-2 bg-slate-800/40 border border-emerald-800/40 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
                                     <input type="checkbox" name="constNeedsMeasure" value="Yes" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                    <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Needs Site Measure? <span class="text-slate-500">(adds a Joel/Tom measure task)</span></span>
+                                    <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Needs Site Measure? <span class="text-slate-500">(adds a site measure task)</span></span>
                                 </label>
                                 <label class="flex items-center p-2 bg-slate-800/40 border border-emerald-800/40 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
                                     <input type="checkbox" name="constInstall" value="Yes" class="w-3 h-3 text-emerald-400 bg-slate-900 border-slate-600 rounded form-checkbox">
@@ -457,7 +457,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.23 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.24 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                     <button type="button" id="themeToggle" onclick="window.toggleTheme()" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all" title="Switch between dark and light theme"></button>
                 </div>
@@ -537,10 +537,17 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.23 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.24 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.24 - Small Polish</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Smarter Scheduling Wording:</strong> With "Install Required?" checked, Matt's task reads "Schedule Production" (the install gets its own scheduling task); unchecked it stays "Schedule Production &amp; Drop Off".</li>
+                            <li><strong class="text-slate-300">No Names in Labels:</strong> UI copy no longer hardcodes staff names &mdash; defaults come from the live roster and fail soft if someone leaves.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.23 - Const. Grade Stairs Broken Out</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1460,7 +1467,7 @@
                 });
 
                 const draft = {
-                    schema: 20,
+                    schema: 21,
                     travel: {
                         address: (document.getElementById('travelAddress') || {}).value || '',
                         req: (document.getElementById('travelRequired') || {}).value || 'No',
@@ -1577,7 +1584,7 @@
                     try {
                         const draft = JSON.parse(draftStr);
                         const formState = draft.form || {};
-                        const isV10Draft = (draft.schema || 0) >= 20;
+                        const isV10Draft = (draft.schema || 0) >= 21;
 
                         // 1. Restore Custom Options Checkboxes (Left Side)
                         // Dedup is scoped to custom-option inputs only, so a custom item
@@ -2107,7 +2114,8 @@
             { key: 'conststair-scheduling', abbrev: 'CS', title: 'Const. Stair Scheduling', list: 'Stair Production & Install', owner: 'MATT',
               when: s => s.constStair,
               tasks: [
-                { name: 'Schedule Production & Drop Off', days: 1, phase: 'setup', owner: 'MATT' },
+                { name: 'Schedule Production & Drop Off', days: 1, phase: 'setup', owner: 'MATT', cond: s => !s.constInstall },
+                { name: 'Schedule Production', days: 1, phase: 'setup', owner: 'MATT', cond: s => s.constInstall },
                 { name: 'Schedule Const. Stair Install', days: 1, phase: 'setup', owner: 'MATT', site: true, cond: s => s.constInstall }
               ] },
             { key: 'conststair-setup', abbrev: 'CD', title: 'Const. Stair Setup & Design (Sales)', list: 'Stair Production & Install',
@@ -3087,7 +3095,7 @@
                 <div>
                     <h4 class="text-sky-400 font-bold mb-2 uppercase tracking-wider text-[11px]">2. Who Owns What</h4>
                     <ul class="list-disc pl-5 space-y-2 mt-2">
-                        <li><strong>Automatic owners:</strong> Tasks pre-assign to the right people (Tom, Matt, Joel, Jeffery) from the live roster — you'll see their initials chip on each task.</li>
+                        <li><strong>Automatic owners:</strong> Tasks pre-assign to the team's default leads from the live roster — you'll see their initials chip on each task. If a default lead ever leaves the roster, their tasks simply come up unassigned for you to pick.</li>
                         <li><strong>The Sales section is intentionally blank</strong> — use its "Assign User" button to pick the salesperson. Generating is blocked until every section has an owner.</li>
                         <li><strong>Overrides:</strong> "Assign User" on a section header sets that whole section; the small person icon on any single task overrides just that task.</li>
                         <li><strong>Project Owner</strong> (top of Scope of Work) optionally sets who owns the whole project in Zoho Projects &mdash; separate from task assignees. Leave unset for the default.</li>
