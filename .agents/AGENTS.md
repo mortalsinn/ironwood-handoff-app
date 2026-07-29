@@ -24,7 +24,7 @@
   1. Make changes locally.
   2. Commit and push (`git add index.html && git commit -m "..." && git push`).
   3. Wait approximately 60 seconds for Render to finish deploying the updated `index.html`.
-  4. Instruct the user to "hard refresh" the app in their browser.
+  4. Since v12.2 the widget self-updates: on open it fetches its own source fresh, compares the <title> version, and reloads once if newer. KEEP THE TITLE FORMAT "Ironwood Handoff Form vX.Y" - the update check parses it. Manual hard-refresh is only a fallback.
 
 ## Zoho CRM Integration
 - **SDK**: Uses the Zoho Embedded App SDK (`https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js`).
