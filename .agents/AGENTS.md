@@ -10,6 +10,8 @@
 
 ## Tech Stack & Architecture
 - **Single-File Setup**: The entire frontend application is housed in `index.html`. All styles use Tailwind CSS via CDN, and all logic is embedded in the bottom `<script>` tag.
+- **Styling (v12.1+)**: Tailwind is NO LONGER loaded from a CDN. The compiled stylesheet is inlined in `<style id="tw-compiled">`. CRITICAL: if you add a Tailwind class to index.html that was never used before, it will NOT render until the stylesheet is regenerated. Regenerate with:
+  `npx -y tailwindcss@3.4.17 -c tailwind.config.js -i tw-input.css -o tailwind.out.css --minify` (config content = ['index.html'], input = the three @tailwind directives), then replace the contents of the `tw-compiled` style tag. Alternatively use a handwritten CSS rule in the main `<style>` block. SortableJS 1.15.2 and canvas-confetti 1.6.0 are also inlined; the only external script is Zoho's SDK.
 - **Styling Guidelines**:
   - Uses Tailwind CSS defaults with extended colors (slate for dark themes, sky/emerald/rose/orange for specific states).
   - Modern, clean aesthetic utilizing `bg-slate-900`, `backdrop-blur`, glassmorphism, rounded corners (`rounded-xl`), and subtle borders.
