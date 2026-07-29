@@ -72,6 +72,12 @@ The right-panel blueprint is generated from `ARCHETYPES` in index.html — the t
 - Drafts carry `schema: 10`; pre-v10 drafts skip the right-panel snapshot and regenerate fresh.
 - Every job ends with the Accounting Close Out block (Jeffery / Zoho Books) — do not remove.
 
+## v12.0 Shared Drafts
+- "Save Draft" persists the draft to the Deal itself as chunked CRM Notes titled `IRONWOOD_DRAFT [i/N] - widget draft data, do not delete` (28k chars/chunk; savedBy/savedAt lead the JSON so chunk 1 carries the meta). Anyone opening the widget on that Deal auto-loads the newest of shared-vs-local at PageLoad, with an authorship banner.
+- Auto-save while typing stays LOCAL only (API rate limits); shared writes happen on the explicit Save Draft button. Overwrite protection compares the remote savedAt against loadedSharedSavedAt and confirms before clobbering a newer save. Last-write-wins by design.
+- Generate success and Reset both delete the shared draft notes (post-generation truth lives in Zoho Projects). All shared-draft calls are fail-soft: any API error falls back to local-only behavior.
+- Uses only APIs already proven in this widget: getRelatedRecords / insertRecord / deleteRecord on Notes, plus ZOHO.CRM.CONFIG.getCurrentUser for authorship.
+
 ## v11.0 Timeline & Dependencies
 - Every archetype task has `days: N` (default working days) rendered as an editable `.task-days-input` per task; `data-days` on the `<li>` is the payload source of truth (the input handler syncs both it and the `value` attribute so snapshots keep edits). Section headers show a live `.block-days-total` badge.
 - On Generate the widget computes start/end dates per task: each Zoho task list is a parallel lane, tasks sequential within the lane by working days (weekends skipped), anchored on the generation date, format MM-dd-yyyy. `chain_group` (per visible block) marks section boundaries.

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.29</title>
+    <title>Ironwood Handoff Form v12.0</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -102,6 +102,7 @@
         html.light .task-phase-install { color: #e11d48; }
         html.light .task-phase-wrap { color: #64748b; }
         html.light ::-webkit-scrollbar-thumb { background: #94a3b8; }
+        html.light #sharedDraftBanner { background: #e0f2fe !important; color: #0369a1 !important; border-color: #bae6fd !important; }
     </style>
     <script>if (localStorage.getItem('ironwood_theme') === 'light') document.documentElement.classList.add('light');</script>
 </head>
@@ -109,7 +110,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.29</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v12.0</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -147,6 +148,12 @@
                 </button>
                 <button type="button" id="manualSaveBtn" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 transition-colors">Save Draft</button>
             </div>
+        </div>
+
+        <div id="sharedDraftBanner" class="hidden bg-sky-900/40 border-b border-sky-800/50 px-5 py-1.5 text-[10px] text-sky-300 flex items-center gap-2 shrink-0 z-10">
+            <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <span></span>
+            <button type="button" onclick="this.parentElement.classList.add('hidden')" class="ml-auto text-sky-400 hover:text-white font-bold px-1">&times;</button>
         </div>
 
         <div class="flex flex-row flex-grow w-full overflow-hidden min-h-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 to-slate-900">
@@ -452,7 +459,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.29 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v12.0 Live</button>
 
                 </div>
             </div>
@@ -527,10 +534,18 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.29 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v12.0 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v12.0 - Shared Drafts</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">The Handoff Is Now a Team Document:</strong> "Save Draft" stores the filled-out form on the Deal itself. Anyone opening the widget on that Deal &mdash; from any machine &mdash; picks up the latest saved state automatically, with a banner showing who saved it and when.</li>
+                            <li><strong class="text-slate-300">Overwrite Protection:</strong> If a teammate saved a newer version after you loaded yours, you're warned before overwriting.</li>
+                            <li><strong class="text-slate-300">Clean Endings:</strong> A successful Generate clears the shared draft (the Zoho Project becomes the source of truth); Reset clears it for everyone. Auto-save while typing stays local and instant.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.29 - Header Cleanup &amp; Notes Clarity</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1134,6 +1149,8 @@
         let dealOwnerName = "";
         let dealStage = "";
         let closedWonReminderShown = false;
+        let currentUserName = "";
+        let loadedSharedSavedAt = 0;
         let roleUserMap = {};
         // Archetype blocks the user explicitly trashed this session — the engine
         // won't recreate them until their driving checkbox is toggled off and on.
@@ -1150,6 +1167,95 @@
             syncThemeToggleLabel();
         };
         document.addEventListener('DOMContentLoaded', syncThemeToggleLabel);
+
+        // ============================================================
+        // SHARED DRAFTS (v12) - the draft is stored on the Deal itself as
+        // chunked, clearly-titled CRM Notes, so anyone opening the widget
+        // on this Deal auto-loads the latest saved state. Fail-soft: any
+        // API hiccup falls back to today's local-only behavior.
+        // ============================================================
+        const DRAFT_NOTE_PREFIX = 'IRONWOOD_DRAFT';
+        const DRAFT_CHUNK_SIZE = 28000;
+
+        async function fetchDraftNotes() {
+            const res = await ZOHO.CRM.API.getRelatedRecords({ Entity: "Deals", RecordID: currentDealId, RelatedList: "Notes", page: 1, per_page: 200 });
+            const notes = ((res && res.data) ? res.data : []).filter(n => (n.Note_Title || '').indexOf(DRAFT_NOTE_PREFIX) === 0);
+            notes.sort((a, b) => {
+                const ai = parseInt((a.Note_Title.match(/\[(\d+)\//) || [])[1] || '0', 10);
+                const bi = parseInt((b.Note_Title.match(/\[(\d+)\//) || [])[1] || '0', 10);
+                return ai - bi;
+            });
+            let meta = null;
+            if (notes.length) {
+                const c = notes[0].Note_Content || '';
+                const at = c.match(/"savedAt":(\d+)/);
+                const by = c.match(/"savedBy":"([^"]*)"/);
+                if (at) meta = { savedAt: parseInt(at[1], 10), savedBy: by ? by[1] : '' };
+            }
+            return { notes, meta };
+        }
+
+        window.saveSharedDraft = async () => {
+            if (!isZohoEnvironment || !currentDealId || typeof window.buildDraftObject !== 'function') return false;
+            try {
+                // savedBy/savedAt lead the JSON so chunk 1 always carries the meta
+                const draft = Object.assign({ savedBy: currentUserName || 'Unknown', savedAt: Date.now() }, window.buildDraftObject());
+                const json = JSON.stringify(draft);
+                const existing = await fetchDraftNotes();
+                if (existing.meta && loadedSharedSavedAt > 0 && existing.meta.savedAt > loadedSharedSavedAt) {
+                    const who = existing.meta.savedBy || 'Someone';
+                    if (!confirm(who + " saved a newer shared draft after you loaded this one. Overwrite it with your version?")) return false;
+                }
+                for (const n of existing.notes) {
+                    try { await ZOHO.CRM.API.deleteRecord({ Entity: "Notes", RecordID: n.id }); } catch (e) { console.warn('Old draft chunk delete failed', e); }
+                }
+                const total = Math.ceil(json.length / DRAFT_CHUNK_SIZE) || 1;
+                for (let i = 0; i < total; i++) {
+                    await ZOHO.CRM.API.insertRecord({ Entity: "Notes", APIData: {
+                        "Parent_Id": currentDealId,
+                        "se_module": "Deals",
+                        "Note_Title": DRAFT_NOTE_PREFIX + ' [' + (i + 1) + '/' + total + '] - widget draft data, do not delete',
+                        "Note_Content": json.substring(i * DRAFT_CHUNK_SIZE, (i + 1) * DRAFT_CHUNK_SIZE)
+                    }, Trigger: [] });
+                }
+                loadedSharedSavedAt = draft.savedAt;
+                return true;
+            } catch (e) { console.warn('Shared draft save failed (local draft still saved)', e); return false; }
+        };
+
+        window.loadSharedDraft = async () => {
+            if (!isZohoEnvironment || !currentDealId) return;
+            try {
+                const { notes } = await fetchDraftNotes();
+                if (!notes.length) return;
+                const draft = JSON.parse(notes.map(n => n.Note_Content || '').join(''));
+                let localTs = 0;
+                try {
+                    const ls = localStorage.getItem('ironwood_draft_' + currentDealId);
+                    if (ls) localTs = JSON.parse(ls).timestamp || 0;
+                } catch (e) { /* ignore */ }
+                if ((draft.savedAt || 0) >= localTs) {
+                    window.restoreDraftState(currentDealId, draft);
+                    loadedSharedSavedAt = draft.savedAt || 0;
+                    const el = document.getElementById('sharedDraftBanner');
+                    if (el) {
+                        const when = draft.savedAt ? new Date(draft.savedAt).toLocaleString() : '';
+                        el.querySelector('span').textContent = 'Shared draft loaded - last saved by ' + (draft.savedBy || 'unknown') + (when ? ' on ' + when : '');
+                        el.classList.remove('hidden');
+                    }
+                }
+            } catch (e) { console.warn('Shared draft load failed; using local draft only', e); }
+        };
+
+        window.deleteSharedDraft = async () => {
+            if (!isZohoEnvironment || !currentDealId) return;
+            try {
+                const { notes } = await fetchDraftNotes();
+                for (const n of notes) {
+                    try { await ZOHO.CRM.API.deleteRecord({ Entity: "Notes", RecordID: n.id }); } catch (e) { /* ignore */ }
+                }
+            } catch (e) { /* ignore */ }
+        };
 
         // Working-day date helpers for the task timeline (weekends skipped)
         const isWeekend = (d) => d.getDay() === 0 || d.getDay() === 6;
@@ -1249,6 +1355,12 @@
                     buildRoleUserMap();
                     applyRoleDefaults();
                     updateBlueprintPreview();
+
+                    try {
+                        const cu = await ZOHO.CRM.CONFIG.getCurrentUser();
+                        if (cu && cu.users && cu.users[0]) currentUserName = cu.users[0].full_name || "";
+                    } catch(e) { console.warn("Could not resolve current user", e); }
+                    window.loadSharedDraft();
 
                     try {
                         const usersRes = await ZOHO.CRM.API.getAllUsers({Type:"ActiveUsers"});
@@ -1478,9 +1590,9 @@
             let autoSaveTimeout;
             let customBlockCounter = 0; // Moved here for AutoSave access
 
-            window.saveDraftState = () => {
-                if (!isZohoEnvironment || !currentDealId) return;
-                
+            // Builds the draft object used by BOTH local auto-save and shared
+            // (CRM-stored) drafts.
+            const buildDraftObject = () => {
                 const formData = new FormData(form);
                 const formState = {};
                 for (let [key, value] of formData.entries()) {
@@ -1530,8 +1642,15 @@
                     customBlockCounter: customBlockCounter
                 };
                 
+                return draft;
+            };
+            window.buildDraftObject = buildDraftObject;
+
+            window.saveDraftState = () => {
+                if (!isZohoEnvironment || !currentDealId) return;
+                const draft = buildDraftObject();
                 localStorage.setItem('ironwood_draft_' + currentDealId, JSON.stringify(draft));
-                
+
                 if(autoSaveIndicator) {
                     const text = document.getElementById('autoSaveText');
                     const spinner = document.getElementById('autoSaveSpinner');
@@ -1571,19 +1690,22 @@
             form.addEventListener('change', triggerAutoSave);
             
             if(manualSaveBtn) {
-                manualSaveBtn.addEventListener('click', () => {
+                manualSaveBtn.addEventListener('click', async () => {
                     window.saveDraftState();
-                    manualSaveBtn.textContent = "Saved!";
-                    setTimeout(() => { manualSaveBtn.textContent = "Save Draft"; }, 2000);
+                    manualSaveBtn.textContent = "Sharing...";
+                    const shared = await window.saveSharedDraft();
+                    manualSaveBtn.textContent = shared ? "Saved & Shared!" : "Saved!";
+                    setTimeout(() => { manualSaveBtn.textContent = "Save Draft"; }, 2500);
                 });
             }
 
             const resetBtn = document.getElementById('resetBtn');
             if (resetBtn) {
                 resetBtn.addEventListener('click', () => {
-                    if (confirm("Are you sure you want to reset all data and start over? This cannot be undone.")) {
+                    if (confirm("Reset all data and start over? This also clears the shared draft for everyone on this deal. This cannot be undone.")) {
                         if (currentDealId) localStorage.removeItem('ironwood_draft_' + currentDealId);
-                        window.location.reload();
+                        Promise.resolve(window.deleteSharedDraft ? window.deleteSharedDraft() : null)
+                            .finally(() => window.location.reload());
                     }
                 });
             }
@@ -1619,11 +1741,11 @@
                 return label;
             };
 
-            window.restoreDraftState = (dealId) => {
-                const draftStr = localStorage.getItem('ironwood_draft_' + dealId);
+            window.restoreDraftState = (dealId, providedDraft) => {
+                const draftStr = providedDraft ? "provided" : localStorage.getItem('ironwood_draft_' + dealId);
                 if (draftStr) {
                     try {
-                        const draft = JSON.parse(draftStr);
+                        const draft = providedDraft || JSON.parse(localStorage.getItem('ironwood_draft_' + dealId));
                         const formState = draft.form || {};
                         const isV10Draft = (draft.schema || 0) >= 23;
 
@@ -2741,8 +2863,12 @@
                     document.getElementById('successOverlay').classList.remove('hidden');
                     if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
                     
-                    // Clear draft on success
-                    if (isZohoEnvironment && currentDealId) localStorage.removeItem('ironwood_draft_' + currentDealId);
+                    // Clear drafts on success - the Zoho Project is now the source
+                    // of truth (prevents stale-state duplication headaches)
+                    if (isZohoEnvironment && currentDealId) {
+                        localStorage.removeItem('ironwood_draft_' + currentDealId);
+                        window.deleteSharedDraft();
+                    }
                     
                     setTimeout(() => { if (ZOHO.CRM.UI.Popup.closeReload) { ZOHO.CRM.UI.Popup.closeReload(); } else { ZOHO.CRM.UI.Popup.close(); } }, 2000);
                 } catch (error) {
@@ -3120,7 +3246,7 @@
                         <li>Creates the Zoho Project (from the production template), invites every assigned person, and builds all task lists, tasks, owners, dates, and section dependencies.</li>
                         <li><strong>Safe to re-run:</strong> generating again on the same Deal re-uses the existing project and only fills in missing pieces — no duplicates.</li>
                         <li><strong>"Handoff Incomplete"</strong> means the project exists but some tasks failed — it lists exactly which; click Generate again to retry just those.</li>
-                        <li>Your work <strong>auto-saves</strong> as a draft per Deal — close and reopen anytime. <strong>Reset</strong> (top right) clears the draft and starts fresh.</li>
+                        <li>Your work <strong>auto-saves</strong> locally as you type, and <strong>Save Draft</strong> shares it to the Deal itself — anyone opening this widget on the same Deal picks up right where you left off (a banner shows who saved it last). <strong>Reset</strong> clears the draft for everyone on the deal.</li>
                     </ul>
                 </div>
 
