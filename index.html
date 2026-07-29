@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ironwood Handoff Form v11.13</title>
+    <title>Ironwood Handoff Form v11.14</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://live.zwidgets.com/js-sdk/1.2/ZohoEmbededAppSDK.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
@@ -60,7 +60,7 @@
 
     <div id="localSimulator" class="absolute inset-0 bg-slate-900 flex items-center justify-center z-50 hidden">
         <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-2xl shadow-blue-900/20 text-center max-w-lg w-full">
-            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.13</h1>
+            <h1 class="text-2xl font-bold text-white mb-2">Zoho CRM Simulator v11.14</h1>
             <p class="text-slate-400 mb-8">Test the Stage-Based Assignee widget locally.</p>
             <button id="triggerBtn" class="bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 px-6 rounded-xl transition-all shadow-lg shadow-sky-900/50 w-full">
                 Simulate "Closed Won"
@@ -264,10 +264,13 @@
                                 <input type="checkbox" id="railFullMetal" name="railingType" value="FullMetal" class="w-3.5 h-3.5 text-sky-400 bg-slate-900 border-slate-600 rounded form-checkbox">
                                 <span class="ml-2 text-xs font-medium text-slate-300 group-has-[:checked]:text-white">Full Metal Railing (Welded)</span>
                             </label>
-                            <label class="flex items-center p-2 bg-slate-800/30 border border-amber-800/40 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20 col-span-2">
-                                <input type="checkbox" name="woodAddon" value="Yes" class="w-3 h-3 text-amber-400 bg-slate-900 border-slate-600 rounded form-checkbox">
-                                <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Wood Components Add-On <span class="text-slate-500">(e.g. wood cap rail on a welded job)</span></span>
-                            </label>
+                            <div class="col-span-2 relative pl-6 -mt-1.5">
+                                <div class="absolute left-3 -top-1 h-5 w-3 border-l-2 border-b-2 border-slate-600 rounded-bl-md"></div>
+                                <label class="flex items-center p-2 bg-slate-800/30 border border-amber-800/40 rounded-lg cursor-pointer hover:border-slate-500 hover:bg-slate-800 transition-all group has-[:checked]:border-brand-accent has-[:checked]:bg-sky-900/20">
+                                    <input type="checkbox" name="woodAddon" value="Yes" class="w-3 h-3 text-amber-400 bg-slate-900 border-slate-600 rounded form-checkbox">
+                                    <span class="ml-2 text-[11px] font-medium text-slate-400 group-has-[:checked]:text-white">Wood Components Add-On <span class="text-slate-500">(e.g. wood cap rail on a welded job)</span></span>
+                                </label>
+                            </div>
                         </div>
                         <details class="mt-2 group">
                             <summary class="text-[10px] text-sky-500/80 cursor-pointer hover:text-sky-400 list-none flex items-center gap-1 font-semibold uppercase tracking-wider">
@@ -401,7 +404,7 @@
                     System Linked
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.13 Live</button>
+                    <button type="button" onclick="document.getElementById('changelogOverlay').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white font-mono bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all">v11.14 Live</button>
                     <button type="button" onclick="document.getElementById('instructionsModal').classList.remove('hidden')" class="text-[10px] text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 px-2 py-0.5 rounded border border-slate-700 hover:border-slate-500 cursor-pointer transition-all flex items-center gap-1"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> Help</button>
                 </div>
             </div>
@@ -480,10 +483,17 @@
                     </div>
                     <div>
                         <h3 class="text-lg font-black tracking-widest uppercase">Release Notes</h3>
-                        <p class="text-[10px] text-sky-400 font-mono">v11.13 Live</p>
+                        <p class="text-[10px] text-sky-400 font-mono">v11.14 Live</p>
                     </div>
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
+                    <div>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.14 - Wood Add-On, Right This Time</h4>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li><strong class="text-slate-300">Left Panel:</strong> The Wood Components checkbox is now visually nested under Full Metal Railing with a connector &mdash; a sub-option, not a standalone box.</li>
+                            <li><strong class="text-slate-300">Right Panel:</strong> The Wood Components section is back as its own workflow box (Tom orders rail stock, Joel installs the cap) &mdash; the wood shop keeps its own lane.</li>
+                        </ul>
+                    </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v11.13 - Wood Add-On Folded Into Welding</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
@@ -1293,7 +1303,7 @@
                 });
 
                 const draft = {
-                    schema: 16,
+                    schema: 17,
                     form: formState,
                     assignees: assignees,
                     timestamp: new Date().getTime(),
@@ -1404,7 +1414,7 @@
                     try {
                         const draft = JSON.parse(draftStr);
                         const formState = draft.form || {};
-                        const isV10Draft = (draft.schema || 0) >= 16;
+                        const isV10Draft = (draft.schema || 0) >= 17;
 
                         // 1. Restore Custom Options Checkboxes (Left Side)
                         // Dedup is scoped to custom-option inputs only, so a custom item
@@ -1788,7 +1798,7 @@
             s.railingGeneral = s.railStraight || s.railCurved || s.spindleWood || s.spindleMetal || s.spindleWall || s.spindleGlass;
             s.spindlesInstall = s.railStraight || s.railCurved || s.spindleWood || s.spindleMetal || s.spindleWall;
             s.welding = s.railFullMetal || s.spindleCustom;
-            s.anyArchetype = s.railingGeneral || s.welding || s.constStair || s.finStair;
+            s.anyArchetype = s.railingGeneral || s.welding || s.constStair || s.finStair || s.woodAddon;
             return s;
         };
 
@@ -1869,7 +1879,6 @@
               when: s => s.welding,
               tasks: [
                 { name: 'Order Materials', days: 2, phase: 'fab', owner: 'JEFFERY' },
-                { name: 'Order Wood Components (Rail)', days: 2, phase: 'fab', owner: 'TOM', cond: s => s.woodAddon },
                 { name: 'Schedule Fabrication', days: 5, phase: 'fab', owner: 'JEFFERY', curved: true },
                 { name: 'Schedule Dry Fit Check', days: 1, phase: 'qa', owner: 'JEFFERY' }
               ] },
@@ -1889,8 +1898,13 @@
               when: s => s.welding,
               tasks: [
                 { name: 'Install Welded Railing', days: 2, phase: 'install', owner: 'JOEL', site: true, esa: true, curved: true },
-                { name: 'Install Wood Cap Rail', days: 1, phase: 'install', owner: 'JOEL', site: true, esa: true, cond: s => s.woodAddon },
                 { name: 'QA - Install', days: 1, phase: 'qa', owner: 'JOEL', site: true }
+              ] },
+            { key: 'wood-addon', abbrev: 'WC', title: 'Wood Components Add-On', list: 'Railing Production & Install', owner: 'TOM',
+              when: s => s.woodAddon,
+              tasks: [
+                { name: 'Order Wood Components (Rail)', days: 2, phase: 'fab', owner: 'TOM' },
+                { name: 'Install Wood Cap Rail', days: 1, phase: 'install', owner: 'JOEL', site: true, esa: true }
               ] },
             { key: 'const-stair', abbrev: 'CG', title: 'Construction Grade Stairs', list: 'Stair Production & Install', owner: 'MATT',
               when: s => s.constStair,
