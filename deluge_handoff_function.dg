@@ -53,6 +53,33 @@ if(newProjectId == "")
 		return "Error creating project in Zoho: " + createResponse.toString();
 	}
 	newProjectId = createResponse.get("projects").get(0).get("id_string");
+	// =====================================
+	// LINK THE PROJECT BACK TO THE DEAL
+	// A project created through the REST API is never associated with the CRM
+	// Deal, so the Deal's "Zoho Projects" related list stays empty. Drop a note
+	// on the Deal carrying a direct link so the project is at least reachable.
+	// Sits inside the creation branch on purpose: a retried handoff re-uses the
+	// existing project and must not stack duplicate notes.
+	// Fail-open - a failed note must never turn a completed handoff into a
+	// Warning, so nothing here is added to failedItems.
+	// =====================================
+	projectUrl = "";
+	createdProject = createResponse.get("projects").get(0);
+	if(createdProject.get("url") != null)
+	{
+		projectUrl = createdProject.get("url");
+	}
+	if(projectUrl == "")
+	{
+		projectUrl = "https://projects.zoho.com/portal/" + portalId + "#zp/projects/" + newProjectId + "/tasks";
+	}
+	linkNote = Map();
+	linkNote.put("Parent_Id",dealId);
+	linkNote.put("se_module","Deals");
+	linkNote.put("Note_Title","Zoho Project - " + projectName);
+	linkNote.put("Note_Content","Production project created by the Handoff widget." + "\n" + projectUrl);
+	linkNoteResponse = zoho.crm.createRecord("Notes",linkNote);
+	info "DEAL LINK NOTE RESULT: " + linkNoteResponse.toString();
 }
 if(newProjectId == null)
 {
