@@ -9,9 +9,25 @@
    - **Do this in the same step as your code changes, before pushing to git.**
 
 ## Tech Stack & Architecture
-- **Single-File Setup**: The entire frontend application is housed in `index.html`. All styles use Tailwind CSS via CDN, and all logic is embedded in the bottom `<script>` tag.
-- **Styling (v12.1+)**: Tailwind is NO LONGER loaded from a CDN. The compiled stylesheet is inlined in `<style id="tw-compiled">`. CRITICAL: if you add a Tailwind class to index.html that was never used before, it will NOT render until the stylesheet is regenerated. Regenerate with:
-  `npx -y tailwindcss@3.4.17 -c tailwind.config.js -i tw-input.css -o tailwind.out.css --minify` (config content = ['index.html'], input = the three @tailwind directives), then replace the contents of the `tw-compiled` style tag. Alternatively use a handwritten CSS rule in the main `<style>` block. SortableJS 1.15.2 and canvas-confetti 1.6.0 are also inlined; the only external script is Zoho's SDK.
+- **Single-File Setup**: The entire frontend application is housed in `index.html` — markup, the inlined compiled Tailwind sheet, a handwritten `<style>` block, and all logic in the bottom `<script>` tag. The repo tracks exactly three files: `index.html`, `deluge_handoff_function.dg`, `.agents/AGENTS.md`.
+- **Styling (v12.1+)**: Tailwind is NOT loaded from a CDN. The compiled stylesheet is inlined in `<style id="tw-compiled">` on line 9. **A Tailwind class that is not already in that sheet does nothing — silently. No error, no warning, it just has no effect.**
+
+  🚨 **CHECK BEFORE YOU USE A CLASS.** This has silently broken real features four separate times (see casualties below). One command, always worth it:
+  ```bash
+  sed -n '9p' index.html > /tmp/tw.css
+  grep -c '\.items-start[{:,]' /tmp/tw.css      # 0 = the class does not exist
+  ```
+  The compiled sheet is one very long line, so `grep -c` answers 0 or 1 only — read it as a yes/no, not a count. Use `grep -o … | wc -l` if you actually need occurrences.
+  Selectors are CSS-escaped, so `focus:ring-brand-accent` is `.focus\:ring-brand-accent` and `has-[:checked]:bg-sky-900/20` is `.has-\[\:checked\]\:bg-sky-900\/20`. When grepping for a variant, search a distinctive fragment (`brand-accent`, `has-\[`) rather than the full escaped string.
+
+  ⚠️ **The documented regenerate command cannot be run as written.** `tailwind.config.js` and `tw-input.css` are **not in this repo** — you must create them first (config `content: ['index.html']`, input = the three `@tailwind` directives), then:
+  `npx -y tailwindcss@3.4.17 -c tailwind.config.js -i tw-input.css -o tailwind.out.css --minify`, then replace the contents of the `tw-compiled` tag. Because that is a heavy step for one utility, **the normal fix is a handwritten rule in the main `<style>` block** — that is why `.opt-desc`, `.override-btn`, `.bg/text/border-brand-accent` and the `has-[:checked]` border rule all live there.
+
+  **The variant trap.** `brand-accent` is defined by hand in `<style>`, so Tailwind's scanner has never heard of the colour and generates **no variants for it**. `bg-`, `text-` and `border-brand-accent` exist only because they were written by hand; `focus:ring-brand-accent`, `hover:border-brand-accent/50` and `has-[:checked]:border-brand-accent` did not, and did nothing for months. Any new variant of a hand-defined colour must also be written by hand.
+
+  **Known casualties** (all fixed, all silent until measured): `@tailwindcss/forms` is absent, so `form-checkbox`/`form-radio` styled nothing on 28 controls (v13.5, fixed with `accent-color: currentColor`); `has-[:checked]:border-brand-accent` never compiled, so no option card showed a selected border (v13.5); `focus:ring-brand-accent` / `focus:border-brand-accent` were dead on the notes field (v13.4); `leading-snug` and `gap-2.5` do not exist at all — the sheet has only `leading-none` and `leading-relaxed`, and `gap-1/2/3/4` (v13.7).
+
+  SortableJS 1.15.2 and canvas-confetti 1.6.0 are also inlined; the only external script is Zoho's SDK (deferred since v13.4 — a blocking tag there hangs the entire page when `live.zwidgets.com` is slow or unreachable).
 - **Styling Guidelines**:
   - Uses Tailwind CSS defaults with extended colors (slate for dark themes, sky/emerald/rose/orange for specific states).
   - Modern, clean aesthetic utilizing `bg-slate-900`, `backdrop-blur`, glassmorphism, rounded corners (`rounded-xl`), and subtle borders.
