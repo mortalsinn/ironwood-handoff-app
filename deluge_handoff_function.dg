@@ -77,7 +77,14 @@ if(newProjectId == "")
 	linkNote.put("Parent_Id",dealId);
 	linkNote.put("se_module","Deals");
 	linkNote.put("Note_Title","Zoho Project - " + projectName);
-	linkNote.put("Note_Content","Production project created by the Handoff widget." + "\n" + projectUrl);
+	// Content is the bare URL and nothing else. Two reasons, both observed live
+	// on 2026-08-07: Deluge does not interpret "\n" here - it wrote a literal
+	// backslash-n into the note, glued to the front of the URL - and CRM Note
+	// bodies are plain text, so no markdown or link syntax renders (the widget's
+	// own [@Name](zohocrm://user/id) mentions come out raw too). A clean
+	// unadorned URL is the only thing with a chance of auto-linking, and the
+	// note title already says what it is.
+	linkNote.put("Note_Content",projectUrl);
 	linkNoteResponse = zoho.crm.createRecord("Notes",linkNote);
 	info "DEAL LINK NOTE RESULT: " + linkNoteResponse.toString();
 }
