@@ -66,7 +66,7 @@ if(newProjectId == "")
 	// The URL needs the portal's default task-view id or it lands on the list of
 	// ALL projects instead of this one. That id is portal-level, not per-project:
 	// confirmed identical across two different projects on 2026-08-07
-	// (…7756008 and …7787094 both carry …3199003). Ending on /gantt so the link
+	// (...7756008 and ...7787094 both carry ...3199003). Ending on /gantt so the link
 	// opens the schedule the handoff just built.
 	// Built by hand rather than read from the create response - that response
 	// carries no usable url field, confirmed on the first live run.
