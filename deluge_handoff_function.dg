@@ -87,10 +87,9 @@ if(newProjectId == "")
 	// Attribute the note to the Deal owner. Without this the note shows whoever
 	// this standalone function executes as - a fixed CRM user unrelated to the
 	// job (it read "Mike Kent" on every note regardless of who ran the handoff).
-	// UNVERIFIED: Owner is the documented field, but the byline in the Notes UI
-	// may be Created_By, which the API does not let us set. If it still shows the
-	// function's execution user after this, the note has to be written from the
-	// widget instead, which runs as the logged-in user.
+	// CONFIRMED WORKING 2026-08-07: setting Owner does change the byline in the
+	// Notes UI, so no need to move this into the widget. Guarded - a Deal with no
+	// Owner still gets its note, just attributed as before.
 	dealOwnerInfo = dealInfo.get("Owner");
 	if(dealOwnerInfo != null)
 	{
