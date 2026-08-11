@@ -84,6 +84,23 @@ if(newProjectId == "")
 	// unadorned URL is the only form with a chance of auto-linking, and the note
 	// title already says what it is.
 	linkNote.put("Note_Content",projectUrl);
+	// Attribute the note to the Deal owner. Without this the note shows whoever
+	// this standalone function executes as - a fixed CRM user unrelated to the
+	// job (it read "Mike Kent" on every note regardless of who ran the handoff).
+	// UNVERIFIED: Owner is the documented field, but the byline in the Notes UI
+	// may be Created_By, which the API does not let us set. If it still shows the
+	// function's execution user after this, the note has to be written from the
+	// widget instead, which runs as the logged-in user.
+	dealOwnerInfo = dealInfo.get("Owner");
+	if(dealOwnerInfo != null)
+	{
+		dealOwnerId = dealOwnerInfo.get("id");
+		if(dealOwnerId != null)
+		{
+			linkNote.put("Owner",dealOwnerId);
+			info "DEAL LINK NOTE OWNER: " + dealOwnerId;
+		}
+	}
 	linkNoteResponse = zoho.crm.createRecord("Notes",linkNote);
 	info "DEAL LINK NOTE RESULT: " + linkNoteResponse.toString();
 }
