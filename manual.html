@@ -59,6 +59,11 @@
               font-family:var(--sans); font-size:13.5px; color:var(--muted);
               padding:4px 8px; border-radius:5px; line-height:1.35; }
     .railnav a:hover{ color:var(--ink); background:var(--accent-soft); }
+    /* Where you are now. The bar carries it as much as the colour, so it still
+       reads at a glance without relying on hue alone. */
+    .railnav a.active{ color:var(--ink); font-weight:600;
+        background:var(--accent-soft); box-shadow:inset 2px 0 0 0 var(--accent); }
+    .railnav a.active .n{ color:var(--accent); }
     .railnav .n{ font-family:var(--mono); font-size:11px; color:var(--faint);
               min-width:1.8em; font-variant-numeric:tabular-nums; }
     .toc{ display:none; }
@@ -215,7 +220,8 @@
     }
     body{ background:#fff; color:#111; font-size:10.5pt; line-height:1.5; }
     .wrap{ max-width:none; padding:0; }
-    .no-print, .pdfbar{ display:none !important; }
+    .no-print, .pdfbar, .railnav{ display:none !important; }
+    .layout{ display:block !important; }
 
     .mast{ padding:0 0 18pt; border-bottom:1.5pt solid #111; }
     .mast h1{ font-size:30pt; }
@@ -789,15 +795,69 @@
   Ironwood Stair &amp; Rail · Production Handoff user manual · Written against v14.43 · Internal use
 </footer>
 </div>
+
+<script>
+// Highlight the section you are reading in the contents rail. Uses the scroll
+// position of each section heading rather than IntersectionObserver ratios, so a
+// long section stays highlighted the whole way through it instead of dropping out
+// when its heading scrolls off.
+(function () {
+  var links = Array.prototype.slice.call(document.querySelectorAll('.railnav a'));
+  if (!links.length) return;
+  var targets = links.map(function (a) {
+    return { link: a, el: document.querySelector(a.getAttribute('href')) };
+  }).filter(function (t) { return t.el; });
+  var current = null;
+  function update() {
+    var line = window.scrollY + 140;   // a little below the top of the viewport
+    var found = targets[0];
+    for (var i = 0; i < targets.length; i++) {
+      // Document-relative, not offsetTop: the sections sit inside a positioned
+      // grid column, so offsetTop is measured from that column and every section
+      // reported the same figure - the highlight never moved off section one.
+      var top = targets[i].el.getBoundingClientRect().top + window.scrollY;
+      if (top <= line) found = targets[i]; else break;
+    }
+    // at the very bottom, the last section is what you are looking at
+    if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 8) {
+      found = targets[targets.length - 1];
+    }
+    if (found === current) return;
+    if (current) current.link.classList.remove('active');
+    found.link.classList.add('active');
+    found.link.setAttribute('aria-current', 'true');
+    if (current) current.link.removeAttribute('aria-current');
+    current = found;
+    // keep the highlighted item in view within the rail itself
+    var nav = found.link.closest('.railnav');
+    if (nav && nav.scrollHeight > nav.clientHeight) {
+      var top = found.link.offsetTop, bottom = top + found.link.offsetHeight;
+      if (top < nav.scrollTop) nav.scrollTop = top - 8;
+      else if (bottom > nav.scrollTop + nav.clientHeight) nav.scrollTop = bottom - nav.clientHeight + 8;
+    }
+  }
+  // Driven by watching the scroll POSITION rather than listening for the scroll
+  // event. Two contexts this has to survive - the embedded preview pane and
+  // headless Chromium - deliver no scroll events at all, and an event-driven
+  // version simply never updated in either: the highlight sat on section one for
+  // the whole document. The listener is still attached for immediacy where events
+  // do arrive; the poll is what guarantees it.
+  var lastY = -1;
+  function tick() {
+    if (window.scrollY !== lastY) { lastY = window.scrollY; update(); }
+  }
+  window.addEventListener('scroll', tick, { passive: true });
+  window.addEventListener('resize', function () { lastY = -1; tick(); });
+  setInterval(tick, 200);
+  update();
+})();
+</script>
 </div>
 
 </div>
 
 <script>
-// The viewer theme toggle does not exist outside the artifact host, so give the
-// page its own. Defaults to the reader's system preference.
-(function(){var b=document.createElement("button");b.type="button";
-b.className="pdfbtn";b.style.cssText="margin-right:10px";
+(function(){var b=document.createElement("button");b.type="button";b.className="pdfbtn";b.style.cssText="margin-right:10px";
 var set=function(t){document.documentElement.setAttribute("data-theme",t);
   b.textContent=t==="dark"?"Light mode":"Dark mode";try{localStorage.setItem("iwManualTheme",t)}catch(e){}};
 var saved=null;try{saved=localStorage.getItem("iwManualTheme")}catch(e){}
