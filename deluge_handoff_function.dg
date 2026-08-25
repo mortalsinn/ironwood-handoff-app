@@ -102,6 +102,59 @@ if(newProjectId == "")
 	}
 	linkNoteResponse = zoho.crm.createRecord("Notes",linkNote);
 	info "DEAL LINK NOTE RESULT: " + linkNoteResponse.toString();
+	// =====================================
+	// POPULATE THE DEAL'S "ZOHO PROJECTS" RELATED LIST
+	// The note above is a fallback and stays. This is the real association, so
+	// the project appears under the Deal's Zoho Projects sub-menu the way a
+	// project created from inside CRM does.
+	// Two routes are tried because only the second is confirmed by anyone
+	// publicly, and the first needs no new connection:
+	//   1. zoho.crm.updateRelatedRecord - native, runs on this function's own
+	//      CRM scope. Cross-application (Projects) support is NOT documented,
+	//      so it may simply fail, which is why route 2 follows it.
+	//   2. POST /crm/v2/Deals/{dealId}/Zoho_Projects/{projectId} - this is the
+	//      endpoint the CRM UI itself uses. It needs a connection with CRM
+	//      scope named "zcrm"; if that connection does not exist the call
+	//      throws, which the try/catch swallows.
+	// BOTH ARE FAIL-OPEN. A failure here must never turn a completed handoff
+	// into a Warning, so nothing is added to failedItems and nothing returns
+	// early. Read the execution log lines below to see which route worked.
+	// UNVERIFIED: written from Zoho's docs and a community thread, never yet
+	// run against the live portal.
+	// =====================================
+	try
+	{
+		linkValues = Map();
+		linkValues.put("name",projectName);
+		assocNative = zoho.crm.updateRelatedRecord("Zoho_Projects",newProjectId,"Deals",dealId,linkValues);
+		info "DEAL PROJECT ASSOC (native): " + assocNative.toString();
+	}
+	catch (e)
+	{
+		info "DEAL PROJECT ASSOC (native) FAILED: " + e.toString();
+	}
+	try
+	{
+		assocRow = Map();
+		assocRow.put("name",projectName);
+		dealRef = Map();
+		dealRef.put("id",dealId);
+		assocRow.put("deals",{dealRef});
+		assocBody = Map();
+		assocBody.put("data",{assocRow});
+		assocRest = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v2/Deals/" + dealId + "/Zoho_Projects/" + newProjectId
+			type :POST
+			parameters:assocBody.toString()
+			connection:"zcrm"
+		];
+		info "DEAL PROJECT ASSOC (rest): " + assocRest.toString();
+	}
+	catch (e)
+	{
+		info "DEAL PROJECT ASSOC (rest) FAILED: " + e.toString();
+	}
 }
 if(newProjectId == null)
 {
