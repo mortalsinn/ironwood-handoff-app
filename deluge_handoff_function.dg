@@ -133,28 +133,35 @@ if(newProjectId == "")
 	{
 		info "DEAL PROJECT ASSOC (native) FAILED: " + e.toString();
 	}
-	try
-	{
-		assocRow = Map();
-		assocRow.put("name",projectName);
-		dealRef = Map();
-		dealRef.put("id",dealId);
-		assocRow.put("deals",{dealRef});
-		assocBody = Map();
-		assocBody.put("data",{assocRow});
-		assocRest = invokeurl
-		[
-			url :"https://www.zohoapis.com/crm/v2/Deals/" + dealId + "/Zoho_Projects/" + newProjectId
-			type :POST
-			parameters:assocBody.toString()
-			connection:"zcrm"
-		];
-		info "DEAL PROJECT ASSOC (rest): " + assocRest.toString();
-	}
-	catch (e)
-	{
-		info "DEAL PROJECT ASSOC (rest) FAILED: " + e.toString();
-	}
+	// ---- ROUTE 2, DISABLED UNTIL THE CONNECTION EXISTS ----
+	// Deluge validates connection names when the function is SAVED, not when
+	// it runs, so this block stops the whole function saving with
+	// "connection 'zcrm' does not exist" until that connection is created.
+	// To enable: Setup > Developer Space > Connections > new connection named
+	// exactly zcrm with ZohoCRM scope, then uncomment everything below.
+	// try
+	// {
+	// assocRow = Map();
+	// assocRow.put("name",projectName);
+	// dealRef = Map();
+	// dealRef.put("id",dealId);
+	// assocRow.put("deals",{dealRef});
+	// assocBody = Map();
+	// assocBody.put("data",{assocRow});
+	// assocRest = invokeurl
+	// [
+	// url :"https://www.zohoapis.com/crm/v2/Deals/" + dealId + "/Zoho_Projects/" + newProjectId
+	// type :POST
+	// parameters:assocBody.toString()
+	// connection:"zcrm"
+	// ];
+	// info "DEAL PROJECT ASSOC (rest): " + assocRest.toString();
+	// }
+	// catch (e)
+	// {
+	// info "DEAL PROJECT ASSOC (rest) FAILED: " + e.toString();
+	// }
+	//}
 }
 if(newProjectId == null)
 {
