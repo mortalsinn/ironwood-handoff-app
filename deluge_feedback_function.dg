@@ -26,15 +26,37 @@ if(firstLine.length() > 70)
 {
 	firstLine = firstLine.subString(0,70) + "...";
 }
+// A NOTE ON THE DEAL FIRST, ALWAYS.
+// The first version created a CRM Task related to the deal via What_Id and
+// $se_module, and reported success - but the task did not appear in the
+// deal's Open Activities. Rather than keep guessing at how Deluge relates a
+// task to a deal, the report is written as a NOTE, which is the one CRM write
+// this codebase has already proven works (the project link note).
+// A note sits on the deal record where it was reported from, which is also
+// the easiest place to find it.
+noteSaved = "no";
+if(dealId != null && dealId != "")
+{
+	noteData = Map();
+	noteData.put("Parent_Id",dealId);
+	noteData.put("se_module","Deals");
+	noteData.put("Note_Title","[Handoff Feedback] " + firstLine);
+	noteData.put("Note_Content",body);
+	noteResponse = zoho.crm.createRecord("Notes",noteData);
+	info "FEEDBACK NOTE RESULT: " + noteResponse.toString();
+	if(noteResponse.get("id") != null)
+	{
+		noteSaved = "yes";
+	}
+}
+// The task is a convenience on top - something to tick off - not the record
+// of truth. If it fails, or lands somewhere unexpected, the note still has it.
+taskSaved = "no";
 taskData = Map();
 taskData.put("Subject","[Handoff Feedback] " + firstLine);
 taskData.put("Status","Not Started");
 taskData.put("Priority","High");
-taskData.put("Due_Date",zoho.currentdate.toString("yyyy-MM-dd"));
 taskData.put("Description",body);
-// Attach it to the Deal it was reported from when we have one, so the report
-// sits next to the job that produced it. A report sent from outside a Deal
-// still lands, just unattached - losing it would be worse.
 if(dealId != null && dealId != "")
 {
 	taskData.put("What_Id",dealId);
@@ -42,27 +64,25 @@ if(dealId != null && dealId != "")
 }
 taskResponse = zoho.crm.createRecord("Tasks",taskData);
 info "FEEDBACK TASK RESULT: " + taskResponse.toString();
-resultText = taskResponse.toString();
-if(taskResponse.get("id") == null)
+if(taskResponse.get("id") != null)
 {
-	// Fall back to a Note on the Deal rather than dropping the report. The
-	// widget also copies it to the reporter's clipboard if this whole call
-	// fails, so there are two more chances to not lose it.
-	if(dealId != null && dealId != "")
-	{
-		noteData = Map();
-		noteData.put("Parent_Id",dealId);
-		noteData.put("se_module","Deals");
-		noteData.put("Note_Title","[Handoff Feedback] " + firstLine);
-		noteData.put("Note_Content",body);
-		noteResponse = zoho.crm.createRecord("Notes",noteData);
-		info "FEEDBACK NOTE FALLBACK: " + noteResponse.toString();
-		if(noteResponse.get("id") != null)
-		{
-			return "Success: feedback saved as a note on the deal.";
-		}
-	}
-	return "Error: could not save feedback. " + resultText;
+	taskSaved = "yes";
 }
-return "Success: feedback logged.";
+// Say exactly where it went. The widget prints this back, because the CRM
+// function log does not retain info statements - a call that quietly does
+// nothing looks identical to one that worked.
+if(noteSaved == "yes" && taskSaved == "yes")
+{
+	return "Success: saved as a NOTE on the deal, and as a task. Deal id " + dealId;
+}
+if(noteSaved == "yes")
+{
+	return "Success: saved as a NOTE on the deal. Deal id " + dealId;
+}
+if(taskSaved == "yes")
+{
+	return "Success: saved as a task (no deal attached). Subject starts [Handoff Feedback].";
+}
+return "Error: could not save feedback anywhere. Task said: " + taskResponse.toString();
+
 }
