@@ -1,5 +1,10 @@
 string standalone.submit_handoff_feedback(String dealId, String body)
 {
+// !! DEPLOYMENT: after saving this function, its REST API must be switched on
+// or the widget gets {"code":"NOT_ACTIVE","message":"api is inactive for the
+// given custom function"} and nothing runs. Functions list > Settings for this
+// function > REST API > enable the OAuth 2.0 slider > Save. create_handoff_tasks
+// already has it on, which is why that one worked and this one silently did not.
 // =====================================
 // HANDOFF FEEDBACK -> NOTE ON THE DEAL
 // The report is written as a NOTE on the deal it came from. That is where
