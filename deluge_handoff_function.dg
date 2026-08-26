@@ -426,44 +426,37 @@ for each  listName in keys
 					}
 					if(prevGroupLastTaskId != "" && thisChainGroup != -999)
 					{
+						// The documented endpoint. Everything before this used
+						// /tasks/{id}/ and /tasks/{id}/dependency/ with a predecessor_ids
+						// parameter - neither exists, so no dependency has ever actually
+						// been created. It went unnoticed because the Gantt bars stagger
+						// from the dates we calculate, with or without a dependency.
 						depParams = Map();
-						depParams.put("predecessor_ids",prevGroupLastTaskId);
+						depParams.put("taskid",thisTaskId);
+						depParams.put("projId",newProjectId);
+						depParams.put("toupdate","dependencyset");
+						depParams.put("predids",prevGroupLastTaskId);
+						depParams.put("dependencytype","FS");
 						depResponse = invokeurl
 						[
-							url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/" + thisTaskId + "/"
+							url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/taskdependency/"
 							type :POST
 							parameters:depParams
 							connection:"zoho_projects_connection"
 						];
-						info "DEPENDENCY UPDATE (" + prevGroupLastTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
-						if(depResponse.get("tasks") != null)
+						info "DEPENDENCY (" + prevGroupLastTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
+						depText = depResponse.toString();
+						if(depText.contains("error") || depText.contains("Error") || depText == "")
+						{
+							depFail = depFail + 1;
+							if(depFirstError == "")
+							{
+								depFirstError = depText.subString(0,180);
+							}
+						}
+						else
 						{
 							depOk = depOk + 1;
-						}
-						if(depResponse.get("tasks") == null)
-						{
-							depAltParams = Map();
-							depAltParams.put("predecessor_ids",prevGroupLastTaskId);
-							depAltResponse = invokeurl
-							[
-								url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/" + thisTaskId + "/dependency/"
-								type :POST
-								parameters:depAltParams
-								connection:"zoho_projects_connection"
-							];
-							info "DEPENDENCY ALT (" + prevGroupLastTaskId + " -> " + thisTaskId + ") RESULT: " + depAltResponse.toString();
-							if(depAltResponse.get("tasks") != null)
-							{
-								depOk = depOk + 1;
-							}
-							else
-							{
-								depFail = depFail + 1;
-								if(depFirstError == "")
-								{
-									depFirstError = depAltResponse.toString().subString(0,180);
-								}
-							}
 						}
 					}
 					thisGroupLastTaskId = thisTaskId;
@@ -497,6 +490,22 @@ if(failedItems.size() > 0)
 if(isReusedProject == "yes")
 {
 	return "Success: Existing project updated in Zoho Projects (" + createdCount + " task(s) created, " + skippedCount + " already existed). Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
+}
+// =====================================
+// ERROR CAPTURE
+// The CRM function log does not retain info statements, so a fail-open call
+// that quietly does nothing is invisible. If any dependency failed, leave a
+// note on the Deal saying so. Silent when everything worked.
+// =====================================
+if(depFail > 0)
+{
+	diagNote = Map();
+	diagNote.put("Parent_Id",dealId);
+	diagNote.put("se_module","Deals");
+	diagNote.put("Note_Title","Handoff diagnostics - " + depFail + " dependency call(s) failed");
+	diagNote.put("Note_Content","Project: " + projectName + " (" + newProjectId + ")\nLinked: " + depOk + "\nFailed: " + depFail + "\nFirst error: " + depFirstError);
+	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
+	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }
 return "Success: Project and Tasks created in Zoho Projects. Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
 }
