@@ -301,6 +301,12 @@ if(existingTasks != null)
 failedItems = List();
 skippedCount = 0;
 createdCount = 0;
+// Dependency outcomes are reported back in the return string. The execution log
+// is awkward to reach in the CRM UI, and these calls are fail-open, so without
+// this a silent failure looks identical to success.
+depOk = 0;
+depFail = 0;
+depFirstError = "";
 keys = taskListsMap.keys();
 for each  listName in keys
 {
@@ -430,6 +436,10 @@ for each  listName in keys
 							connection:"zoho_projects_connection"
 						];
 						info "DEPENDENCY UPDATE (" + prevGroupLastTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
+						if(depResponse.get("tasks") != null)
+						{
+							depOk = depOk + 1;
+						}
 						if(depResponse.get("tasks") == null)
 						{
 							depAltParams = Map();
@@ -442,6 +452,18 @@ for each  listName in keys
 								connection:"zoho_projects_connection"
 							];
 							info "DEPENDENCY ALT (" + prevGroupLastTaskId + " -> " + thisTaskId + ") RESULT: " + depAltResponse.toString();
+							if(depAltResponse.get("tasks") != null)
+							{
+								depOk = depOk + 1;
+							}
+							else
+							{
+								depFail = depFail + 1;
+								if(depFirstError == "")
+								{
+									depFirstError = depAltResponse.toString().subString(0,180);
+								}
+							}
 						}
 					}
 					thisGroupLastTaskId = thisTaskId;
@@ -474,7 +496,7 @@ if(failedItems.size() > 0)
 }
 if(isReusedProject == "yes")
 {
-	return "Success: Existing project updated in Zoho Projects (" + createdCount + " task(s) created, " + skippedCount + " already existed).";
+	return "Success: Existing project updated in Zoho Projects (" + createdCount + " task(s) created, " + skippedCount + " already existed). Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
 }
-return "Success: Project and Tasks created in Zoho Projects.";
+return "Success: Project and Tasks created in Zoho Projects. Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
 }
