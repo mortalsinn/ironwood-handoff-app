@@ -1,0 +1,68 @@
+string standalone.submit_handoff_feedback(String dealId, String body)
+{
+// =====================================
+// HANDOFF FEEDBACK -> CRM TASK
+// Why a Task and not an email: feedback you can close is a list that gets
+// shorter. Feedback in an inbox is another thing to lose. Tasks show up in
+// Activities, can be assigned, and carry a status.
+//
+// The widget sends the message plus a context block it gathered itself -
+// app version, deal, and every answer that was on screen - so a report can
+// be reproduced without the reporter typing it all out.
+// =====================================
+info "Feedback received. Deal: " + dealId;
+if(body == null || body.trim() == "")
+{
+	return "Error: empty feedback body.";
+}
+// First line of the message becomes the subject, so the Activities list is
+// readable without opening anything. Trimmed to keep the list tidy.
+firstLine = body;
+if(body.indexOf("\n") > 0)
+{
+	firstLine = body.subString(0,body.indexOf("\n"));
+}
+if(firstLine.length() > 70)
+{
+	firstLine = firstLine.subString(0,70) + "...";
+}
+taskData = Map();
+taskData.put("Subject","[Handoff Feedback] " + firstLine);
+taskData.put("Status","Not Started");
+taskData.put("Priority","High");
+taskData.put("Due_Date",zoho.currentdate.toString("yyyy-MM-dd"));
+taskData.put("Description",body);
+// Attach it to the Deal it was reported from when we have one, so the report
+// sits next to the job that produced it. A report sent from outside a Deal
+// still lands, just unattached - losing it would be worse.
+if(dealId != null && dealId != "")
+{
+	taskData.put("What_Id",dealId);
+	taskData.put("$se_module","Deals");
+}
+taskResponse = zoho.crm.createRecord("Tasks",taskData);
+info "FEEDBACK TASK RESULT: " + taskResponse.toString();
+resultText = taskResponse.toString();
+if(taskResponse.get("id") == null)
+{
+	// Fall back to a Note on the Deal rather than dropping the report. The
+	// widget also copies it to the reporter's clipboard if this whole call
+	// fails, so there are two more chances to not lose it.
+	if(dealId != null && dealId != "")
+	{
+		noteData = Map();
+		noteData.put("Parent_Id",dealId);
+		noteData.put("se_module","Deals");
+		noteData.put("Note_Title","[Handoff Feedback] " + firstLine);
+		noteData.put("Note_Content",body);
+		noteResponse = zoho.crm.createRecord("Notes",noteData);
+		info "FEEDBACK NOTE FALLBACK: " + noteResponse.toString();
+		if(noteResponse.get("id") != null)
+		{
+			return "Success: feedback saved as a note on the deal.";
+		}
+	}
+	return "Error: could not save feedback. " + resultText;
+}
+return "Success: feedback logged.";
+}
