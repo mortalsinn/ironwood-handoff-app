@@ -336,8 +336,14 @@ for each  listName in keys
 		else
 		{
 			taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
-			prevTaskId = "";
 			prevChainGroup = -999;
+			// Every task in a section hangs off the LAST task of the section before
+			// it, not just the first. Zoho's "Predecessor Task upon completion" mail
+			// is what tells someone their work is ready, and a task with no
+			// predecessor never triggers it - so before this, only the first task of
+			// each section was ever announced.
+			prevGroupLastTaskId = "";
+			thisGroupLastTaskId = "";
 			for each  taskObj in tasksInList
 			{
 				taskName = taskObj.get("name");
@@ -391,9 +397,12 @@ for each  listName in keys
 					}
 				}
 				// =====================================
-				// DEPENDENCIES: chain section boundaries (finish-to-start).
-				// chain_group marks the widget section each task came from;
-				// when it changes, the new section waits on the previous one.
+				// DEPENDENCIES: every task waits on the previous section (finish-to-start).
+				// chain_group marks the widget section each task came from. EVERY task in
+				// a section is given the previous section's last task as its predecessor,
+				// not just the section's first task - Zoho's "Predecessor Task upon
+				// completion" mail is how someone is told their work is ready, and a task
+				// with no predecessor never triggers one.
 				// Fail-open: a failed dependency call never fails the handoff.
 				// =====================================
 				thisChainGroup = -999;
@@ -403,10 +412,16 @@ for each  listName in keys
 				}
 				if(thisTaskId != "")
 				{
-					if(prevTaskId != "" && thisChainGroup != -999 && prevChainGroup != -999 && thisChainGroup != prevChainGroup)
+					// A new section: everything from here waits on the section that just
+					// ended.
+					if(thisChainGroup != prevChainGroup && prevChainGroup != -999)
+					{
+						prevGroupLastTaskId = thisGroupLastTaskId;
+					}
+					if(prevGroupLastTaskId != "" && thisChainGroup != -999)
 					{
 						depParams = Map();
-						depParams.put("predecessor_ids",prevTaskId);
+						depParams.put("predecessor_ids",prevGroupLastTaskId);
 						depResponse = invokeurl
 						[
 							url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/" + thisTaskId + "/"
@@ -414,11 +429,11 @@ for each  listName in keys
 							parameters:depParams
 							connection:"zoho_projects_connection"
 						];
-						info "DEPENDENCY UPDATE (" + prevTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
+						info "DEPENDENCY UPDATE (" + prevGroupLastTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
 						if(depResponse.get("tasks") == null)
 						{
 							depAltParams = Map();
-							depAltParams.put("predecessor_ids",prevTaskId);
+							depAltParams.put("predecessor_ids",prevGroupLastTaskId);
 							depAltResponse = invokeurl
 							[
 								url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/" + thisTaskId + "/dependency/"
@@ -426,10 +441,10 @@ for each  listName in keys
 								parameters:depAltParams
 								connection:"zoho_projects_connection"
 							];
-							info "DEPENDENCY ALT (" + prevTaskId + " -> " + thisTaskId + ") RESULT: " + depAltResponse.toString();
+							info "DEPENDENCY ALT (" + prevGroupLastTaskId + " -> " + thisTaskId + ") RESULT: " + depAltResponse.toString();
 						}
 					}
-					prevTaskId = thisTaskId;
+					thisGroupLastTaskId = thisTaskId;
 					prevChainGroup = thisChainGroup;
 				}
 			}
