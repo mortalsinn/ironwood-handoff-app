@@ -1,10 +1,13 @@
 string standalone.submit_handoff_feedback(String dealId, String body)
 {
 // =====================================
-// HANDOFF FEEDBACK -> CRM TASK
-// Why a Task and not an email: feedback you can close is a list that gets
-// shorter. Feedback in an inbox is another thing to lose. Tasks show up in
-// Activities, can be assigned, and carry a status.
+// HANDOFF FEEDBACK -> NOTE ON THE DEAL
+// The report is written as a NOTE on the deal it came from. That is where
+// someone looking for it would look, and it is the one CRM write this
+// codebase has proven works - the project link note has been landing since
+// 2026-08-07. A CRM Task is also attempted as something to tick off, but it
+// is NOT the record of truth: an earlier version relied on the task alone,
+// reported success, and the report was nowhere to be found.
 //
 // The widget sends the message plus a context block it gathered itself -
 // app version, deal, and every answer that was on screen - so a report can
@@ -68,9 +71,6 @@ if(taskResponse.get("id") != null)
 {
 	taskSaved = "yes";
 }
-// Say exactly where it went. The widget prints this back, because the CRM
-// function log does not retain info statements - a call that quietly does
-// nothing looks identical to one that worked.
 // ---- CLIQ PING, DISABLED UNTIL THE CONNECTION EXISTS ----
 // Deluge validates connection names when the function is SAVED, not when it
 // runs, so leaving this live would stop the whole function saving with
@@ -95,6 +95,9 @@ if(taskResponse.get("id") != null)
 // {
 // info "FEEDBACK CLIQ FAILED: " + e.toString();
 // }
+// Say exactly where it went. The widget prints this back, because the CRM
+// function log does not retain info statements - a call that quietly does
+// nothing looks identical to one that worked.
 if(noteSaved == "yes" && taskSaved == "yes")
 {
 	return "Success: saved as a NOTE on the deal, and as a task. Deal id " + dealId;
