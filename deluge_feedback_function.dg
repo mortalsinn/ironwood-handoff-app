@@ -71,6 +71,30 @@ if(taskResponse.get("id") != null)
 // Say exactly where it went. The widget prints this back, because the CRM
 // function log does not retain info statements - a call that quietly does
 // nothing looks identical to one that worked.
+// ---- CLIQ PING, DISABLED UNTIL THE CONNECTION EXISTS ----
+// Deluge validates connection names when the function is SAVED, not when it
+// runs, so leaving this live would stop the whole function saving with
+// "connection 'cliq_connection' does not exist". Same trap as the zcrm route
+// in the handoff function.
+// TO ENABLE:
+//   1. Setup > Developer Space > Connections > Create Connection
+//      Service: Zoho Cliq   Link name: cliq_connection
+//      Tick the Cliq scopes the picker offers, authorise it.
+//   2. Put the recipient's ZOHO ORG email in cliqTo below (not a personal one).
+//   3. Uncomment the block.
+// Fail-open on purpose: the note is the record of truth, and a chat ping that
+// fails must never cost us the report.
+// cliqTo = "someone@ironwoodstairs.com";
+// try
+// {
+// cliqMsg = "*Handoff feedback*\n" + firstLine + "\n\nDeal id: " + dealId;
+// cliqRes = zoho.cliq.postToUser(cliqTo,cliqMsg,"cliq_connection");
+// info "FEEDBACK CLIQ RESULT: " + cliqRes.toString();
+// }
+// catch (e)
+// {
+// info "FEEDBACK CLIQ FAILED: " + e.toString();
+// }
 if(noteSaved == "yes" && taskSaved == "yes")
 {
 	return "Success: saved as a NOTE on the deal, and as a task. Deal id " + dealId;
