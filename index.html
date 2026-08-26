@@ -1367,42 +1367,33 @@
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.72 - The Railing Flow Is Not Interrupted</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.72 - Railing Flow Not Interrupted</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">Custom Metal and Glass Wait for the Railing to Be Finished:</strong> they were appearing the moment you answered Yes to railing, so two unrelated questions &mdash; and then their note boxes &mdash; landed in the middle of the railing steps. They now hold until the railing is fully specified.</li>
-                            <li><strong class="text-slate-300">Frameless Glass Still Gets There:</strong> on a frameless job nothing is ticked in Guard Fill, because leaving it empty is the answer. Waiting for a tick would have meant the next question never arrived. Same for a wall mount on its own.</li>
+                            <li>Custom metal and interior glass wait until the railing is finished instead of appearing partway through it.</li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.71 - Lead Times, and Railing Comes First</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.71 - Lead Times</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">How Long to Fabricate:</strong> the custom metal section has a days box, 14 by default, change it per job. It sets the Fabricate Custom Metal task, so the whole schedule after it moves with it.</li>
-                            <li><strong class="text-slate-300">How Long to Get the Glass:</strong> same box on interior glass, 14 by default, driving Receive Interior Glass. Leave it blank or put in zero and it falls back to 14 rather than producing a broken date.</li>
-                            <li><strong class="text-slate-300">Railing Is Asked Before Custom Metal and Glass:</strong> most jobs have a railing and few have the other two, so answering No twice to reach the common question was the wrong way round.</li>
+                            <li>Custom metal and interior glass each take a days box, 14 by default. Railing is asked before both.</li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.70 - The Custom Metal Box Appears Where You Asked For It</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.70 - Note Boxes in the Right Place</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">Custom Metal and Interior Glass:</strong> the question was asked in one place and the box you type into rendered somewhere else &mdash; below the whole railing section. Answering Yes looked like it did nothing, then the box turned up later. Both boxes now sit directly under their question.</li>
-                            <li><strong class="text-slate-300">Both Lists Fold When You Move On:</strong> they used to stay open at full height for the rest of the form, which pushed the railing question off the top of the panel. They now fold to a summary the way the stair sections do.</li>
-                            <li><strong class="text-slate-300">Version Notes Cut Down:</strong> 169 releases were listed in full. The current line stays in full; everything older is one line per release behind a fold. Nothing was deleted.</li>
+                            <li>The custom metal and interior glass boxes sit under their own question rather than below the railing section.</li>
                         </ul>
                     </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.69 - Answered Questions Fold Away</h4>
-<ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">Nine Answers, One Line:</strong> every question you have answered folds into a single row reading <span class="text-slate-300">9 answered &middot; Renovation &middot; Supply &amp; Install &middot; no travel...</span>. Click it to open them all back up. The question being asked now sits near the top instead of below a stack.</li>
-                            <li><strong class="text-slate-300">Railing Is Asked Last:</strong> it is the deepest section, so stairs, custom metal and interior glass are settled before it comes up.</li>
-                            <li><strong class="text-slate-300">Custom Metal Was in the Wrong Place:</strong> it only appeared if you answered No to railing, and then sat above it. It now follows stairs.</li>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li>Answered questions collapse into one row so the question being asked stays near the top of the panel.</li>
                         </ul>
                     </div>
                     <div>
                         <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.68 - Three Fixes From Review</h4>
-<ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">The Site Questions Have a Heading:</strong> Needs Site Measure and Install Required sat under a bare divider with no title, which read as a glitch. Now <span class="text-slate-300">Step 4. Site Work</span>.</li>
-                            <li><strong class="text-slate-300">Rise Controls Are Square:</strong> they were round because rise is a pick-one. In this panel square means a top-level choice and round means a sub-option, so round broke the rule.</li>
-                            <li><strong class="text-slate-300">Custom Metal Asked in the Right Place:</strong> it was appearing between stairs and railing. It now follows railing, as intended.</li>
+                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
+                            <li>Site Work heading on the construction stair steps, and the rise controls squared off to match everything else.</li>
                         </ul>
                     </div>
                     <div>
