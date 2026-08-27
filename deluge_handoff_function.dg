@@ -63,7 +63,20 @@ if(newProjectId == "")
 	projectData = Map();
 	projectData.put("name",projectName);
 	projectData.put("template_id","1768463000007543025");
-	projectData.put("description","Auto-generated from Ironwood Handoff Widget. Notes: " + payloadData.get("notes"));
+	// The description is the first thing anyone reads on the project, so the
+	// address and the promised date go at the top of it. Both were previously
+	// nowhere in Zoho - the address lived only in the widget's travel modal.
+	projDesc = "";
+	if(payloadData.get("job_address") != null && payloadData.get("job_address") != "")
+	{
+		projDesc = projDesc + "Site: " + payloadData.get("job_address") + "\n";
+	}
+	if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
+	{
+		projDesc = projDesc + "Needed by: " + payloadData.get("needed_by") + "\n";
+	}
+	projDesc = projDesc + "Auto-generated from Ironwood Handoff Widget. Notes: " + payloadData.get("notes");
+	projectData.put("description",projDesc);
 	projectData.put("public","yes");
 	// =====================================
 	// INJECT PROJECT OWNER IF ASSIGNED
@@ -164,6 +177,39 @@ if(newProjectId == null)
 if(newProjectId == "")
 {
 	return "Error: Could not create Zoho Project.";
+}
+// =====================================
+// THE PROJECT'S OWN START AND END DATES
+// Every task carries dates; the project header carried none, so the project
+// list and any roll-up showed no schedule at all. start_date and end_date are
+// documented optional parameters in MM-DD-YYYY - the same format the tasks
+// already send successfully.
+// Deliberately a SEPARATE call after creation rather than another key on
+// createProject: project creation is the critical path, and if these were
+// rejected for any reason they would take the whole handoff down with them.
+// Fail-open, and it runs for a re-used project too so a re-run repairs dates.
+// =====================================
+if(payloadData.get("project_start") != null && payloadData.get("project_start") != ""
+   && payloadData.get("project_end") != null && payloadData.get("project_end") != "")
+{
+	try
+	{
+		projDateParams = Map();
+		projDateParams.put("start_date",payloadData.get("project_start"));
+		projDateParams.put("end_date",payloadData.get("project_end"));
+		projDateResponse = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/"
+			type :POST
+			parameters:projDateParams
+			connection:"zoho_projects_connection"
+		];
+		info "PROJECT DATES (" + payloadData.get("project_start") + " to " + payloadData.get("project_end") + "): " + projDateResponse.toString();
+	}
+	catch (e)
+	{
+		info "PROJECT DATES FAILED: " + e.toString();
+	}
 }
 // =====================================
 // POPULATE THE DEAL'S "ZOHO PROJECTS" RELATED LIST
