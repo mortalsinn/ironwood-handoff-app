@@ -476,6 +476,13 @@ for each  listName in keys
 						depParams.put("projId",newProjectId);
 						depParams.put("toupdate","dependencyset");
 						depParams.put("predids",prevGroupLastTaskId);
+						// REQUIRED, and its absence is why every dependency failed with
+						// error 6831 "To set dependency, pass child project id also."
+						// The parameter exists for cross-project dependencies; for one
+						// inside a single project it takes that same project's id.
+						// Confirmed against Zoho's own Deluge sample in the Custom
+						// Functions for Tasks documentation.
+						depParams.put("childprojId",newProjectId);
 						depParams.put("dependencytype","FS");
 						depResponse = invokeurl
 						[
