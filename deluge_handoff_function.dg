@@ -326,23 +326,27 @@ createdCount = 0;
 depOk = 0;
 depFail = 0;
 depFirstError = "";
-// Zoho shows task lists in the order they are CREATED, and Deluge does not
-// guarantee the key order of a Map - so iterating taskListsMap.keys() directly
-// could create the railing list first and put railing above stairs in the
-// Gantt no matter what the names are. Build the order explicitly instead:
-// anything numbered "1." first, then the rest.
+// TASK LIST DISPLAY ORDER - measured, not assumed.
+// Evidence from a clean run on 2026-08-27: the project had no pre-existing
+// lists, the stair list was created FIRST, and Zoho still displayed railing
+// above stairs. So the display is not creation-ascending, and it is not
+// alphabetical either - "1. Stair" would beat "2. Railing" if it were.
+// The remaining reading is newest-first, so the list we want on TOP has to be
+// created LAST. Hence: everything NOT numbered "1." first, then the "1." list.
+// The API has no ordering parameter at all - sequence is read-only on both
+// create and update - so creation order is the only lever available.
 rawKeys = taskListsMap.keys();
 keys = List();
 for each  k in rawKeys
 {
-	if(k.startsWith("1."))
+	if(!k.startsWith("1."))
 	{
 		keys.add(k);
 	}
 }
 for each  k in rawKeys
 {
-	if(!k.startsWith("1."))
+	if(k.startsWith("1."))
 	{
 		keys.add(k);
 	}
