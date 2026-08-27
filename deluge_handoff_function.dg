@@ -238,9 +238,15 @@ for each  uid in uniqueUsers
 }
 // =====================================
 // TASK LIST READINESS POLL
-// Replaces the old postman-echo delay: template task lists provision
-// asynchronously right after project creation, so poll the real
-// endpoint - each round trip both waits and confirms readiness.
+// This comment used to say the template provisions task lists asynchronously,
+// so the poll was waiting for them. That is WRONG and it cost real time: the
+// template (1768463000007543025) is EMPTY - the widget builds every task list
+// and every task from the payload. Confirmed 2026-08-27.
+// What the poll actually finds is lists left by a PREVIOUS handoff on a
+// project this run is re-using, which is the whole reason the ordering looked
+// unfixable: re-running on the same deal keeps whatever order the first run
+// created, no matter what the app calls them now.
+// On a genuinely new project it finds nothing and we create everything.
 // (Deluge has no break; the listsReady flag skips finished attempts.)
 // =====================================
 existingListsMap = Map();
