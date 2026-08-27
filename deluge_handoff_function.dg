@@ -244,6 +244,11 @@ for each  uid in uniqueUsers
 // (Deluge has no break; the listsReady flag skips finished attempts.)
 // =====================================
 existingListsMap = Map();
+// What was already in the project before we touched it, IN ORDER. This is the
+// only way to tell where the task lists came from: a template applied at
+// creation, or a previous handoff on a project this run is re-using. Reported
+// in the return string because the CRM function log discards info statements.
+foundLists = "";
 listsReady = "no";
 pollAttempts = "1,2,3,4,5".toList(",");
 for each  attempt in pollAttempts
@@ -262,6 +267,14 @@ for each  attempt in pollAttempts
 			for each  elist in existingTaskLists
 			{
 				existingListsMap.put(elist.get("name"),elist.get("id_string"));
+				if(foundLists == "")
+				{
+					foundLists = elist.get("name");
+				}
+				else
+				{
+					foundLists = foundLists + " | " + elist.get("name");
+				}
 			}
 			listsReady = "yes";
 		}
@@ -523,7 +536,7 @@ if(failedItems.size() > 0)
 }
 if(isReusedProject == "yes")
 {
-	return "Success: Existing project updated in Zoho Projects (" + createdCount + " task(s) created, " + skippedCount + " already existed). Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
+	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
 }
 // =====================================
 // ERROR CAPTURE
@@ -541,5 +554,5 @@ if(depFail > 0)
 	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
 	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }
-return "Success: Project and Tasks created in Zoho Projects. Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
+return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
 }
