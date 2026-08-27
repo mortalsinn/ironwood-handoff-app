@@ -5855,6 +5855,14 @@
                     }
 
                     clearInterval(loadingInterval);
+                    // Show what the backend returned. Only errors were ever displayed,
+                    // so the counts it reports were invisible on the one path where
+                    // someone would want to read them.
+                    const successDetail = document.getElementById('successDetail');
+                    if (successDetail && output) {
+                        successDetail.textContent = output;
+                        successDetail.classList.remove('hidden');
+                    }
                     document.getElementById('successOverlay').classList.remove('hidden');
                     if (typeof confetti === 'function') confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } });
                     
