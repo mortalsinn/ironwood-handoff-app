@@ -326,12 +326,6 @@ createdCount = 0;
 depOk = 0;
 depFail = 0;
 depFirstError = "";
-// First and last task of each list, captured so the stair->railing handover
-// can be bridged after both lists exist. The chain resets per list, so
-// without this nothing links the last stair task to the first railing task -
-// and that handover is the one notification the whole drip exists for.
-listFirstTaskMap = Map();
-listLastTaskMap = Map();
 // TASK LIST DISPLAY ORDER - measured, not assumed.
 // Evidence from a clean run on 2026-08-27: the project had no pre-existing
 // lists, the stair list was created FIRST, and Zoho still displayed railing
@@ -468,11 +462,6 @@ for each  listName in keys
 				}
 				if(thisTaskId != "")
 				{
-					if(listFirstTaskMap.get(listName) == null)
-					{
-						listFirstTaskMap.put(listName,thisTaskId);
-					}
-					listLastTaskMap.put(listName,thisTaskId);
 					// A new section: everything from here waits on the section that just
 					// ended.
 					if(thisChainGroup != prevChainGroup && prevChainGroup != -999)
@@ -539,66 +528,6 @@ for each  listName in keys
 				}
 			}
 		}
-	}
-}
-// =====================================
-// BRIDGE: THE RAILING WAITS ON THE STAIRS
-// Creation order runs railing-first (display) but the WORK runs stairs-first,
-// so this is wired after both lists exist: the first task of the "2." list
-// takes the last task of the "1." list as its predecessor. Skipped cleanly on
-// a stairs-only or railing-only job. Fail-open like every other dependency.
-// Assumes the two-list shape ("1." and one other), which is all the widget
-// ever sends.
-// =====================================
-stairLastTaskId = "";
-railFirstTaskId = "";
-for each  k in taskListsMap.keys()
-{
-	if(k.startsWith("1.") && listLastTaskMap.get(k) != null)
-	{
-		stairLastTaskId = listLastTaskMap.get(k);
-	}
-	if(!k.startsWith("1.") && listFirstTaskMap.get(k) != null && railFirstTaskId == "")
-	{
-		railFirstTaskId = listFirstTaskMap.get(k);
-	}
-}
-if(stairLastTaskId != "" && railFirstTaskId != "")
-{
-	bridgeParams = Map();
-	bridgeParams.put("taskid",railFirstTaskId);
-	bridgeParams.put("projId",newProjectId);
-	bridgeParams.put("toupdate","dependencyset");
-	bridgeParams.put("predids",stairLastTaskId);
-	bridgeParams.put("childprojId",newProjectId);
-	bridgeParams.put("dependencytype","FS");
-	bridgeResponse = invokeurl
-	[
-		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/taskdependency/"
-		type :POST
-		parameters:bridgeParams
-		connection:"zoho_projects_connection"
-	];
-	info "BRIDGE (" + stairLastTaskId + " -> " + railFirstTaskId + ") RESULT: " + bridgeResponse.toString();
-	bridgeText = bridgeResponse.toString();
-	if(bridgeText.contains("error") || bridgeText.contains("Error") || bridgeText == "")
-	{
-		depFail = depFail + 1;
-		if(depFirstError == "")
-		{
-			if(bridgeText.length() > 180)
-			{
-				depFirstError = bridgeText.subString(0,180);
-			}
-			else
-			{
-				depFirstError = bridgeText;
-			}
-		}
-	}
-	else
-	{
-		depOk = depOk + 1;
 	}
 }
 // =====================================
