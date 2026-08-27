@@ -1523,97 +1523,39 @@
                 </div>
                 <div class="flex-grow overflow-y-auto pr-2 space-y-6 text-sm text-slate-300">
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.7 - The Address Actually Arrives, Temp Stairs Fold</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">The address is read at load, not in the travel pop-up.</strong> v15.6 put it in the project description, but it was only ever filled in when that pop-up opened &mdash; so on a job with no travel it went to Zoho blank.</li>
-                            <li><strong class="text-slate-300">It picks the address, not the job number.</strong> On <span class="font-mono text-slate-300">UG-855 Testing - 1225 Kings Way SE</span> it used to grab <span class="font-mono text-slate-300">855 Testing</span>, being the first bit that started with a number. It now looks for a street.</li>
-                            <li><strong class="text-slate-300">Temporary Stairs collapses</strong> once you have ticked a flight and answered the railing question, like the other two stair sections already did.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.6 - Needed By, the Address, and Project Dates</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.6 - Needed By, and the Project Has Dates</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
                             <li><strong class="text-slate-300">Needed by:</strong> a date on the job summary, checked against the finish the panel already works out. It tells you <span class="text-slate-300">21 working days LATE</span> or <span class="text-slate-300">6 working days to spare</span> &mdash; at handoff, while you can still do something about it.</li>
-                            <li><strong class="text-slate-300">The site address reaches Zoho:</strong> it only ever lived in the travel pop-up for the distance sum, so an installer opening the project had no address. It is now at the top of the project description with the promised date.</li>
-                            <li><strong class="text-slate-300">The project has dates:</strong> every task had them, the project itself had none, so the project list showed no schedule.</li>
+                            <li><strong class="text-slate-300">The project itself has dates.</strong> Every task had them, the project did not, so the project list in Zoho showed no schedule against the job.</li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.5 - The Panel Really Stays Put</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.0 - How Many Stairs, and Where</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>Clicking Western under finished stairs still threw the form down to the summary card. The previous attempt corrected the scroll once, before the section above had finished collapsing, so it measured nothing to correct. It now holds position for the whole fold.</li>
+                            <li>Construction grade and finished stairs each take a list of locations &mdash; basement, great room, primary bedroom &mdash; so two finished staircases no longer arrive in Zoho looking like one.</li>
+                            <li><strong class="text-slate-300">+ Add Stair</strong> for anything not on the list. The location rides along in the task name, so the crew reads <span class="font-mono text-slate-300">Install Finished Stairs (Great Room)</span>.</li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.4 - Light Mode on the Add Buttons</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.96 - Temporary Stairs</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>The four &ldquo;+ Add&rdquo; buttons on the item lists are named explicitly in the light theme, rather than relying on a rule that matches them by class.</li>
+                            <li>Their own always-visible line under the stairs question, with the flights ticked off &mdash; basement to main, main to upper, upper to loft &mdash; and a rise count per flight.</li>
+                            <li>They used to live inside the stairs question, so the moment it folded to a summary the flights vanished.</li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.3 - Rise Counts Survive a Reload</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.93 - Every Task Carries Its Trade</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>The three temp stair rise boxes share one field name, and a restored draft put all three values into the first box as &ldquo;15,,18&rdquo;, leaving the other two empty. They now come back in the boxes they belong to.</li>
+                            <li>Seven tags, one per trade: <span class="font-mono text-slate-300">[Stairs] [Rails] [Welding] [Glass] [Metal] [Int Glass] [Admin]</span>, so a Zoho list of 60 tasks can be read at a glance.</li>
+                            <li>Supply and install reads <strong class="text-slate-300">[S&amp;I]</strong>; a supply only job reads <strong class="text-slate-300">[Supply]</strong>.</li>
                         </ul>
                     </div>
                     <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.2 - Eight Styles That Were Doing Nothing</h4>
+                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.92 - One Task List, and the Notifications Drip</h4>
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>Checked all 470 classes in the app against the stylesheets. Eight were missing from the build and silently had no effect &mdash; three of them on the handoff result message, which was rendering full width, unspaced from its Close button, and could not be click-selected to copy.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.1 - Two Task Names That Could Collide</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>A job with construction stairs dropped off <em>and</em> temp stairs produced two tasks called &ldquo;Upload Drop-off Photos&rdquo;; construction installed <em>and</em> finished stairs produced two called &ldquo;Upload Install Photos&rdquo;. On a re-run the backend matches tasks by name, so the second was skipped and its dependency pointed at the wrong task. Both renamed to say which stair they belong to.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v15.0 - Add Stair</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>The stair location list now reads <span class="text-slate-300">How many, and where?</span> with a <span class="text-slate-300">+ Add Stair</span> button, the same shape as Add Another Note. Two stairs is two presses.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.99 - The Panel Stays Where You Left It</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>Answering a question folds the section above it, which used to yank the form down &mdash; click Western under finished stairs and you were at the bottom, scrolling back up. Whatever you just clicked now stays under the cursor.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.98 - Where the Stairs Go</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>Construction grade and finished stairs each take a list of locations &mdash; basement, great room, primary bedroom. One line per stair, so two finished stairs no longer look like one. The locations ride onto the build, drop off and install tasks: <span class="text-slate-300">Manufacture / Assemble Finished Stair [Western, Straight - Great Room, Basement]</span>.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.97 - One Press on No, and Temp Stairs in the Right Place</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>Answering a question took two presses: the first press folded the step above it, the button moved out from under the cursor before you let go, and the press was lost. Temporary Stairs also sat below the railing question and now sits above it.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.96 - Temporary Stairs Gets Its Own Section</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">The flights stopped disappearing:</strong> they lived inside the stairs question, so the moment it folded to a summary your flights and rise counts went with it. Temporary Stairs now has a section that stays on screen, the same as construction and finished grade.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.95 - Supply Only Reads [Supply]</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>A supply only job now tags tasks <span class="text-slate-300">[Supply]</span> rather than [S/O].</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.94 - Every Section Has Its Own Tag</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li>Seven tags now, one per trade: <span class="text-slate-300">[Stairs] [Rails] [Welding] [Glass] [Metal] [Int Glass] [Admin]</span>. Railing metalwork reads [Welding] and railing glass reads [Glass]; the standalone custom metal and interior glass jobs read [Metal] and [Int Glass]. Every block is listed by name, so a new one cannot quietly inherit the wrong trade.</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-white mb-2 flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>v14.93 - Trade Tags, and Two Questions That Looked Identical</h4>
-                        <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
-                            <li><strong class="text-slate-300">Task names carry their trade:</strong> <span class="text-slate-300">[Stairs] [S&amp;I] Complete Site Measure</span>. Custom metal reads [Metal] and interior glass [Glass]. One flat list now reads as sections. [Supply &amp; Install] is shortened to [S&amp;I].</li>
+                            <li>Everything goes into a single <strong class="text-slate-300">Production &amp; Install</strong> list, stairs first &mdash; Zoho will not let anything order task lists, so having one removes the order to get wrong.</li>
+                            <li>Every block is chained to the one before it, so each person is emailed when the work in front of theirs finishes instead of everyone being emailed about everything on day one.</li>
+                            <li>The success screen prints what the backend actually did &mdash; tasks created, lists found, dependencies linked &mdash; and waits for you to close it.</li>
                         </ul>
                     </div>
 
@@ -1622,9 +1564,19 @@
                     <div class="pt-4 mt-2 border-t border-slate-700/60">
                         <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-3">Earlier releases</p>
                     <details class="changelog-fold">
-                        <summary><span class="cf-band">v14.55 - v14.92</span><span class="cf-count">35 releases</span></summary>
+                        <summary><span class="cf-band">v14.55 - v15.7</span><span class="cf-count">45 releases</span></summary>
                         <ul class="cf-list">
-                                <li><span class="cf-ver">v14.92</span>One Task List, Stairs First</li>
+                                <li><span class="cf-ver">v15.7</span>Temporary Stairs Folds Away</li>
+                                <li><span class="cf-ver">v15.5</span>The Panel Stays Where You Left It</li>
+                                <li><span class="cf-ver">v15.4</span>Light Mode on the Add Buttons</li>
+                                <li><span class="cf-ver">v15.3</span>Rise Counts Survive a Reload</li>
+                                <li><span class="cf-ver">v15.2</span>Eight Styles That Were Doing Nothing</li>
+                                <li><span class="cf-ver">v15.1</span>Two Task Names That Could Collide</li>
+                                <li><span class="cf-ver">v14.99</span>Fix: The Form Jumped to the Summary</li>
+                                <li><span class="cf-ver">v14.98</span>Stair Locations</li>
+                                <li><span class="cf-ver">v14.97</span>One Press on No</li>
+                                <li><span class="cf-ver">v14.95</span>Supply Only Reads [Supply]</li>
+                                <li><span class="cf-ver">v14.94</span>A Tag for Every Section</li>
                                 <li><span class="cf-ver">v14.91</span>The Success Screen Tells You What Happened</li>
                                 <li><span class="cf-ver">v14.89</span>Rise Count Per Flight</li>
                                 <li><span class="cf-ver">v14.88</span>Temp Stairs Ask Which Flights</li>
@@ -2309,17 +2261,6 @@
                                     dealOwnerEmail = dealRes.data[0].Owner.email || "";
                                 }
                                 dealStage = dealRes.data[0].Stage || "";
-                                // The job address used to be resolved ONLY when the travel
-                                // pop-up opened. Answer No to travel - which most local
-                                // jobs do - and it was never fetched, so nothing carried
-                                // the address through to Zoho and the installer opened a
-                                // project with no idea where to go. Resolved here instead,
-                                // off the Deal call this already makes, so it costs
-                                // nothing and is present regardless of the travel answer.
-                                const addrEl = document.getElementById('travelAddress');
-                                if (addrEl && !addrEl.value) {
-                                    addrEl.value = window.addressFromDeal(dealRes.data[0]);
-                                }
                             }
                         } catch(e) { console.warn("Could not load deal owner", e); }
                     }
@@ -5916,7 +5857,6 @@
                 // The address only existed inside the travel modal, for the distance
                 // calculation, so an installer opening the project in Zoho had no idea
                 // where the job was unless it happened to be in the deal name.
-                job_address: (document.getElementById('travelAddress') || {}).value || "",
                 // What was promised. Carried through so the date lives with the work
                 // rather than only in the head of whoever ran the handoff.
                 needed_by: (document.getElementById('neededBy') || {}).value || "",
