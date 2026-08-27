@@ -14,22 +14,47 @@ portalId = "ironwoodstairs";
 // =====================================
 newProjectId = "";
 isReusedProject = "no";
-existingProjectsResponse = invokeurl
-[
-	url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/?index=1&range=200"
-	type :GET
-	connection:"zoho_projects_connection"
-];
-existingProjects = existingProjectsResponse.get("projects");
-if(existingProjects != null)
+// PAGE through the projects. This used to fetch index=1&range=200 and stop.
+// The portal gains a project on every won deal, so the moment it passes 200
+// the lookup would stop finding the match, every handoff would believe the
+// project did not exist, and it would create a DUPLICATE - silently, and
+// worse each time. Ten pages covers 2000 projects; the loop also stops early
+// on a match or a short page, so the normal case still costs one call.
+// (Deluge has no break; the flags skip the remaining iterations.)
+projPage = 0;
+projDone = "no";
+for each  attempt in {1,2,3,4,5,6,7,8,9,10}
 {
-	for each  existingProj in existingProjects
+	if(projDone == "no")
 	{
-		if(newProjectId == "" && existingProj.get("name") == projectName)
+		projStart = projPage * 200 + 1;
+		existingProjectsResponse = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/?index=" + projStart + "&range=200"
+			type :GET
+			connection:"zoho_projects_connection"
+		];
+		existingProjects = existingProjectsResponse.get("projects");
+		if(existingProjects == null || existingProjects.size() == 0)
 		{
-			newProjectId = existingProj.get("id_string");
-			isReusedProject = "yes";
-			info "IDEMPOTENCY: Re-using existing project " + newProjectId + " (" + projectName + ")";
+			projDone = "yes";
+		}
+		else
+		{
+			for each  existingProj in existingProjects
+			{
+				if(newProjectId == "" && existingProj.get("name") == projectName)
+				{
+					newProjectId = existingProj.get("id_string");
+					isReusedProject = "yes";
+					info "IDEMPOTENCY: Re-using existing project " + newProjectId + " (" + projectName + ")";
+				}
+			}
+			if(newProjectId != "" || existingProjects.size() < 200)
+			{
+				projDone = "yes";
+			}
+			projPage = projPage + 1;
 		}
 	}
 }
