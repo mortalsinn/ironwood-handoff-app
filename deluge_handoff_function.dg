@@ -451,7 +451,20 @@ for each  listName in keys
 							depFail = depFail + 1;
 							if(depFirstError == "")
 							{
-								depFirstError = depText.subString(0,180);
+								// Deluge's subString ERRORS when the end index is past the
+								// end of the string - it does not clamp like most languages.
+								// An error shorter than 180 characters therefore killed the
+								// whole handoff, and it did so from inside the error-capture
+								// path, which is supposed to be the fail-open part. The
+								// first dependency failure took the entire run down with it.
+								if(depText.length() > 180)
+								{
+									depFirstError = depText.subString(0,180);
+								}
+								else
+								{
+									depFirstError = depText;
+								}
 							}
 						}
 						else
