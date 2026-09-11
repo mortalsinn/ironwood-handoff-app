@@ -457,14 +457,20 @@ for each  listName in keys
 		else
 		{
 			taskUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasks/";
-			prevChainGroup = -999;
-			// Every task in a section hangs off the LAST task of the section before
-			// it, not just the first. Zoho's "Predecessor Task upon completion" mail
-			// is what tells someone their work is ready, and a task with no
-			// predecessor never triggers it - so before this, only the first task of
-			// each section was ever announced.
-			prevGroupLastTaskId = "";
-			thisGroupLastTaskId = "";
+			// ONE STRICT CHAIN, TASK TO TASK.
+			// Each task waits on the single task immediately before it, the whole way
+			// down the list - NOT on the last task of the previous section. Hanging a
+			// whole section off one predecessor told Zoho that every task in that
+			// section could start at the same moment, which is neither how the work
+			// runs nor what the dates already say: the widget advances its cursor after
+			// EVERY task, so the bars have always marched one at a time. Only the
+			// dependency graph disagreed, and it is the graph the notification mail
+			// reads - so a five task section announced all five at once.
+			// Reset per list deliberately. Lists are created in a scrambled order to
+			// control how Zoho displays them, so a chain that crossed lists would run in
+			// display order instead of work order. With the single master list, this is
+			// the entire project in one unbroken chain.
+			prevTaskId = "";
 			for each  taskObj in tasksInList
 			{
 				taskName = taskObj.get("name");
@@ -518,28 +524,15 @@ for each  listName in keys
 					}
 				}
 				// =====================================
-				// DEPENDENCIES: every task waits on the previous section (finish-to-start).
-				// chain_group marks the widget section each task came from. EVERY task in
-				// a section is given the previous section's last task as its predecessor,
-				// not just the section's first task - Zoho's "Predecessor Task upon
-				// completion" mail is how someone is told their work is ready, and a task
-				// with no predecessor never triggers one.
+				// DEPENDENCIES: finish-to-start, one task to the next.
+				// The predecessor is simply the task created before this one. chain_group is
+				// still accepted in the payload and deliberately ignored, so an older widget
+				// keeps working against this function.
 				// Fail-open: a failed dependency call never fails the handoff.
 				// =====================================
-				thisChainGroup = -999;
-				if(taskObj.get("chain_group") != null)
-				{
-					thisChainGroup = taskObj.get("chain_group");
-				}
 				if(thisTaskId != "")
 				{
-					// A new section: everything from here waits on the section that just
-					// ended.
-					if(thisChainGroup != prevChainGroup && prevChainGroup != -999)
-					{
-						prevGroupLastTaskId = thisGroupLastTaskId;
-					}
-					if(prevGroupLastTaskId != "" && thisChainGroup != -999)
+					if(prevTaskId != "")
 					{
 						// The documented endpoint. Everything before this used
 						// /tasks/{id}/ and /tasks/{id}/dependency/ with a predecessor_ids
@@ -550,7 +543,7 @@ for each  listName in keys
 						depParams.put("taskid",thisTaskId);
 						depParams.put("projId",newProjectId);
 						depParams.put("toupdate","dependencyset");
-						depParams.put("predids",prevGroupLastTaskId);
+						depParams.put("predids",prevTaskId);
 						// REQUIRED, and its absence is why every dependency failed with
 						// error 6831 "To set dependency, pass child project id also."
 						// The parameter exists for cross-project dependencies; for one
@@ -566,7 +559,7 @@ for each  listName in keys
 							parameters:depParams
 							connection:"zoho_projects_connection"
 						];
-						info "DEPENDENCY (" + prevGroupLastTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
+						info "DEPENDENCY (" + prevTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
 						depText = depResponse.toString();
 						if(depText.contains("error") || depText.contains("Error") || depText == "")
 						{
@@ -594,8 +587,7 @@ for each  listName in keys
 							depOk = depOk + 1;
 						}
 					}
-					thisGroupLastTaskId = thisTaskId;
-					prevChainGroup = thisChainGroup;
+					prevTaskId = thisTaskId;
 				}
 			}
 		}
