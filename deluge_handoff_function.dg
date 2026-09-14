@@ -231,14 +231,12 @@ if(payloadData.get("project_start") != null && payloadData.get("project_start") 
 tagOk = 0;
 tagFail = 0;
 tagFirstError = "";
-// Every associate response, short, in the RETURN STRING. "2 applied" was
-// counted from the absence of the word "error" in a response nobody had ever
-// read - and only one tag actually landed on the project. Counting a success
-// you have not seen is not evidence.
+// Kept, but only printed WHEN A TAG FAILS. It earned its place: "2 applied"
+// was once counted from the absence of the word "error" in a response nobody
+// had read, while one tag reached the project. On a clean run it is noise.
 tagAssocLog = "";
 tagIdsCsv = "";
 tagResolved = 0;
-tagPaletteSeen = "";
 projectTags = payloadData.get("project_tags");
 if(projectTags != null && projectTags.size() > 0)
 {
@@ -359,14 +357,6 @@ if(projectTags != null && projectTags.size() > 0)
 				if(etagName != null && etagId != null)
 				{
 					tagIdByName.put(etagName.toLowerCase(),etagId);
-					// Tags created through this function come out default blue, so the
-					// colour we send is either ignored or not a valid class name. His
-					// portal already HAS coloured tags, so the real values are in this
-					// response - report a few rather than guess at the palette.
-					if(tagPaletteSeen.length() < 160)
-					{
-						tagPaletteSeen = tagPaletteSeen + etagName + "=" + etag.get("color_class") + " ";
-					}
 				}
 			}
 		}
@@ -1041,7 +1031,7 @@ if(failedItems.size() > 0)
 }
 if(isReusedProject == "yes")
 {
-	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagAssocLog == "", "", " Assoc:" + tagAssocLog) + if(tagPaletteSeen == "", "", " Palette: " + tagPaletteSeen) + if(depFirstError == "", "", " First error: " + depFirstError);
+	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(depFirstError == "", "", " First error: " + depFirstError);
 }
 // =====================================
 // ERROR CAPTURE
@@ -1059,5 +1049,5 @@ if(depFail > 0)
 	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
 	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }
-return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagAssocLog == "", "", " Assoc:" + tagAssocLog) + if(tagPaletteSeen == "", "", " Palette: " + tagPaletteSeen) + if(depFirstError == "", "", " First error: " + depFirstError);
+return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(depFirstError == "", "", " First error: " + depFirstError);
 }
