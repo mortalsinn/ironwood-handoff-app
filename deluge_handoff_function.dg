@@ -233,67 +233,90 @@ if(projectTags != null && projectTags.size() > 0)
 {
 	try
 	{
-		// v3 REJECTS THE PORTAL NAME. Everything else in this function addresses the
-		// portal as "ironwoodstairs", which the v1 restapi accepts, and v3 answers
-		// 400 URL_RULE_NOT_CONFIGURED / "Given URL is wrong" for
-		// /api/v3/portal/ironwoodstairs/tags. v3 needs the NUMERIC portal id.
-		// The first attempt at this matched portals by NAME and silently kept the
-		// name, because GET /restapi/portals/ DOES NOT RETURN A NAME - Zoho's own
-		// sample response carries id, default, plan and settings, and no name at
-		// all. So the portal is chosen by "default", then by being the only one.
+		// v3 REJECTS THE PORTAL NAME. Everything else here addresses the portal as
+		// "ironwoodstairs", which the v1 restapi accepts; v3 answers 400
+		// URL_RULE_NOT_CONFIGURED for /api/v3/portal/ironwoodstairs/tags and needs
+		// the NUMERIC id.
+		// GET /restapi/portals/ is the documented way to get it and it came back
+		// {"code":6403,"message":"Invalid OAuth scope."} - this connection has no
+		// ZohoProjects.portals.READ. Rather than depend on a scope being added, the
+		// id is READ OUT OF A URL ZOHO ALREADY HANDS US: every link in a project
+		// response is absolute and carries the numeric portal id, e.g.
+		// https://projectsapi.zoho.com/restapi/portal/647154632/projects/...
+		// That costs one GET on a project we just created, on the scope we plainly
+		// already have, since we created it.
 		tagPortalId = "";
-		portalsDebug = "";
-		portalsResponse = invokeurl
+		portalProbe = invokeurl
 		[
-			url :"https://projectsapi.zoho.com/restapi/portals/"
+			url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/"
 			type :GET
 			connection:"zoho_projects_connection"
 		];
-		info "PORTALS: " + portalsResponse.toString();
-		portalsList = portalsResponse.get("portals");
-		if(portalsList != null && portalsList.size() > 0)
+		scanText = portalProbe.toString() + " " + existingProjectsResponse.toString();
+		// Deluge has no break, and indexOf takes no start offset, so each pass chops
+		// the string it has already searched.
+		for each  attempt in {1,2,3,4,5,6,7,8}
 		{
-			firstPortalId = "";
-			for each  onePortal in portalsList
-			{
-				gotId = onePortal.get("id_string");
-				if(gotId == null)
-				{
-					gotId = onePortal.get("id");
-				}
-				if(gotId != null)
-				{
-					gotId = gotId.toString();
-					if(portalsDebug == "")
-					{
-						portalsDebug = gotId;
-					}
-					else
-					{
-						portalsDebug = portalsDebug + "," + gotId;
-					}
-					if(firstPortalId == "")
-					{
-						firstPortalId = gotId;
-					}
-					if(onePortal.get("default") == true)
-					{
-						tagPortalId = gotId;
-					}
-				}
-			}
 			if(tagPortalId == "")
 			{
-				tagPortalId = firstPortalId;
+				markerAt = scanText.indexOf("/portal/");
+				if(markerAt >= 0)
+				{
+					scanText = scanText.subString(markerAt + 8,scanText.length());
+					nextSlash = scanText.indexOf("/");
+					if(nextSlash > 0)
+					{
+						portalCandidate = scanText.subString(0,nextSlash);
+						// The name appears in these URLs too. Only digits are the id.
+						if(portalCandidate.matches("[0-9]+"))
+						{
+							tagPortalId = portalCandidate;
+						}
+					}
+				}
 			}
 		}
-		info "TAG PORTAL ID: " + tagPortalId + " (candidates: " + portalsDebug + ")";
+		// Documented route, kept as a fallback for when the scope IS present.
+		if(tagPortalId == "")
+		{
+			portalsResponse = invokeurl
+			[
+				url :"https://projectsapi.zoho.com/restapi/portals/"
+				type :GET
+				connection:"zoho_projects_connection"
+			];
+			info "PORTALS: " + portalsResponse.toString();
+			portalsList = portalsResponse.get("portals");
+			if(portalsList != null && portalsList.size() > 0)
+			{
+				for each  onePortal in portalsList
+				{
+					gotId = onePortal.get("id_string");
+					if(gotId == null)
+					{
+						gotId = onePortal.get("id");
+					}
+					// No name is returned by this endpoint - Zoho's own sample response
+					// has none - so the default portal is the only safe discriminator.
+					if(gotId != null && (portalsList.size() == 1 || onePortal.get("default") == true))
+					{
+						tagPortalId = gotId.toString();
+					}
+				}
+			}
+			portalProbeNote = portalProbe.toString();
+			if(portalProbeNote.length() > 120)
+			{
+				portalProbeNote = portalProbeNote.subString(0,120);
+			}
+		}
+		info "TAG PORTAL ID: " + tagPortalId;
 		if(tagPortalId == "")
 		{
 			// Without the numeric id every tag call is a guaranteed 400. Report that
 			// rather than spending three round trips proving it.
 			tagFail = projectTags.size();
-			tagFirstError = "portal id lookup failed. portals response: " + portalsResponse.toString();
+			tagFirstError = "portal id not found. project probe said: " + portalProbe.toString();
 			if(tagFirstError.length() > 300)
 			{
 				tagFirstError = tagFirstError.subString(0,300);
