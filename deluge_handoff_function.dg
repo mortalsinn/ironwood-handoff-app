@@ -237,89 +237,111 @@ tagFirstError = "";
 tagAssocLog = "";
 tagIdsCsv = "";
 tagResolved = 0;
+// PER-TASK OWNER TAGS. The task's Tags column, one tag per task carrying who
+// owns it. entityType 5 = TASK (2 project, 3 milestone, 4 tasklist, 6 bug).
+// Costs ONE associate call per task, so on a sixty task job this is sixty more
+// calls on top of the sixty task creates and fifty-nine dependencies. The tag
+// itself is created once per PERSON and cached, not once per task.
+ownerTagIdByName = Map();
+ownerTagOk = 0;
+ownerTagFail = 0;
+ownerTagFirstError = "";
+// Resolved ONCE, and OUTSIDE the project-tag branch, because the per-task
+// owner tags need it too - a job with no project tags still tags its tasks,
+// and reading tagPortalId when it had never been assigned would throw before
+// any of the fail-open guards could catch it.
+tagPortalId = "";
+tagIdByName = Map();
+try
+{
+	// v3 REJECTS THE PORTAL NAME. Everything else here addresses the portal as
+	// "ironwoodstairs", which the v1 restapi accepts; v3 answers 400
+	// URL_RULE_NOT_CONFIGURED for /api/v3/portal/ironwoodstairs/tags and needs
+	// the NUMERIC id.
+	// GET /restapi/portals/ is the documented way to get it and it came back
+	// {"code":6403,"message":"Invalid OAuth scope."} - this connection has no
+	// ZohoProjects.portals.READ. Rather than depend on a scope being added, the
+	// id is READ OUT OF A URL ZOHO ALREADY HANDS US: every link in a project
+	// response is absolute and carries the numeric portal id, e.g.
+	// https://projectsapi.zoho.com/restapi/portal/647154632/projects/...
+	// That costs one GET on a project we just created, on the scope we plainly
+	// already have, since we created it.
+	tagPortalId = "";
+	portalProbe = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/"
+		type :GET
+		connection:"zoho_projects_connection"
+	];
+	scanText = portalProbe.toString() + " " + existingProjectsResponse.toString();
+	// Deluge has no break, and indexOf takes no start offset, so each pass chops
+	// the string it has already searched.
+	for each  attempt in {1,2,3,4,5,6,7,8}
+	{
+		if(tagPortalId == "")
+		{
+			markerAt = scanText.indexOf("/portal/");
+			if(markerAt >= 0)
+			{
+				scanText = scanText.subString(markerAt + 8,scanText.length());
+				nextSlash = scanText.indexOf("/");
+				if(nextSlash > 0)
+				{
+					portalCandidate = scanText.subString(0,nextSlash);
+					// The name appears in these URLs too. Only digits are the id.
+					if(portalCandidate.matches("[0-9]+"))
+					{
+						tagPortalId = portalCandidate;
+					}
+				}
+			}
+		}
+	}
+	// Documented route, kept as a fallback for when the scope IS present.
+	if(tagPortalId == "")
+	{
+		portalsResponse = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/restapi/portals/"
+			type :GET
+			connection:"zoho_projects_connection"
+		];
+		info "PORTALS: " + portalsResponse.toString();
+		portalsList = portalsResponse.get("portals");
+		if(portalsList != null && portalsList.size() > 0)
+		{
+			for each  onePortal in portalsList
+			{
+				gotId = onePortal.get("id_string");
+				if(gotId == null)
+				{
+					gotId = onePortal.get("id");
+				}
+				// No name is returned by this endpoint - Zoho's own sample response
+				// has none - so the default portal is the only safe discriminator.
+				if(gotId != null && (portalsList.size() == 1 || onePortal.get("default") == true))
+				{
+					tagPortalId = gotId.toString();
+				}
+			}
+		}
+		portalProbeNote = portalProbe.toString();
+		if(portalProbeNote.length() > 120)
+		{
+			portalProbeNote = portalProbeNote.subString(0,120);
+		}
+	}
+	info "TAG PORTAL ID: " + tagPortalId;
+}
+catch (e)
+{
+	info "PORTAL ID LOOKUP FAILED: " + e.toString();
+}
 projectTags = payloadData.get("project_tags");
 if(projectTags != null && projectTags.size() > 0)
 {
 	try
 	{
-		// v3 REJECTS THE PORTAL NAME. Everything else here addresses the portal as
-		// "ironwoodstairs", which the v1 restapi accepts; v3 answers 400
-		// URL_RULE_NOT_CONFIGURED for /api/v3/portal/ironwoodstairs/tags and needs
-		// the NUMERIC id.
-		// GET /restapi/portals/ is the documented way to get it and it came back
-		// {"code":6403,"message":"Invalid OAuth scope."} - this connection has no
-		// ZohoProjects.portals.READ. Rather than depend on a scope being added, the
-		// id is READ OUT OF A URL ZOHO ALREADY HANDS US: every link in a project
-		// response is absolute and carries the numeric portal id, e.g.
-		// https://projectsapi.zoho.com/restapi/portal/647154632/projects/...
-		// That costs one GET on a project we just created, on the scope we plainly
-		// already have, since we created it.
-		tagPortalId = "";
-		portalProbe = invokeurl
-		[
-			url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/"
-			type :GET
-			connection:"zoho_projects_connection"
-		];
-		scanText = portalProbe.toString() + " " + existingProjectsResponse.toString();
-		// Deluge has no break, and indexOf takes no start offset, so each pass chops
-		// the string it has already searched.
-		for each  attempt in {1,2,3,4,5,6,7,8}
-		{
-			if(tagPortalId == "")
-			{
-				markerAt = scanText.indexOf("/portal/");
-				if(markerAt >= 0)
-				{
-					scanText = scanText.subString(markerAt + 8,scanText.length());
-					nextSlash = scanText.indexOf("/");
-					if(nextSlash > 0)
-					{
-						portalCandidate = scanText.subString(0,nextSlash);
-						// The name appears in these URLs too. Only digits are the id.
-						if(portalCandidate.matches("[0-9]+"))
-						{
-							tagPortalId = portalCandidate;
-						}
-					}
-				}
-			}
-		}
-		// Documented route, kept as a fallback for when the scope IS present.
-		if(tagPortalId == "")
-		{
-			portalsResponse = invokeurl
-			[
-				url :"https://projectsapi.zoho.com/restapi/portals/"
-				type :GET
-				connection:"zoho_projects_connection"
-			];
-			info "PORTALS: " + portalsResponse.toString();
-			portalsList = portalsResponse.get("portals");
-			if(portalsList != null && portalsList.size() > 0)
-			{
-				for each  onePortal in portalsList
-				{
-					gotId = onePortal.get("id_string");
-					if(gotId == null)
-					{
-						gotId = onePortal.get("id");
-					}
-					// No name is returned by this endpoint - Zoho's own sample response
-					// has none - so the default portal is the only safe discriminator.
-					if(gotId != null && (portalsList.size() == 1 || onePortal.get("default") == true))
-					{
-						tagPortalId = gotId.toString();
-					}
-				}
-			}
-			portalProbeNote = portalProbe.toString();
-			if(portalProbeNote.length() > 120)
-			{
-				portalProbeNote = portalProbeNote.subString(0,120);
-			}
-		}
-		info "TAG PORTAL ID: " + tagPortalId;
 		if(tagPortalId == "")
 		{
 			// Without the numeric id every tag call is a guaranteed 400. Report that
@@ -335,7 +357,6 @@ if(projectTags != null && projectTags.size() > 0)
 		// skipped from inside the loop.
 		if(tagPortalId != "")
 		{
-		tagIdByName = Map();
 		existingTagsResponse = invokeurl
 		[
 			url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags?index=0&range=200"
@@ -938,6 +959,103 @@ for each  listName in keys
 						thisTaskId = taskResponse.get("tasks").get(0).get("id_string");
 					}
 				}
+				// ---- OWNER TAG ON THE TASK ITSELF ----
+				// Fail-open and counted, exactly like the project tags: nobody loses a
+				// handoff because a tag did not stick.
+				ownerName = taskObj.get("owner_name");
+				if(thisTaskId != "" && tagPortalId != "" && ownerName != null && ownerName != "")
+				{
+					try
+					{
+						ownerTagId = ownerTagIdByName.get(ownerName.toLowerCase());
+						if(ownerTagId == null)
+						{
+							ownerTagId = tagIdByName.get(ownerName.toLowerCase());
+						}
+						if(ownerTagId == null)
+						{
+							safeOwner = ownerName.replaceAll("\"","");
+							// bg-tag9 for every person, so a name reads as a person rather
+							// than competing with the trade colours on the project.
+							ownerJson = "{\"tags\":[{\"name\":\"" + safeOwner + "\",\"color_class\":\"bg-tag9\"}]}";
+							ownerHeaders = Map();
+							ownerHeaders.put("Content-Type","application/json");
+							ownerCreate = invokeurl
+							[
+								url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags"
+								type :POST
+								parameters:ownerJson
+								headers:ownerHeaders
+								connection:"zoho_projects_connection"
+							];
+							info "CREATE OWNER TAG (" + ownerName + "): " + ownerCreate.toString();
+							ownerArr = ownerCreate.get("tags");
+							if(ownerArr != null && ownerArr.size() > 0)
+							{
+								if(ownerArr.get(0).get("id") != null)
+								{
+									ownerTagId = ownerArr.get(0).get("id");
+								}
+								else if(ownerArr.get(0).get("id_string") != null)
+								{
+									ownerTagId = ownerArr.get(0).get("id_string");
+								}
+							}
+						}
+						if(ownerTagId != null)
+						{
+							// Cached, so a person costs one create for the whole handoff
+							// however many tasks they own.
+							ownerTagIdByName.put(ownerName.toLowerCase(),ownerTagId);
+							ownerAssocParams = Map();
+							ownerAssocParams.put("tag_id",ownerTagId);
+							ownerAssocParams.put("entity_id",thisTaskId);
+							ownerAssocParams.put("entityType",5);
+							ownerAssoc = invokeurl
+							[
+								url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/tags/associate"
+								type :POST
+								parameters:ownerAssocParams
+								connection:"zoho_projects_connection"
+							];
+							ownerAssocText = ownerAssoc.toString();
+							// Empty body is this endpoint's success answer - measured on the
+							// project tags, same endpoint.
+							if(ownerAssocText.contains("error") || ownerAssocText.contains("Error"))
+							{
+								ownerTagFail = ownerTagFail + 1;
+								if(ownerTagFirstError == "")
+								{
+									ownerTagFirstError = ownerName + ": " + ownerAssocText;
+									if(ownerTagFirstError.length() > 150)
+									{
+										ownerTagFirstError = ownerTagFirstError.subString(0,150);
+									}
+								}
+							}
+							else
+							{
+								ownerTagOk = ownerTagOk + 1;
+							}
+						}
+						else
+						{
+							ownerTagFail = ownerTagFail + 1;
+							if(ownerTagFirstError == "")
+							{
+								ownerTagFirstError = "no id for owner tag '" + ownerName + "'";
+							}
+						}
+					}
+					catch (e)
+					{
+						ownerTagFail = ownerTagFail + 1;
+						if(ownerTagFirstError == "")
+						{
+							ownerTagFirstError = "exception: " + e.toString();
+						}
+					}
+				}
 				// =====================================
 				// DEPENDENCIES: finish-to-start, one task to the next.
 				// The predecessor is simply the task created before this one. chain_group is
@@ -1031,7 +1149,7 @@ if(failedItems.size() > 0)
 }
 if(isReusedProject == "yes")
 {
-	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(depFirstError == "", "", " First error: " + depFirstError);
+	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(depFirstError == "", "", " First error: " + depFirstError);
 }
 // =====================================
 // ERROR CAPTURE
@@ -1049,5 +1167,5 @@ if(depFail > 0)
 	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
 	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }
-return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(depFirstError == "", "", " First error: " + depFirstError);
+return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(depFirstError == "", "", " First error: " + depFirstError);
 }
