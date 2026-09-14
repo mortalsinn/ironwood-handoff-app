@@ -363,75 +363,34 @@ if(projectTags != null && projectTags.size() > 0)
 			createTagText = "";
 			if(ptagId == null)
 			{
-				newTag = Map();
-				newTag.put("name",ptagName);
-				newTag.put("color_class",ptagColor);
-				newTagList = List();
-				newTagList.add(newTag);
-				// v3 takes a JSON BODY. The first attempt sent the array as a form
-				// parameter, which is how the v1 restapi works, and the tag was never
-				// created - "could not resolve tag 'test'". Form-encoded is kept as a
-				// fallback rather than deleted, because only one of these has ever been
-				// seen to work and it is not this one yet.
-				tagBody = Map();
-				tagBody.put("tags",newTagList);
+				// THE JSON IS BUILT BY HAND. The previous attempt handed Deluge a Map
+				// and trusted Map.toString() to render JSON; Zoho answered 400
+				// LESS_THAN_MIN_OCCURANCE "Input Parameter Missing", field_name
+				// "tags" - it received a body but no tags field in it. A string
+				// concatenation cannot be misrendered.
+				safeName = ptagName.replaceAll("\"","");
+				tagArrayJson = "[{\"name\":\"" + safeName + "\",\"color_class\":\"" + ptagColor + "\"}]";
+				tagWrappedJson = "{\"tags\":" + tagArrayJson + "}";
 				tagHeaders = Map();
 				tagHeaders.put("Content-Type","application/json");
+				tagUrlV3 = "https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags";
+				// Three shapes, because the docs call "tags" a request PARAMETER while
+				// the endpoint is v3, where everything else takes a JSON body - and
+				// only a live run can say which it means. Each stops the moment an id
+				// comes back.
 				createTagResponse = invokeurl
 				[
-					url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags"
+					url :tagUrlV3
 					type :POST
-					parameters:tagBody.toString()
+					parameters:tagWrappedJson
 					headers:tagHeaders
 					connection:"zoho_projects_connection"
 				];
-				createTagText = createTagResponse.toString();
-				info "CREATE TAG json (" + ptagName + " / " + ptagColor + "): " + createTagText;
-				// The docs show neither the response body nor whether the id is "id" or
-				// "id_string", so each shape this API uses is tried rather than guessed.
-				tagArr = createTagResponse.get("tags");
-				if(tagArr != null && tagArr.size() > 0)
-				{
-					if(tagArr.get(0).get("id") != null)
-					{
-						ptagId = tagArr.get(0).get("id");
-					}
-					else if(tagArr.get(0).get("id_string") != null)
-					{
-						ptagId = tagArr.get(0).get("id_string");
-					}
-				}
-				if(ptagId == null && createTagResponse.get("tag") != null)
-				{
-					if(createTagResponse.get("tag").get("id") != null)
-					{
-						ptagId = createTagResponse.get("tag").get("id");
-					}
-					else if(createTagResponse.get("tag").get("id_string") != null)
-					{
-						ptagId = createTagResponse.get("tag").get("id_string");
-					}
-				}
-				if(ptagId == null && createTagResponse.get("id") != null)
-				{
-					ptagId = createTagResponse.get("id");
-				}
+				createTagText = "wrapped:" + createTagResponse.toString();
+				info "CREATE TAG wrapped (" + ptagName + "): " + createTagResponse.toString();
 				if(ptagId == null)
 				{
-					createTagParams = Map();
-					createTagParams.put("tags",newTagList.toString());
-					createTagResponse2 = invokeurl
-					[
-						url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags"
-						type :POST
-						parameters:createTagParams
-						connection:"zoho_projects_connection"
-					];
-					createTagText = createTagText + " || form: " + createTagResponse2.toString();
-					info "CREATE TAG form (" + ptagName + "): " + createTagResponse2.toString();
-					// The docs show neither the response body nor whether the id is "id" or
-					// "id_string", so each shape this API uses is tried rather than guessed.
-					tagArr = createTagResponse2.get("tags");
+					tagArr = createTagResponse.get("tags");
 					if(tagArr != null && tagArr.size() > 0)
 					{
 						if(tagArr.get(0).get("id") != null)
@@ -443,20 +402,107 @@ if(projectTags != null && projectTags.size() > 0)
 							ptagId = tagArr.get(0).get("id_string");
 						}
 					}
-					if(ptagId == null && createTagResponse2.get("tag") != null)
+					if(ptagId == null && createTagResponse.get("tag") != null)
 					{
-						if(createTagResponse2.get("tag").get("id") != null)
+						if(createTagResponse.get("tag").get("id") != null)
 						{
-							ptagId = createTagResponse2.get("tag").get("id");
+							ptagId = createTagResponse.get("tag").get("id");
 						}
-						else if(createTagResponse2.get("tag").get("id_string") != null)
+						else if(createTagResponse.get("tag").get("id_string") != null)
 						{
-							ptagId = createTagResponse2.get("tag").get("id_string");
+							ptagId = createTagResponse.get("tag").get("id_string");
 						}
 					}
-					if(ptagId == null && createTagResponse2.get("id") != null)
+					if(ptagId == null && createTagResponse.get("id") != null)
 					{
-						ptagId = createTagResponse2.get("id");
+						ptagId = createTagResponse.get("id");
+					}
+				}
+				if(ptagId == null)
+				{
+					createTagResponse2 = invokeurl
+					[
+						url :tagUrlV3
+						type :POST
+						parameters:tagArrayJson
+						headers:tagHeaders
+						connection:"zoho_projects_connection"
+					];
+					createTagText = createTagText + " || bare:" + createTagResponse2.toString();
+					info "CREATE TAG bare (" + ptagName + "): " + createTagResponse2.toString();
+					if(ptagId == null)
+					{
+						tagArr = createTagResponse2.get("tags");
+						if(tagArr != null && tagArr.size() > 0)
+						{
+							if(tagArr.get(0).get("id") != null)
+							{
+								ptagId = tagArr.get(0).get("id");
+							}
+							else if(tagArr.get(0).get("id_string") != null)
+							{
+								ptagId = tagArr.get(0).get("id_string");
+							}
+						}
+						if(ptagId == null && createTagResponse2.get("tag") != null)
+						{
+							if(createTagResponse2.get("tag").get("id") != null)
+							{
+								ptagId = createTagResponse2.get("tag").get("id");
+							}
+							else if(createTagResponse2.get("tag").get("id_string") != null)
+							{
+								ptagId = createTagResponse2.get("tag").get("id_string");
+							}
+						}
+						if(ptagId == null && createTagResponse2.get("id") != null)
+						{
+							ptagId = createTagResponse2.get("id");
+						}
+					}
+				}
+				if(ptagId == null)
+				{
+					createTagParams = Map();
+					createTagParams.put("tags",tagArrayJson);
+					createTagResponse3 = invokeurl
+					[
+						url :tagUrlV3
+						type :POST
+						parameters:createTagParams
+						connection:"zoho_projects_connection"
+					];
+					createTagText = createTagText + " || form:" + createTagResponse3.toString();
+					info "CREATE TAG form (" + ptagName + "): " + createTagResponse3.toString();
+					if(ptagId == null)
+					{
+						tagArr = createTagResponse3.get("tags");
+						if(tagArr != null && tagArr.size() > 0)
+						{
+							if(tagArr.get(0).get("id") != null)
+							{
+								ptagId = tagArr.get(0).get("id");
+							}
+							else if(tagArr.get(0).get("id_string") != null)
+							{
+								ptagId = tagArr.get(0).get("id_string");
+							}
+						}
+						if(ptagId == null && createTagResponse3.get("tag") != null)
+						{
+							if(createTagResponse3.get("tag").get("id") != null)
+							{
+								ptagId = createTagResponse3.get("tag").get("id");
+							}
+							else if(createTagResponse3.get("tag").get("id_string") != null)
+							{
+								ptagId = createTagResponse3.get("tag").get("id_string");
+							}
+						}
+						if(ptagId == null && createTagResponse3.get("id") != null)
+						{
+							ptagId = createTagResponse3.get("id");
+						}
 					}
 				}
 				if(ptagId != null)
