@@ -267,6 +267,7 @@ if(projectTags != null && projectTags.size() > 0)
 				ptagColor = "bg-tag19";
 			}
 			ptagId = tagIdByName.get(ptagName.toLowerCase());
+			createTagText = "";
 			if(ptagId == null)
 			{
 				newTag = Map();
@@ -274,28 +275,100 @@ if(projectTags != null && projectTags.size() > 0)
 				newTag.put("color_class",ptagColor);
 				newTagList = List();
 				newTagList.add(newTag);
-				createTagParams = Map();
-				createTagParams.put("tags",newTagList.toString());
+				// v3 takes a JSON BODY. The first attempt sent the array as a form
+				// parameter, which is how the v1 restapi works, and the tag was never
+				// created - "could not resolve tag 'test'". Form-encoded is kept as a
+				// fallback rather than deleted, because only one of these has ever been
+				// seen to work and it is not this one yet.
+				tagBody = Map();
+				tagBody.put("tags",newTagList);
+				tagHeaders = Map();
+				tagHeaders.put("Content-Type","application/json");
 				createTagResponse = invokeurl
 				[
 					url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/tags"
 					type :POST
-					parameters:createTagParams
+					parameters:tagBody.toString()
+					headers:tagHeaders
 					connection:"zoho_projects_connection"
 				];
-				info "CREATE TAG (" + ptagName + " / " + ptagColor + "): " + createTagResponse.toString();
-				createdTagList = createTagResponse.get("tags");
-				if(createdTagList != null && createdTagList.size() > 0)
+				createTagText = createTagResponse.toString();
+				info "CREATE TAG json (" + ptagName + " / " + ptagColor + "): " + createTagText;
+				// The docs show neither the response body nor whether the id is "id" or
+				// "id_string", so each shape this API uses is tried rather than guessed.
+				tagArr = createTagResponse.get("tags");
+				if(tagArr != null && tagArr.size() > 0)
 				{
-					ptagId = createdTagList.get(0).get("id");
-					if(ptagId == null)
+					if(tagArr.get(0).get("id") != null)
 					{
-						ptagId = createdTagList.get(0).get("id_string");
+						ptagId = tagArr.get(0).get("id");
 					}
-					if(ptagId != null)
+					else if(tagArr.get(0).get("id_string") != null)
 					{
-						tagIdByName.put(ptagName.toLowerCase(),ptagId);
+						ptagId = tagArr.get(0).get("id_string");
 					}
+				}
+				if(ptagId == null && createTagResponse.get("tag") != null)
+				{
+					if(createTagResponse.get("tag").get("id") != null)
+					{
+						ptagId = createTagResponse.get("tag").get("id");
+					}
+					else if(createTagResponse.get("tag").get("id_string") != null)
+					{
+						ptagId = createTagResponse.get("tag").get("id_string");
+					}
+				}
+				if(ptagId == null && createTagResponse.get("id") != null)
+				{
+					ptagId = createTagResponse.get("id");
+				}
+				if(ptagId == null)
+				{
+					createTagParams = Map();
+					createTagParams.put("tags",newTagList.toString());
+					createTagResponse2 = invokeurl
+					[
+						url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/tags"
+						type :POST
+						parameters:createTagParams
+						connection:"zoho_projects_connection"
+					];
+					createTagText = createTagText + " || form: " + createTagResponse2.toString();
+					info "CREATE TAG form (" + ptagName + "): " + createTagResponse2.toString();
+					// The docs show neither the response body nor whether the id is "id" or
+					// "id_string", so each shape this API uses is tried rather than guessed.
+					tagArr = createTagResponse2.get("tags");
+					if(tagArr != null && tagArr.size() > 0)
+					{
+						if(tagArr.get(0).get("id") != null)
+						{
+							ptagId = tagArr.get(0).get("id");
+						}
+						else if(tagArr.get(0).get("id_string") != null)
+						{
+							ptagId = tagArr.get(0).get("id_string");
+						}
+					}
+					if(ptagId == null && createTagResponse2.get("tag") != null)
+					{
+						if(createTagResponse2.get("tag").get("id") != null)
+						{
+							ptagId = createTagResponse2.get("tag").get("id");
+						}
+						else if(createTagResponse2.get("tag").get("id_string") != null)
+						{
+							ptagId = createTagResponse2.get("tag").get("id_string");
+						}
+					}
+					if(ptagId == null && createTagResponse2.get("id") != null)
+					{
+						ptagId = createTagResponse2.get("id");
+					}
+				}
+				if(ptagId != null)
+				{
+					tagIdByName.put(ptagName.toLowerCase(),ptagId);
 				}
 			}
 			if(ptagId == null)
@@ -303,7 +376,14 @@ if(projectTags != null && projectTags.size() > 0)
 				tagFail = tagFail + 1;
 				if(tagFirstError == "")
 				{
-					tagFirstError = "could not resolve tag '" + ptagName + "'";
+					// The CRM function log discards info statements, so the response
+					// itself has to travel back in the return string or a failure is
+					// invisible. This is what "could not resolve tag" should have said.
+					tagFirstError = "create '" + ptagName + "' -> " + createTagText;
+					if(tagFirstError.length() > 300)
+					{
+						tagFirstError = tagFirstError.subString(0,300);
+					}
 				}
 			}
 			else
@@ -348,7 +428,19 @@ if(projectTags != null && projectTags.size() > 0)
 	}
 	catch (e)
 	{
+		// Swallowing this silently is how the last round told us nothing. If the
+		// response is not a Map, .get() throws here rather than returning null, so
+		// the exception text is the only evidence of what came back.
 		info "TAGS FAILED: " + e.toString();
+		tagFail = tagFail + 1;
+		if(tagFirstError == "")
+		{
+			tagFirstError = "exception: " + e.toString();
+			if(tagFirstError.length() > 300)
+			{
+				tagFirstError = tagFirstError.subString(0,300);
+			}
+		}
 	}
 }
 // =====================================
