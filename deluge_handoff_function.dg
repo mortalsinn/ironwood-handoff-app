@@ -246,6 +246,14 @@ ownerTagIdByName = Map();
 ownerTagOk = 0;
 ownerTagFail = 0;
 ownerTagFirstError = "";
+// Which body shape actually creates a tag. Project tags try three and stop at
+// the first that works, and nobody recorded the winner - so the owner-tag code
+// implemented only the FIRST shape and failed on every task. One run names it,
+// then the other two can go.
+tagShapeWon = "";
+// Names that could NOT be created. Without this the same doomed create is
+// retried once per task - 17 failures for one person on the last run.
+ownerTagDead = Map();
 // Resolved ONCE, and OUTSIDE the project-tag branch, because the per-task
 // owner tags need it too - a job with no project tags still tags its tasks,
 // and reading tagPortalId when it had never been assigned would throw before
@@ -972,23 +980,25 @@ for each  listName in keys
 						{
 							ownerTagId = tagIdByName.get(ownerName.toLowerCase());
 						}
-						if(ownerTagId == null)
+						if(ownerTagId == null && ownerTagDead.get(ownerName.toLowerCase()) == null)
 						{
 							safeOwner = ownerName.replaceAll("\"","");
-							// bg-tag9 for every person, so a name reads as a person rather
-							// than competing with the trade colours on the project.
-							ownerJson = "{\"tags\":[{\"name\":\"" + safeOwner + "\",\"color_class\":\"bg-tag9\"}]}";
+							ownerArrayJson = "[{\"name\":\"" + safeOwner + "\",\"color_class\":\"bg-tag9\"}]";
 							ownerHeaders = Map();
 							ownerHeaders.put("Content-Type","application/json");
+							ownerTagUrl = "https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags";
+							// Wrapped object, bare array, then form-encoded - the same three
+							// the project tags try, because one of them demonstrably works
+							// and this code had only implemented the first.
 							ownerCreate = invokeurl
 							[
-								url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags"
+								url :ownerTagUrl
 								type :POST
-								parameters:ownerJson
+								parameters:"{\"tags\":" + ownerArrayJson + "}"
 								headers:ownerHeaders
 								connection:"zoho_projects_connection"
 							];
-							info "CREATE OWNER TAG (" + ownerName + "): " + ownerCreate.toString();
+							info "OWNER TAG wrapped (" + ownerName + "): " + ownerCreate.toString();
 							ownerArr = ownerCreate.get("tags");
 							if(ownerArr != null && ownerArr.size() > 0)
 							{
@@ -999,6 +1009,80 @@ for each  listName in keys
 								else if(ownerArr.get(0).get("id_string") != null)
 								{
 									ownerTagId = ownerArr.get(0).get("id_string");
+								}
+								if(ownerTagId != null && tagShapeWon == "")
+								{
+									tagShapeWon = "wrapped";
+								}
+							}
+							if(ownerTagId == null)
+							{
+								ownerCreate2 = invokeurl
+								[
+									url :ownerTagUrl
+									type :POST
+									parameters:ownerArrayJson
+									headers:ownerHeaders
+									connection:"zoho_projects_connection"
+								];
+								info "OWNER TAG bare (" + ownerName + "): " + ownerCreate2.toString();
+								ownerArr2 = ownerCreate2.get("tags");
+								if(ownerArr2 != null && ownerArr2.size() > 0)
+								{
+									if(ownerArr2.get(0).get("id") != null)
+									{
+										ownerTagId = ownerArr2.get(0).get("id");
+									}
+									else if(ownerArr2.get(0).get("id_string") != null)
+									{
+										ownerTagId = ownerArr2.get(0).get("id_string");
+									}
+									if(ownerTagId != null && tagShapeWon == "")
+									{
+										tagShapeWon = "bare";
+									}
+								}
+							}
+							if(ownerTagId == null)
+							{
+								ownerFormParams = Map();
+								ownerFormParams.put("tags",ownerArrayJson);
+								ownerCreate3 = invokeurl
+								[
+									url :ownerTagUrl
+									type :POST
+									parameters:ownerFormParams
+									connection:"zoho_projects_connection"
+								];
+								info "OWNER TAG form (" + ownerName + "): " + ownerCreate3.toString();
+								ownerArr3 = ownerCreate3.get("tags");
+								if(ownerArr3 != null && ownerArr3.size() > 0)
+								{
+									if(ownerArr3.get(0).get("id") != null)
+									{
+										ownerTagId = ownerArr3.get(0).get("id");
+									}
+									else if(ownerArr3.get(0).get("id_string") != null)
+									{
+										ownerTagId = ownerArr3.get(0).get("id_string");
+									}
+									if(ownerTagId != null && tagShapeWon == "")
+									{
+										tagShapeWon = "form";
+									}
+								}
+								if(ownerTagId == null)
+								{
+									// Give up on this NAME, not on every task they own.
+									ownerTagDead.put(ownerName.toLowerCase(),"x");
+									if(ownerTagFirstError == "")
+									{
+										ownerTagFirstError = "create '" + ownerName + "' -> " + ownerCreate3.toString();
+										if(ownerTagFirstError.length() > 200)
+										{
+											ownerTagFirstError = ownerTagFirstError.subString(0,200);
+										}
+									}
 								}
 							}
 						}
@@ -1041,10 +1125,6 @@ for each  listName in keys
 						else
 						{
 							ownerTagFail = ownerTagFail + 1;
-							if(ownerTagFirstError == "")
-							{
-								ownerTagFirstError = "no id for owner tag '" + ownerName + "'";
-							}
 						}
 					}
 					catch (e)
@@ -1149,7 +1229,7 @@ if(failedItems.size() > 0)
 }
 if(isReusedProject == "yes")
 {
-	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(depFirstError == "", "", " First error: " + depFirstError);
+	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + if(depFirstError == "", "", " First error: " + depFirstError);
 }
 // =====================================
 // ERROR CAPTURE
@@ -1167,5 +1247,5 @@ if(depFail > 0)
 	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
 	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }
-return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(depFirstError == "", "", " First error: " + depFirstError);
+return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + if(depFirstError == "", "", " First error: " + depFirstError);
 }
