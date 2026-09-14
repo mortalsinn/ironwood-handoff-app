@@ -243,6 +243,16 @@ tagResolved = 0;
 // calls on top of the sixty task creates and fifty-nine dependencies. The tag
 // itself is created once per PERSON and cached, not once per task.
 ownerTagIdByName = Map();
+// THE HEAD OF THE CHAIN HAS NO PREDECESSOR, so no "predecessor task complete"
+// mail can ever fire for it - the one person who has to START the job is the
+// one person the drip feed cannot reach. They get only the generic "added to a
+// new project" notice, which does not name their task. The handoff mails them
+// directly instead.
+firstTaskCaptured = "no";
+firstTaskName = "";
+firstOwnerEmail = "";
+firstOwnerName = "";
+kickoffNote = "";
 ownerTagOk = 0;
 ownerTagFail = 0;
 ownerTagFirstError = "";
@@ -1145,6 +1155,21 @@ for each  listName in keys
 				// =====================================
 				if(thisTaskId != "")
 				{
+					if(firstTaskCaptured == "no")
+					{
+						firstTaskCaptured = "yes";
+						firstTaskName = taskName;
+						// The widget sends the assignee's e-mail as "zuid" - the same
+						// field the project invite already uses.
+						if(taskObj.get("zuid") != null)
+						{
+							firstOwnerEmail = taskObj.get("zuid");
+						}
+						if(taskObj.get("owner_name") != null)
+						{
+							firstOwnerName = taskObj.get("owner_name");
+						}
+					}
 					if(prevTaskId != "")
 					{
 						// The documented endpoint. Everything before this used
@@ -1207,6 +1232,53 @@ for each  listName in keys
 	}
 }
 // =====================================
+// KICK-OFF MAIL TO THE FIRST TASK'S OWNER
+// Only on a NEW project: a re-run re-uses the project, and nobody wants the
+// same "you are up" mail twice for one job.
+// Fail-open - a mail that does not send must never fail a completed handoff.
+// =====================================
+if(isReusedProject == "no" && firstOwnerEmail != "" && firstTaskName != "")
+{
+	try
+	{
+		// Rebuilt here rather than reused: the link built at creation lives inside
+		// the create branch and is not in scope on every path.
+		kickoffUrl = "https://projects.zoho.com/portal/" + portalId + "#zp/projects/" + newProjectId + "/tasks/custom-view/" + taskViewId + "/gantt?group_by=none";
+		kickoffSubject = "You are up first: " + projectName;
+		kickoffBody = "<p>A new production job has been handed off and <b>your task is the first one</b>, so nothing is waiting on anyone else.</p>";
+		kickoffBody = kickoffBody + "<p><b>Job:</b> " + projectName + "<br/><b>Your first task:</b> " + firstTaskName + "</p>";
+		if(payloadData.get("job_address") != null && payloadData.get("job_address") != "")
+		{
+			kickoffBody = kickoffBody + "<p><b>Site:</b> " + payloadData.get("job_address") + "</p>";
+		}
+		if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
+		{
+			kickoffBody = kickoffBody + "<p><b>Needed by:</b> " + payloadData.get("needed_by") + "</p>";
+		}
+		kickoffBody = kickoffBody + "<p><a href=\"" + kickoffUrl + "\">Open the project in Zoho Projects</a></p>";
+		kickoffBody = kickoffBody + "<p style=\"color:#888;font-size:12px\">Everyone after you is told automatically when the task before theirs is finished. You are first, so this one is sent by the handoff.</p>";
+		sendmail
+		[
+			from :zoho.adminuserid
+			to :firstOwnerEmail
+			subject :kickoffSubject
+			message :kickoffBody
+		]
+		kickoffNote = " Kick-off mail sent to " + firstOwnerName + " (" + firstTaskName + ").";
+		info "KICKOFF MAIL to " + firstOwnerEmail + " for " + firstTaskName;
+	}
+	catch (e)
+	{
+		kickoffNote = " Kick-off mail FAILED: " + e.toString();
+		info "KICKOFF MAIL FAILED: " + e.toString();
+	}
+}
+if(kickoffNote == "" && isReusedProject == "no")
+{
+	// Silence here would look identical to a mail that went out.
+	kickoffNote = " Kick-off mail not sent (no e-mail on the first task's owner).";
+}
+// =====================================
 // HONEST RESULT
 // The widget parses these prefixes: "Error" -> failure overlay,
 // "Warning" -> incomplete overlay (retry fills the gaps), else success.
@@ -1229,7 +1301,7 @@ if(failedItems.size() > 0)
 }
 if(isReusedProject == "yes")
 {
-	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + if(depFirstError == "", "", " First error: " + depFirstError);
+	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + kickoffNote + if(depFirstError == "", "", " First error: " + depFirstError);
 }
 // =====================================
 // ERROR CAPTURE
@@ -1247,5 +1319,5 @@ if(depFail > 0)
 	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
 	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }
-return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + if(depFirstError == "", "", " First error: " + depFirstError);
+return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + kickoffNote + if(depFirstError == "", "", " First error: " + depFirstError);
 }
