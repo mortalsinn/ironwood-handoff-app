@@ -212,6 +212,146 @@ if(payloadData.get("project_start") != null && payloadData.get("project_start") 
 	}
 }
 // =====================================
+// PROJECT TAGS  (the Tags column in the project list)
+// v3 API, not the restapi v1 the rest of this function uses:
+//   POST /api/v3/portal/{portal}/tags                      create
+//   GET  /api/v3/portal/{portal}/tags                      list
+//   POST /api/v3/portal/{portal}/projects/{id}/tags/associate
+// A colour is a PALETTE CLASS (color_class: "bg-tag16"), not a hex value.
+// An existing tag is re-used by name so the colours already in the portal are
+// never overwritten - the colour sent only ever applies to a tag being created
+// for the first time.
+// entityType 2 = project.
+// FAIL-OPEN and counted: a tag problem must never turn a completed handoff
+// into a Warning, so the counts are reported in the return string instead.
+// =====================================
+tagOk = 0;
+tagFail = 0;
+tagFirstError = "";
+projectTags = payloadData.get("project_tags");
+if(projectTags != null && projectTags.size() > 0)
+{
+	try
+	{
+		tagIdByName = Map();
+		existingTagsResponse = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/tags?index=0&range=200"
+			type :GET
+			connection:"zoho_projects_connection"
+		];
+		info "EXISTING TAGS: " + existingTagsResponse.toString();
+		existingTagList = existingTagsResponse.get("tags");
+		if(existingTagList != null)
+		{
+			for each  etag in existingTagList
+			{
+				etagName = etag.get("name");
+				etagId = etag.get("id");
+				if(etagId == null)
+				{
+					etagId = etag.get("id_string");
+				}
+				if(etagName != null && etagId != null)
+				{
+					tagIdByName.put(etagName.toLowerCase(),etagId);
+				}
+			}
+		}
+		for each  ptag in projectTags
+		{
+			ptagName = ptag.get("name");
+			ptagColor = ptag.get("color_class");
+			if(ptagColor == null || ptagColor == "")
+			{
+				ptagColor = "bg-tag19";
+			}
+			ptagId = tagIdByName.get(ptagName.toLowerCase());
+			if(ptagId == null)
+			{
+				newTag = Map();
+				newTag.put("name",ptagName);
+				newTag.put("color_class",ptagColor);
+				newTagList = List();
+				newTagList.add(newTag);
+				createTagParams = Map();
+				createTagParams.put("tags",newTagList.toString());
+				createTagResponse = invokeurl
+				[
+					url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/tags"
+					type :POST
+					parameters:createTagParams
+					connection:"zoho_projects_connection"
+				];
+				info "CREATE TAG (" + ptagName + " / " + ptagColor + "): " + createTagResponse.toString();
+				createdTagList = createTagResponse.get("tags");
+				if(createdTagList != null && createdTagList.size() > 0)
+				{
+					ptagId = createdTagList.get(0).get("id");
+					if(ptagId == null)
+					{
+						ptagId = createdTagList.get(0).get("id_string");
+					}
+					if(ptagId != null)
+					{
+						tagIdByName.put(ptagName.toLowerCase(),ptagId);
+					}
+				}
+			}
+			if(ptagId == null)
+			{
+				tagFail = tagFail + 1;
+				if(tagFirstError == "")
+				{
+					tagFirstError = "could not resolve tag '" + ptagName + "'";
+				}
+			}
+			else
+			{
+				assocTagParams = Map();
+				assocTagParams.put("tag_id",ptagId);
+				assocTagParams.put("entity_id",newProjectId);
+				assocTagParams.put("entityType",2);
+				assocTagResponse = invokeurl
+				[
+					url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + newProjectId + "/tags/associate"
+					type :POST
+					parameters:assocTagParams
+					connection:"zoho_projects_connection"
+				];
+				info "TAG ASSOC (" + ptagName + " -> " + ptagId + "): " + assocTagResponse.toString();
+				assocTagText = assocTagResponse.toString();
+				if(assocTagText.contains("error") || assocTagText.contains("Error"))
+				{
+					tagFail = tagFail + 1;
+					if(tagFirstError == "")
+					{
+						// subString ERRORS past the end of the string in Deluge; it does
+						// not clamp. Guard the length or the error capture becomes the
+						// error.
+						if(assocTagText.length() > 150)
+						{
+							tagFirstError = assocTagText.subString(0,150);
+						}
+						else
+						{
+							tagFirstError = assocTagText;
+						}
+					}
+				}
+				else
+				{
+					tagOk = tagOk + 1;
+				}
+			}
+		}
+	}
+	catch (e)
+	{
+		info "TAGS FAILED: " + e.toString();
+	}
+}
+// =====================================
 // POPULATE THE DEAL'S "ZOHO PROJECTS" RELATED LIST
 // Runs on EVERY handoff, not only when the project is created. The link
 // note stays inside the creation branch because repeat notes would stack,
@@ -616,7 +756,7 @@ if(failedItems.size() > 0)
 }
 if(isReusedProject == "yes")
 {
-	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
+	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(depFirstError == "", "", " First error: " + depFirstError);
 }
 // =====================================
 // ERROR CAPTURE
@@ -634,5 +774,5 @@ if(depFail > 0)
 	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
 	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }
-return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + if(depFirstError == "", "", " First error: " + depFirstError);
+return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(depFirstError == "", "", " First error: " + depFirstError);
 }
