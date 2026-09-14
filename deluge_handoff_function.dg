@@ -233,10 +233,48 @@ if(projectTags != null && projectTags.size() > 0)
 {
 	try
 	{
+		// v3 REJECTS THE PORTAL NAME. Everything else in this function addresses the
+		// portal as "ironwoodstairs", which the v1 restapi accepts, and v3 answered
+		// 400 URL_RULE_NOT_CONFIGURED / "Given URL is wrong" for
+		// /api/v3/portal/ironwoodstairs/tags. v3 wants the NUMERIC portal id, so it
+		// is looked up once here and used for the three tag calls only.
+		tagPortalId = portalId;
+		portalsResponse = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/restapi/portals/"
+			type :GET
+			connection:"zoho_projects_connection"
+		];
+		info "PORTALS: " + portalsResponse.toString();
+		portalsList = portalsResponse.get("portals");
+		if(portalsList != null && portalsList.size() > 0)
+		{
+			wantName = portalId.toLowerCase().replaceAll(" ","").replaceAll("-","");
+			for each  onePortal in portalsList
+			{
+				gotId = onePortal.get("id_string");
+				if(gotId == null)
+				{
+					gotId = onePortal.get("id");
+				}
+				gotName = "";
+				if(onePortal.get("name") != null)
+				{
+					gotName = onePortal.get("name").toLowerCase().replaceAll(" ","").replaceAll("-","");
+				}
+				// One portal on the account means no ambiguity to resolve; with more
+				// than one, match the name this function already uses.
+				if(gotId != null && (portalsList.size() == 1 || gotName == wantName))
+				{
+					tagPortalId = gotId;
+				}
+			}
+		}
+		info "TAG PORTAL ID: " + tagPortalId;
 		tagIdByName = Map();
 		existingTagsResponse = invokeurl
 		[
-			url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/tags?index=0&range=200"
+			url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags?index=0&range=200"
 			type :GET
 			connection:"zoho_projects_connection"
 		];
@@ -286,7 +324,7 @@ if(projectTags != null && projectTags.size() > 0)
 				tagHeaders.put("Content-Type","application/json");
 				createTagResponse = invokeurl
 				[
-					url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/tags"
+					url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags"
 					type :POST
 					parameters:tagBody.toString()
 					headers:tagHeaders
@@ -329,7 +367,7 @@ if(projectTags != null && projectTags.size() > 0)
 					createTagParams.put("tags",newTagList.toString());
 					createTagResponse2 = invokeurl
 					[
-						url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/tags"
+						url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags"
 						type :POST
 						parameters:createTagParams
 						connection:"zoho_projects_connection"
@@ -379,7 +417,7 @@ if(projectTags != null && projectTags.size() > 0)
 					// The CRM function log discards info statements, so the response
 					// itself has to travel back in the return string or a failure is
 					// invisible. This is what "could not resolve tag" should have said.
-					tagFirstError = "create '" + ptagName + "' -> " + createTagText;
+					tagFirstError = "portal=" + tagPortalId + " create '" + ptagName + "' -> " + createTagText;
 					if(tagFirstError.length() > 300)
 					{
 						tagFirstError = tagFirstError.subString(0,300);
@@ -394,7 +432,7 @@ if(projectTags != null && projectTags.size() > 0)
 				assocTagParams.put("entityType",2);
 				assocTagResponse = invokeurl
 				[
-					url :"https://projectsapi.zoho.com/api/v3/portal/" + portalId + "/projects/" + newProjectId + "/tags/associate"
+					url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/tags/associate"
 					type :POST
 					parameters:assocTagParams
 					connection:"zoho_projects_connection"
