@@ -217,6 +217,9 @@ if(payloadData.get("project_start") != null && payloadData.get("project_start") 
 //   POST /api/v3/portal/{portal}/tags                      create
 //   GET  /api/v3/portal/{portal}/tags                      list
 //   POST /api/v3/portal/{portal}/projects/{id}/tags/associate
+// ASSOCIATE REPLACES THE PROJECT'S TAG SET, it does not add to it. Measured:
+// four calls, four empty bodies, and only the LAST tag on the project. So it
+// is called ONCE with every id, comma separated.
 // A colour is a PALETTE CLASS (color_class: "bg-tag16"), not a hex value.
 // An existing tag is re-used by name so the colours already in the portal are
 // never overwritten - the colour sent only ever applies to a tag being created
@@ -233,6 +236,8 @@ tagFirstError = "";
 // read - and only one tag actually landed on the project. Counting a success
 // you have not seen is not evidence.
 tagAssocLog = "";
+tagIdsCsv = "";
+tagResolved = 0;
 projectTags = payloadData.get("project_tags");
 if(projectTags != null && projectTags.size() > 0)
 {
@@ -532,47 +537,75 @@ if(projectTags != null && projectTags.size() > 0)
 			}
 			else
 			{
-				assocTagParams = Map();
-				assocTagParams.put("tag_id",ptagId);
-				assocTagParams.put("entity_id",newProjectId);
-				assocTagParams.put("entityType",2);
-				assocTagResponse = invokeurl
-				[
-					url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/tags/associate"
-					type :POST
-					parameters:assocTagParams
-					connection:"zoho_projects_connection"
-				];
-				info "TAG ASSOC (" + ptagName + " -> " + ptagId + "): " + assocTagResponse.toString();
-				assocTagText = assocTagResponse.toString();
-				assocShort = assocTagText;
-				if(assocShort.length() > 90)
+				// COLLECTED, NOT SENT ONE AT A TIME.
+				// Evidence from a live run: four associate calls, every response an
+				// EMPTY body, and only the LAST tag on the project. The endpoint
+				// REPLACES the project's tag set rather than adding to it, so calling
+				// it once per tag can only ever leave one tag behind.
+				if(tagIdsCsv == "")
 				{
-					assocShort = assocShort.subString(0,90);
-				}
-				tagAssocLog = tagAssocLog + " [" + ptagName + " id=" + ptagId + " -> " + assocShort + "]";
-				if(assocTagText.contains("error") || assocTagText.contains("Error"))
-				{
-					tagFail = tagFail + 1;
-					if(tagFirstError == "")
-					{
-						// subString ERRORS past the end of the string in Deluge; it does
-						// not clamp. Guard the length or the error capture becomes the
-						// error.
-						if(assocTagText.length() > 150)
-						{
-							tagFirstError = assocTagText.subString(0,150);
-						}
-						else
-						{
-							tagFirstError = assocTagText;
-						}
-					}
+					tagIdsCsv = ptagId.toString();
 				}
 				else
 				{
-					tagOk = tagOk + 1;
+					tagIdsCsv = tagIdsCsv + "," + ptagId.toString();
 				}
+				tagResolved = tagResolved + 1;
+			}
+		}
+		// ONE call carrying every id.
+		if(tagIdsCsv != "")
+		{
+			assocTagParams = Map();
+			assocTagParams.put("tag_id",tagIdsCsv);
+			assocTagParams.put("entity_id",newProjectId);
+			assocTagParams.put("entityType",2);
+			assocTagResponse = invokeurl
+			[
+				url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/tags/associate"
+				type :POST
+				parameters:assocTagParams
+				connection:"zoho_projects_connection"
+			];
+			assocTagText = assocTagResponse.toString();
+			info "TAG ASSOC (" + tagIdsCsv + "): " + assocTagText;
+			// An EMPTY body is what this endpoint returns on success - measured, not
+			// assumed - so emptiness must NOT be treated as failure here the way it
+			// is for dependencies.
+			if(assocTagText.contains("error") || assocTagText.contains("Error"))
+			{
+				// Same call, the other plausible parameter name, before giving up.
+				assocTagParams2 = Map();
+				assocTagParams2.put("tag_ids",tagIdsCsv);
+				assocTagParams2.put("entity_id",newProjectId);
+				assocTagParams2.put("entityType",2);
+				assocTagResponse2 = invokeurl
+				[
+					url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/tags/associate"
+					type :POST
+					parameters:assocTagParams2
+					connection:"zoho_projects_connection"
+				];
+				assocTagText = assocTagText + " || tag_ids:" + assocTagResponse2.toString();
+				info "TAG ASSOC retry (" + tagIdsCsv + "): " + assocTagResponse2.toString();
+			}
+			assocShort = assocTagText;
+			if(assocShort.length() > 120)
+			{
+				assocShort = assocShort.subString(0,120);
+			}
+			tagAssocLog = " ids=" + tagIdsCsv + " -> " + assocShort;
+			if(assocTagText.contains("error") || assocTagText.contains("Error"))
+			{
+				tagFail = tagFail + tagResolved;
+				if(tagFirstError == "")
+				{
+					tagFirstError = assocShort;
+				}
+			}
+			else
+			{
+				tagOk = tagResolved;
 			}
 		}
 		}
