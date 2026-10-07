@@ -1268,7 +1268,11 @@ if(isReusedProject == "no" && firstOwnerEmail != "" && firstTaskName != "")
 		kickoffBody = kickoffBody + "<p style=\"color:#888;font-size:12px\">Everyone after you is told automatically when the task before theirs is finished. You are first, so this one is sent by the handoff.</p>";
 		sendmail
 		[
-			from :zoho.adminuserid
+			// zoho.adminuserid is REJECTED at save time: "The from address can only
+			// be either zoho.loginuserid or a verified email address."
+			// loginuserid is the better answer anyway - the mail arrives from
+			// whoever ran the handoff, so a reply reaches the person who sent it.
+			from :zoho.loginuserid
 			to :firstOwnerEmail
 			subject :kickoffSubject
 			message :kickoffBody
