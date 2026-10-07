@@ -1994,6 +1994,10 @@
             </div>
         </div>
 
+        <div id="bootHint" class="hidden absolute inset-0 flex items-center justify-center z-[80] text-slate-400 text-sm">
+            Connecting to Zoho&hellip;
+        </div>
+
         <!-- PICK A DEAL. Only ever shown in the full-screen Web Tab, which is not
              opened from a record and so has no deal to work on. The button on a
              Deal is unaffected: it arrives with an EntityId and never sees this. -->
@@ -2382,8 +2386,22 @@
             // does we can't reveal the app (no Deal id, no roster), and v8.17 hid the
             // simulator to stop it flashing, so a plain browser saw a blank page.
             let zohoPageLoadFired = false;
+            // ARE WE INSIDE A ZOHO IFRAME?
+            // A widget always is - button pop-up or Web Tab. A developer opening the
+            // file locally never is. The simulator exists for the second case only,
+            // so being framed is reason enough never to show it: a slow PageLoad
+            // threw the Web Tab into the simulator, which has not been the right
+            // screen for this app in a long time.
+            const isFramed = (() => { try { return window.self !== window.top; } catch (e) { return true; } })();
             const showLocalSimulator = () => {
                 if (zohoPageLoadFired) return;
+                if (isFramed) {
+                    // Hosted, just not answered yet. Say so and keep waiting rather
+                    // than pretending this is a developer's laptop.
+                    const hint = document.getElementById('bootHint');
+                    if (hint) hint.classList.remove('hidden');
+                    return;
+                }
                 document.getElementById('localSimulator').classList.remove('hidden');
                 document.getElementById('appContainer').classList.add('hidden');
                 // Same local-safe boot the PageLoad path does, so the blueprint is
@@ -2475,6 +2493,8 @@
 
                     // Dismiss the simulator in case the watchdog beat a slow host to it.
                     document.getElementById('localSimulator').classList.add('hidden');
+                    const bh = document.getElementById('bootHint');
+                    if (bh) bh.classList.add('hidden');
                     document.getElementById('appContainer').classList.remove('hidden');
                     ZOHO.CRM.UI.Resize({height: currentWindowHeight, width: currentWindowWidth});
 
@@ -2525,7 +2545,7 @@
                 // hasn't by now we're in a plain browser, so hand over to the
                 // simulator. Guarded by the flag, so a slow-but-real host that
                 // answers late still wins and the simulator stays hidden.
-                setTimeout(showLocalSimulator, 2500);
+                setTimeout(showLocalSimulator, isFramed ? 6000 : 2500);
             } else {
                 // SDK blocked or offline entirely - no waiting required.
                 showLocalSimulator();
