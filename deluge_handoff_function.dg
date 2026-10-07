@@ -958,6 +958,15 @@ for each  listName in keys
 					{
 						taskParams.put("end_date",taskObj.get("end_date"));
 					}
+					// DURATION. Zoho takes duration (int) with duration_type "days" or
+					// "hrs". The widget decides the unit per task; a half day is sent
+					// as 4 hrs rather than rounded up into a whole day it never takes.
+					// Both must travel together - duration alone is ignored.
+					if(taskObj.get("duration") != null && taskObj.get("duration_type") != null)
+					{
+						taskParams.put("duration",taskObj.get("duration"));
+						taskParams.put("duration_type",taskObj.get("duration_type"));
+					}
 					taskParams.put("tasklist_id",createdTaskListId);
 					taskResponse = invokeurl
 					[

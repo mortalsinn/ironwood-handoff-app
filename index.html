@@ -1442,6 +1442,16 @@
                         <!-- Workflow blocks are generated dynamically by the archetype engine (see ARCHETYPES in the script) -->
 
                     </div>
+                    <!-- Adding a section of your own was only ever reachable from the
+                         left, buried inside the stairs question's "add custom stair
+                         item". A section that belongs to no question had nowhere to be
+                         created from. This sits under the plan it adds to. -->
+                    <div id="addBlockBar" class="hidden pb-6">
+                        <div class="flex items-center gap-2 pt-3 border-t border-slate-800">
+                            <input type="text" id="newBlockName" maxlength="60" placeholder="Add a section of your own..." class="flex-1 min-w-0 text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 placeholder-slate-600 outline-none focus:border-sky-500">
+                            <button type="button" id="addBlockBtn" class="shrink-0 text-xs font-semibold px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700">+ Section</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -2483,6 +2493,7 @@
                 li.className = "task-custom flex items-center group relative";
                 li.setAttribute('data-list', blockEl.getAttribute('data-default-list') || "Production & Install");
                 li.setAttribute('data-days', '1');
+                li.setAttribute('data-unit', 'days');
                 const taskId = 'task-inline-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
                 li.innerHTML = `
                     <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
@@ -2491,7 +2502,10 @@
                     <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${escapeHtml(displayVal)}</span>
                     <span class="task-days-wrap opacity-70 group-hover:opacity-100 transition-opacity" title="Working days for this task (drives the project timeline)">
                         <input type="number" min="0.5" max="99" step="0.5" value="1" class="task-days-input text-xs bg-slate-900 border border-slate-700 rounded px-0.5 py-0 text-slate-300 focus:outline-none focus:border-sky-500">
-                        <span class="text-[10px] text-slate-500 lowercase">d</span>
+                        <select class="task-unit-sel text-[10px] bg-slate-900 border border-slate-700 rounded text-slate-400 focus:outline-none focus:border-sky-500" title="Days or hours">
+                            <option value="days">d</option>
+                            <option value="hrs">h</option>
+                        </select>
                     </span>
                     <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
                     <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
@@ -2555,6 +2569,24 @@
                         li.setAttribute('data-days-edited', '1');
                     }
                     e.target.setAttribute('value', String(v));
+                    updateBlockDayTotals();
+                    triggerAutoSave();
+                }
+                // The unit is a real Zoho field - duration_type, "days" or "hrs" -
+                // not a label, so it is stored on the row exactly like the number
+                // beside it, and the same stamp stops the reconcile pass resetting it.
+                if (e.target && e.target.classList && e.target.classList.contains('task-unit-sel')) {
+                    const li = e.target.closest('li');
+                    if (li) {
+                        const u = e.target.value === 'hrs' ? 'hrs' : 'days';
+                        li.setAttribute('data-unit', u);
+                        li.setAttribute('data-days-edited', '1');
+                        e.target.querySelectorAll('option').forEach(o => {
+                            // Draft snapshots are taken from innerHTML, and a select's
+                            // live value is not in it - only the selected ATTRIBUTE is.
+                            if (o.value === u) { o.setAttribute('selected',''); } else { o.removeAttribute('selected'); }
+                        });
+                    }
                     updateBlockDayTotals();
                     triggerAutoSave();
                 }
@@ -3057,17 +3089,17 @@
             // --- END AUTO SAVE ---
 
             // Custom Option Logic
-            document.querySelectorAll('.add-opt-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
-                    const input = e.target.previousElementSibling;
-                    const val = input.value.trim();
-                    const targetList = input.getAttribute('data-list-target');
-                    if (val) {
+            // Lifted out of the click handler so the right-hand panel can create a
+            // block too. Both paths MUST come through here: a block made without the
+            // matching left-hand checkbox is not written into the draft, so it would
+            // quietly vanish on the next reload.
+            window.createCustomBlock = (val, targetList, grid) => {
+                {
+                    {
                         customBlockCounter++;
                         const blockId = `block-custom-${customBlockCounter}`;
 
                         // 1. Create Checkbox on Left (shared builder attaches all listeners)
-                        const grid = e.target.closest('details').previousElementSibling;
                         const label = createCustomOptionLabel(val, blockId, grid);
 
                         // 2. Create Block on Right
@@ -3121,12 +3153,23 @@
                         hiddenInput.value = "UNASSIGNED";
                         document.getElementById('handoffForm').appendChild(hiddenInput);
 
-                        input.value = "";
                         const cb = label.querySelector('input');
                         cb.checked = true;
                         // Bubbles so the form-level listeners (preview refresh + auto-save) fire too
                         cb.dispatchEvent(new Event('change', { bubbles: true }));
+                        return block;
                     }
+                }
+            };
+
+            document.querySelectorAll('.add-opt-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const input = e.target.previousElementSibling;
+                    const val = input.value.trim();
+                    if (!val) return;
+                    const grid = e.target.closest('details').previousElementSibling;
+                    window.createCustomBlock(val, input.getAttribute('data-list-target') || 'Production & Install', grid);
+                    input.value = "";
                 });
             });
 
@@ -3663,6 +3706,27 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
+            const addBlock = () => {
+                const inp = document.getElementById('newBlockName');
+                if (!inp) return;
+                const val = inp.value.trim();
+                if (!val || typeof window.createCustomBlock !== 'function') return;
+                // Reuses the grid the left-hand custom adder uses, so the block gets
+                // its checkbox and therefore survives a draft reload. Found rather
+                // than hardcoded - the id of that grid is not this code's business.
+                const seed = document.querySelector('.custom-opt-input[data-list-target]');
+                const grid = seed ? seed.closest('details').previousElementSibling : null;
+                if (!grid) return;
+                window.createCustomBlock(val, seed.getAttribute('data-list-target') || 'Production & Install', grid);
+                inp.value = '';
+            };
+            const abtn = document.getElementById('addBlockBtn');
+            if (abtn) abtn.addEventListener('click', addBlock);
+            const ainp = document.getElementById('newBlockName');
+            // Enter inside a form submits it, which would fire the handoff.
+            if (ainp) ainp.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); addBlock(); }
+            });
             const add = document.getElementById('addCustomTagBtn');
             if (add) add.addEventListener('click', window.addCustomTag);
             const inp = document.getElementById('customTagInput');
@@ -4470,14 +4534,17 @@
                 const taskDays = resolveDays(t.days, state);
                 const taskOwner = resolveOwner(t.owner, state);
                 return `
-                <li data-ti="${i}" data-phase="${t.phase}" data-days="${taskDays}"${t.list ? ` data-list="${t.list}"` : ''} class="task-phase-${t.phase} flex items-center group relative">
+                <li data-ti="${i}" data-phase="${t.phase}" data-days="${taskDays}" data-unit="days"${t.list ? ` data-list="${t.list}"` : ''} class="task-phase-${t.phase} flex items-center group relative">
                     <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
                         <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line></svg>
                     </span>
                     <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5">${escapeHtml(esaPrefix + t.name + noteSuffix)}</span>
-                    <span class="task-days-wrap opacity-70 group-hover:opacity-100 transition-opacity" title="Working days for this task (drives the project timeline)">
+                    <span class="task-days-wrap opacity-70 group-hover:opacity-100 transition-opacity" title="How long this task takes. Zoho stores a duration in days or hours - duration_type on the task - so the unit is a real field, not a label.">
                         <input type="number" min="0.5" max="99" step="0.5" value="${taskDays}" class="task-days-input text-xs bg-slate-900 border border-slate-700 rounded px-0.5 py-0 text-slate-300 focus:outline-none focus:border-sky-500">
-                        <span class="text-[10px] text-slate-500 lowercase">d</span>
+                        <select class="task-unit-sel text-[10px] bg-slate-900 border border-slate-700 rounded text-slate-400 focus:outline-none focus:border-sky-500" title="Days or hours">
+                            <option value="days">d</option>
+                            <option value="hrs">h</option>
+                        </select>
                     </span>
                     <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid=""${taskOwner ? ` data-role="${taskOwner}"` : ''}>
                     <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
@@ -4568,15 +4635,22 @@
                 if (!badge) {
                     badge = document.createElement('span');
                     badge.className = 'block-days-total text-xs font-bold text-sky-400/80 bg-sky-500/10 border border-sky-500/20 rounded px-1.5 py-0.5 ml-1';
-                    badge.title = 'Total working days in this section (edit the "d" field on any task)';
+                    badge.title = 'Total working days in this section. Tasks set to hours count at an 8 hour day.';
                     titleEl.insertAdjacentElement('afterend', badge);
                 }
                 let total = 0;
                 block.querySelectorAll('li:not(.hidden)').forEach(li => {
-                    total += parseFloat(li.getAttribute('data-days')) || 1;
+                    const n = parseFloat(li.getAttribute('data-days')) || 1;
+                    // Hours are NOT days. Adding 4h to 3d as "7d" would be a lie on
+                    // the badge and in the timeline, so hours convert at an 8 hour
+                    // working day, which is what Zoho's own default day is.
+                    total += (li.getAttribute('data-unit') === 'hrs') ? (n / 8) : n;
                 });
-                // 7.5d, but 7d rather than 7.0d
-                badge.textContent = (Math.round(total * 2) / 2) + 'd';
+                // 7.5d, but 7d rather than 7.0d. Under half a day the badge reads
+                // in hours instead: a single one hour task rounded to "0d", which
+                // says the section costs nothing.
+                const half = Math.round(total * 2) / 2;
+                badge.textContent = (total > 0 && half < 0.5) ? (Math.round(total * 8) + 'h') : (half + 'd');
                 badge.classList.toggle('hidden', total === 0);
             });
         }
@@ -4598,13 +4672,17 @@
                 Array.from(form.querySelectorAll('input[type="checkbox"]')).some(cb => cb.checked)
                 || state.anyArchetype;
 
+            const addBar = document.getElementById('addBlockBar');
             if (anyRequirementChecked) {
                 emptyStatePreview.classList.add('hidden');
                 previewList.classList.remove('hidden');
+                if (addBar) addBar.classList.remove('hidden');
                 saveBtn.disabled = false;
             } else {
                 emptyStatePreview.classList.remove('hidden');
                 previewList.classList.add('hidden');
+                // Nothing to add a section to yet - it would sit under an empty panel.
+                if (addBar) addBar.classList.add('hidden');
                 saveBtn.disabled = true;
             }
 
@@ -6151,7 +6229,13 @@
                             }
                             
                             // Working-day schedule for this task within its lane
-                            const taskDays = parseFloat(item.getAttribute('data-days')) || 1;
+                            const taskAmount = parseFloat(item.getAttribute('data-days')) || 1;
+                            const taskUnit = item.getAttribute('data-unit') === 'hrs' ? 'hrs' : 'days';
+                            // Hours convert at an 8 hour day purely to place the task on
+                            // the calendar. The duration sent to Zoho stays in the unit
+                            // that was chosen, so a 4 hour task is 4 hrs on the task and
+                            // still occupies the one day it really runs on.
+                            const taskDays = taskUnit === 'hrs' ? (taskAmount / 8) : taskAmount;
                             // A half-day task still occupies a day on a calendar - Zoho
                             // Projects has no concept of half a working day - so the
                             // dates round up while the duration we report stays exact.
@@ -6173,6 +6257,14 @@
                                 "start_date": fmtProjectsDate(startDate),
                                 "end_date": fmtProjectsDate(endDate),
                                 "days": taskDays,
+                                // Zoho's own fields: duration is an int, duration_type
+                                // is "days" or "hrs". Half days cannot survive an int,
+                                // so a half day is sent as 4 hrs rather than rounded
+                                // into a whole day it does not take.
+                                "duration": taskUnit === 'hrs' ? Math.max(1, Math.round(taskAmount))
+                                          : (taskAmount % 1 === 0 ? taskAmount : Math.max(1, Math.round(taskAmount * 8))),
+                                "duration_type": taskUnit === 'hrs' ? "hrs"
+                                          : (taskAmount % 1 === 0 ? "days" : "hrs"),
                                 "chain_group": chainGroupIndex
                             });
                         }
@@ -6652,6 +6744,7 @@
                     const li = document.createElement('li');
                     li.className = "task-custom flex items-center group relative";
                     li.setAttribute('data-days', '1');
+                li.setAttribute('data-unit', 'days');
                     const taskId = 'task-inline-' + Date.now() + '-' + Math.floor(Math.random()*1000);
                     li.innerHTML = `
                         <span class="task-drag-handle cursor-grab active:cursor-grabbing text-slate-600 hover:text-slate-400 mr-1.5 flex-shrink-0 inline-flex items-center" title="Drag to reorder or move to another block">
@@ -6660,7 +6753,10 @@
                         <span contenteditable="true" class="editable-task outline-none border-b border-transparent focus:border-sky-500 transition-colors py-0.5 text-amber-400 font-bold">${escapeHtml(taskString)}</span>
                         <span class="task-days-wrap opacity-70 group-hover:opacity-100 transition-opacity" title="Working days for this task (drives the project timeline)">
                             <input type="number" min="0.5" max="99" step="0.5" value="1" class="task-days-input text-xs bg-slate-900 border border-slate-700 rounded px-0.5 py-0 text-slate-300 focus:outline-none focus:border-sky-500">
-                            <span class="text-[10px] text-slate-500 lowercase">d</span>
+                            <select class="task-unit-sel text-[10px] bg-slate-900 border border-slate-700 rounded text-slate-400 focus:outline-none focus:border-sky-500" title="Days or hours">
+                            <option value="days">d</option>
+                            <option value="hrs">h</option>
+                        </select>
                         </span>
                         <input type="hidden" id="${taskId}" class="task-assignee-val" value="UNASSIGNED" data-zuid="">
                         <button type="button" id="btn-${taskId}" onclick="openUserModal('${taskId}', 'Task')" class="task-assign-btn text-slate-500 hover:text-sky-400 transition-colors opacity-0 group-hover:opacity-100 flex-shrink-0" title="Assign specific user to this task">
