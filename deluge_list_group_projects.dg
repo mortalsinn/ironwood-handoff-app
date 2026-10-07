@@ -1,0 +1,154 @@
+// =====================================
+// list_group_projects  -  READ ONLY. DELETES NOTHING.
+//
+// Stage 1 of trashing the "TG- Temporary Group" projects. Its only job is to
+// show what is actually in that group, and to reveal HOW group membership is
+// expressed in the project JSON, because nothing in Zoho's docs says. The
+// delete function is written from this output, not from a guess.
+//
+// Standalone function. Arguments: groupName (String).
+// Scope needed: ZohoProjects.projects.READ - already present, this function
+// reads projects today.
+// =====================================
+string standalone.list_group_projects(String groupName)
+{
+	portalId = "ironwoodstairs";
+	out = "";
+	// ---- 1. THE GROUPS ----
+	groupsResponse = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/groups"
+		type :GET
+		connection:"zoho_projects_connection"
+	];
+	groupsText = groupsResponse.toString();
+	info "GROUPS RAW: " + groupsText;
+	// The response shape is undocumented, so the raw head of it comes back in
+	// the return value - the CRM function log discards info statements.
+	groupsHead = groupsText;
+	if(groupsHead.length() > 400)
+	{
+		groupsHead = groupsHead.subString(0,400);
+	}
+	out = "GROUPS HEAD: " + groupsHead + "\n\n";
+	wantedGroupId = "";
+	groupList = groupsResponse.get("groups");
+	if(groupList == null)
+	{
+		groupList = groupsResponse.get("project_groups");
+	}
+	if(groupList != null)
+	{
+		for each  oneGroup in groupList
+		{
+			gName = oneGroup.get("name");
+			gId = oneGroup.get("id_string");
+			if(gId == null)
+			{
+				gId = oneGroup.get("id");
+			}
+			if(gName != null && gId != null)
+			{
+				out = out + "GROUP: " + gName + " = " + gId + "\n";
+				// Trimmed compare - a leading or trailing space in a portal name
+				// is invisible on screen and would silently match nothing.
+				if(gName.trim().equalsIgnoreCase(groupName.trim()))
+				{
+					wantedGroupId = gId.toString();
+				}
+			}
+		}
+	}
+	out = out + "\nMATCHED GROUP ID: " + wantedGroupId + "\n\n";
+	// ---- 2. THE PROJECTS ----
+	// Paged the same way the handoff function pages, for the same reason: the
+	// portal has well over 200 projects and a single unpaged fetch silently
+	// stops at the first page.
+	projPage = 0;
+	projDone = "no";
+	seen = 0;
+	matched = 0;
+	shapeShown = "no";
+	for each  attempt in {1,2,3,4,5,6,7,8,9,10}
+	{
+		if(projDone == "no")
+		{
+			projStart = projPage * 200 + 1;
+			projectsResponse = invokeurl
+			[
+				url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/?index=" + projStart + "&range=200"
+				type :GET
+				connection:"zoho_projects_connection"
+			];
+			projectList = projectsResponse.get("projects");
+			if(projectList == null || projectList.size() == 0)
+			{
+				projDone = "yes";
+			}
+			else
+			{
+				for each  oneProject in projectList
+				{
+					seen = seen + 1;
+					// ONE project printed in full, once. This is the whole point of
+					// stage 1: it shows which key carries the group, and what it is
+					// called, so the delete function can filter on fact.
+					if(shapeShown == "no")
+					{
+						oneShape = oneProject.toString();
+						if(oneShape.length() > 900)
+						{
+							oneShape = oneShape.subString(0,900);
+						}
+						out = out + "FIRST PROJECT SHAPE: " + oneShape + "\n\n";
+						shapeShown = "yes";
+					}
+					pName = oneProject.get("name");
+					pId = oneProject.get("id_string");
+					if(pId == null)
+					{
+						pId = oneProject.get("id");
+					}
+					// Every plausible spelling of the group field is tried, and
+					// whichever one is populated is reported.
+					pGroup = oneProject.get("group");
+					if(pGroup == null)
+					{
+						pGroup = oneProject.get("group_name");
+					}
+					if(pGroup == null)
+					{
+						pGroup = oneProject.get("project_group");
+					}
+					pGroupText = "";
+					if(pGroup != null)
+					{
+						pGroupText = pGroup.toString();
+					}
+					isMatch = "no";
+					if(pGroupText != "" && pGroupText.containsIgnoreCase(groupName.trim()))
+					{
+						isMatch = "yes";
+					}
+					if(wantedGroupId != "" && pGroupText.contains(wantedGroupId))
+					{
+						isMatch = "yes";
+					}
+					if(isMatch == "yes")
+					{
+						matched = matched + 1;
+						out = out + matched + ". " + pId + "  |  " + pName + "\n";
+					}
+				}
+				if(projectList.size() < 200)
+				{
+					projDone = "yes";
+				}
+				projPage = projPage + 1;
+			}
+		}
+	}
+	out = out + "\nSCANNED " + seen + " projects. IN GROUP: " + matched + ". NOTHING WAS DELETED.";
+	info out;
+	return out;
+}
