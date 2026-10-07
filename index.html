@@ -440,16 +440,30 @@
         html.light #projectPreviewList li:hover .task-days-wrap,
         html.light .task-days-wrap:focus-within { background: #ffffff; border-color: #cbd5e1; }
         .task-days-wrap .task-days-input { background: transparent !important; border: 0 !important;
-                                           padding: 0 !important; width: 20px; text-align: right; }
+                                           padding: 0 !important; width: 26px; text-align: right;
+                                           font-size: 12px !important; font-weight: 600; }
         /* The unit select sits inside the same pill as the number, so it must be
            as invisible as the number is until the row is hovered. A browser's
            default select chrome would otherwise be the loudest thing on the row. */
+        /* It was 10px and invisible until hovered, which made the one control on
+           the row you actually have to CHANGE the hardest thing on it to hit. It
+           is now the same size as the number it belongs to, always carries a
+           caret so it reads as a control, and the whole pill is a click target. */
         .task-days-wrap .task-unit-sel { background: transparent !important; border: 0 !important;
-                                         padding: 0 !important; margin: 0; outline: none;
+                                         padding: 0 2px 0 1px !important; margin: 0; outline: none;
                                          -webkit-appearance: none; appearance: none;
-                                         cursor: pointer; line-height: 1; }
+                                         cursor: pointer; line-height: 1;
+                                         font-size: 12px !important; font-weight: 600;
+                                         color: #7dd3fc; }
+        .task-days-wrap { padding: 2px 4px 2px 6px; }
+        /* The caret, drawn rather than native, so it matches on every platform. */
+        .task-days-wrap::after { content: ""; width: 0; height: 0; margin-left: -2px;
+                                 border-left: 3.5px solid transparent; border-right: 3.5px solid transparent;
+                                 border-top: 4px solid currentColor; color: #64748b;
+                                 align-self: center; pointer-events: none; }
+        #projectPreviewList li:hover .task-days-wrap::after { color: #7dd3fc; }
         .task-days-wrap .task-unit-sel option { background: #0f172a; color: #e2e8f0; }
-        html.light .task-days-wrap .task-unit-sel { color: #475569; }
+        html.light .task-days-wrap .task-unit-sel { color: #0369a1; }
         html.light .task-days-wrap .task-unit-sel option { background: #ffffff; color: #0f172a; }
 
         /* ADDING YOUR OWN LINES AND SECTIONS.
