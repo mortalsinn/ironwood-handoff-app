@@ -2662,7 +2662,6 @@
                     ZOHO.CRM.UI.Resize({height: currentWindowHeight, width: currentWindowWidth});
 
                     if(currentDealId) {
-                        setTimeout(() => { if (typeof window.restoreDraftState === 'function') window.restoreDraftState(currentDealId); }, 500);
                         // Opened FROM a record: the pop-up off the Deal button, which
                         // Zoho keeps small. Narrow layout.
                         document.documentElement.classList.add('mode-popup');
@@ -2673,6 +2672,17 @@
                         // so one has to be chosen before the form means anything.
                         document.documentElement.classList.add('mode-tab');
                         await window.openDealPicker();
+                    }
+
+                    // RESTORE AFTER THE PICKER, NOT BEFORE IT.
+                    // The draft is keyed on the deal id, and in the tab there is no
+                    // deal id until one is chosen - so restoring inside the EntityId
+                    // branch meant a job started from the Deal button opened EMPTY in
+                    // the tab. Same browser, same key, same draft; it just was never
+                    // asked for. Now both entry points restore the moment they know
+                    // which deal they are on.
+                    if (currentDealId && typeof window.restoreDraftState === 'function') {
+                        setTimeout(() => window.restoreDraftState(currentDealId), 500);
                     }
 
                     // The Deal owner backs the SALES role in the workflow engine
