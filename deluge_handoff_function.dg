@@ -1266,12 +1266,15 @@ if(isReusedProject == "no" && firstOwnerEmail != "" && firstTaskName != "")
 		}
 		kickoffBody = kickoffBody + "<p><a href=\"" + kickoffUrl + "\">Open the project in Zoho Projects</a></p>";
 		kickoffBody = kickoffBody + "<p style=\"color:#888;font-size:12px\">Everyone after you is told automatically when the task before theirs is finished. You are first, so this one is sent by the handoff.</p>";
+		// zoho.adminuserid is REJECTED at save time: "The from address can only be
+		// either zoho.loginuserid or a verified email address." loginuserid is the
+		// better answer anyway - the mail arrives from whoever ran the handoff, so
+		// a reply reaches the person who sent it.
+		// NOTHING may sit between the bracket and the parameters: Deluge parses a
+		// sendmail block strictly, and a comment in there is a syntax error that
+		// gets reported against a line somewhere else entirely.
 		sendmail
 		[
-			// zoho.adminuserid is REJECTED at save time: "The from address can only
-			// be either zoho.loginuserid or a verified email address."
-			// loginuserid is the better answer anyway - the mail arrives from
-			// whoever ran the handoff, so a reply reaches the person who sent it.
 			from :zoho.loginuserid
 			to :firstOwnerEmail
 			subject :kickoffSubject
