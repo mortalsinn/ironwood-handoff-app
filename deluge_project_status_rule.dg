@@ -16,31 +16,30 @@
 // rule does not need to know what it ran last time.
 //
 // Arguments to map in the workflow rule: portalId, projectId.
-// Connection: a Zoho Projects connection with
+// Connection: a Zoho Projects connection with. The link name must be
+// written as a LITERAL in every invokeurl - Deluge rejects a variable there
+// with "does not match the required data type CONNECTION LINKNAME".
 //   ZohoProjects.portals.ALL, ZohoProjects.projects.ALL
 // =====================================
-void set_project_in_progress(long portalId, long projectId)
+string set_project_in_progress(long portalId, long projectId)
 {
-	connName = "connectionprojects";
 	// ---- 1. HAS WORK STARTED, AND IS IT STILL RUNNING? ----
 	projResp = invokeurl
 	[
 		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
 		type :GET
-		connection:connName
+		connection:"connectionprojects"
 	];
 	info "PROJECT READ: " + projResp.toString();
 	projList = projResp.get("projects");
 	if(projList == null || projList.size() == 0)
 	{
-		info "No project returned - nothing to do.";
-		return;
+		return "No project returned.";
 	}
 	counts = projList.get(0).get("task_count");
 	if(counts == null)
 	{
-		info "No task_count on the project - nothing to do.";
-		return;
+		return "No task_count on the project.";
 	}
 	closedCount = counts.get("closed");
 	openCount = counts.get("open");
@@ -57,8 +56,7 @@ void set_project_in_progress(long portalId, long projectId)
 	{
 		// Either nothing has been finished yet, or everything has. Neither is
 		// "in progress", and the second must not be overwritten.
-		info "Not in progress by this rule - leaving the status alone.";
-		return;
+		return "Left alone: closed=" + closedCount + " open=" + openCount + ".";
 	}
 	// ---- 2. WHAT IS "IN PROGRESS" CALLED HERE? ----
 	// Looked up by NAME at run time rather than pasted in as an id, so renaming
@@ -67,14 +65,13 @@ void set_project_in_progress(long portalId, long projectId)
 	[
 		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/module/projects/status/"
 		type :GET
-		connection:connName
+		connection:"connectionprojects"
 	];
 	info "STATUSES: " + statusResp.toString();
 	statusList = statusResp.get("project_custom_status");
 	if(statusList == null)
 	{
-		info "No custom status list returned - cannot set a status by name.";
-		return;
+		return "No custom status list returned.";
 	}
 	wantedId = "";
 	for each  oneStatus in statusList
@@ -93,8 +90,7 @@ void set_project_in_progress(long portalId, long projectId)
 	}
 	if(wantedId == "")
 	{
-		info "No status called 'In Progress' in this portal - nothing to set.";
-		return;
+		return "No status called In Progress in this portal.";
 	}
 	// ---- 3. SET IT ----
 	updParams = Map();
@@ -104,7 +100,10 @@ void set_project_in_progress(long portalId, long projectId)
 		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
 		type :POST
 		parameters:updParams
-		connection:connName
+		connection:"connectionprojects"
 	];
-	info "SET IN PROGRESS (" + wantedId + "): " + updResp.toString();
+	// Zoho generates this as a STRING function, so every exit must return one -
+	// a bare return is rejected with "Return statement must be STRING expression".
+	// They double as the line the execution log shows.
+	return "Set In Progress (" + wantedId + "): " + updResp.toString();
 }
