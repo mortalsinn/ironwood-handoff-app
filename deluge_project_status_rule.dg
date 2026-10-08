@@ -1,0 +1,110 @@
+// =====================================
+// set_project_in_progress
+//
+// Runs in ZOHO PROJECTS (not CRM), from a Task workflow rule that fires when a
+// task's status changes to a closed one. Flips the project from Active to
+// In Progress the moment the first task is finished, so nobody has to remember
+// to do it by hand.
+//
+// THE RULE: some tasks closed AND some still open.
+//   closed >= 1 and open >= 1  ->  work has started but is not finished
+// Written this way on purpose rather than "first task closed":
+//   - two tasks closed in quick succession would both miss a count == 1 test,
+//   - and it can never drag a finished project back to In Progress, because a
+//     finished project has no open tasks left.
+// Setting In Progress on a project already In Progress is harmless, so the
+// rule does not need to know what it ran last time.
+//
+// Arguments to map in the workflow rule: portalId, projectId.
+// Connection: a Zoho Projects connection with
+//   ZohoProjects.portals.ALL, ZohoProjects.projects.ALL
+// =====================================
+void set_project_in_progress(long portalId, long projectId)
+{
+	connName = "connectionprojects";
+	// ---- 1. HAS WORK STARTED, AND IS IT STILL RUNNING? ----
+	projResp = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
+		type :GET
+		connection:connName
+	];
+	info "PROJECT READ: " + projResp.toString();
+	projList = projResp.get("projects");
+	if(projList == null || projList.size() == 0)
+	{
+		info "No project returned - nothing to do.";
+		return;
+	}
+	counts = projList.get(0).get("task_count");
+	if(counts == null)
+	{
+		info "No task_count on the project - nothing to do.";
+		return;
+	}
+	closedCount = counts.get("closed");
+	openCount = counts.get("open");
+	if(closedCount == null)
+	{
+		closedCount = 0;
+	}
+	if(openCount == null)
+	{
+		openCount = 0;
+	}
+	info "TASKS closed=" + closedCount + " open=" + openCount;
+	if(closedCount < 1 || openCount < 1)
+	{
+		// Either nothing has been finished yet, or everything has. Neither is
+		// "in progress", and the second must not be overwritten.
+		info "Not in progress by this rule - leaving the status alone.";
+		return;
+	}
+	// ---- 2. WHAT IS "IN PROGRESS" CALLED HERE? ----
+	// Looked up by NAME at run time rather than pasted in as an id, so renaming
+	// or rebuilding the status list does not silently stop this working.
+	statusResp = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/module/projects/status/"
+		type :GET
+		connection:connName
+	];
+	info "STATUSES: " + statusResp.toString();
+	statusList = statusResp.get("project_custom_status");
+	if(statusList == null)
+	{
+		info "No custom status list returned - cannot set a status by name.";
+		return;
+	}
+	wantedId = "";
+	for each  oneStatus in statusList
+	{
+		sName = oneStatus.get("status_name");
+		sId = oneStatus.get("status_id");
+		if(sName != null && sId != null)
+		{
+			// Trimmed and case-insensitive: a trailing space in a status name is
+			// invisible on screen and would match nothing.
+			if(sName.trim().equalsIgnoreCase("In Progress"))
+			{
+				wantedId = sId.toString();
+			}
+		}
+	}
+	if(wantedId == "")
+	{
+		info "No status called 'In Progress' in this portal - nothing to set.";
+		return;
+	}
+	// ---- 3. SET IT ----
+	updParams = Map();
+	updParams.put("custom_status",wantedId);
+	updResp = invokeurl
+	[
+		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
+		type :POST
+		parameters:updParams
+		connection:connName
+	];
+	info "SET IN PROGRESS (" + wantedId + "): " + updResp.toString();
+}
