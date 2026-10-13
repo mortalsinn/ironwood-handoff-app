@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# ========================================================
+# Release-list gate (project template, ~/.claude/project-template): every commit on the
+# work branch carries its row in the release list. Settings in scripts/githooks/project.conf.
+# A commit that touches only the release list or CLAUDE.md needs no row of its own, which is
+# how a row's Commit cell is filled in after the fact.
+# ========================================================
+here=$(cd "$(dirname "$0")" && pwd)
+. "$here/project.conf"
+[ "$(git branch --show-current)" = "$WORK_BRANCH" ] || exit 0
+
+staged=$(git diff --cached --name-only)
+[ -n "$staged" ] || exit 0
+grep -qvE "^(${ROW_FILE//./\\.}$|docs/release/|CLAUDE\.md$|docs/RESUME\.md$)" <<<"$staged" || exit 0
+
+git diff --cached -U0 -- "$ROW_FILE" | grep -qE '^\+\| *[0-9]+ *\|' && exit 0
+
+echo "Commit blocked: add a row for this change to $ROW_FILE and stage it." >&2
+exit 1

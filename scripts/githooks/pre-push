@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# ========================================================
+# Test gate (project template): nothing reaches GitHub until CHECK (project.conf) passes on
+# the exact commit being pushed, checked out clean in a temporary worktree, so uncommitted
+# files from a parallel session cannot pass or fail it. A push that puts back a commit the
+# branch already had (an undo) is not re-tested.
+# ========================================================
+here=$(cd "$(dirname "$0")" && pwd)
+. "$here/project.conf"
+zero=0000000000000000000000000000000000000000
+main_root=$(cd "$(git rev-parse --git-common-dir)/.." && pwd)
+
+status=0
+while read -r lref lsha rref rsha; do
+    [ "$lsha" = "$zero" ] && continue
+    [[ "$rref" == refs/heads/* ]] || continue
+    branch=${rref#refs/heads/}
+    if [ "$rsha" != "$zero" ] && git merge-base --is-ancestor "$lsha" "$rsha" 2>/dev/null; then
+        echo "Test gate: ${lsha:0:8} was already on ${branch}; no new test run" >&2; continue
+    fi
+    if [ -z "$CHECK" ]; then
+        echo "Test gate: this project has no automated tests yet (CHECK is empty in project.conf)" >&2; continue
+    fi
+    dir=$(mktemp -d "${TMPDIR:-/tmp}/project-check.XXXXXX")
+    git -C "$main_root" worktree add --detach --quiet "$dir" "$lsha" || { status=1; break; }
+    for nm in node_modules backend/node_modules; do
+        [ -d "$main_root/$nm" ] && ln -s "$main_root/$nm" "$dir/$nm"
+    done
+    echo "Test gate: $CHECK on ${lsha:0:8} for ${branch}" >&2
+    (cd "$dir" && bash -c "$CHECK") >&2 || status=1
+    git -C "$main_root" worktree remove --force "$dir" 2>/dev/null; rm -rf "$dir"
+    [ $status -eq 0 ] || break
+done
+[ $status -eq 0 ] || echo "Push stopped: the test gate failed. Nothing was sent to GitHub." >&2
+exit $status
