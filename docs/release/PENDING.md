@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 5 | 2026-10-14 | Deal link | Fix | Every handoff links its new project into the Deal's Zoho Projects section, using the call confirmed today. Deluge change (deluge_handoff_function.dg): paste into Zoho after creating the CRM connection "zcrm". | (this commit) |
+| 5 | 2026-10-14 | Deal link | Fix | Every handoff links its new project into the Deal's Zoho Projects section, using the call confirmed today. Deluge change (deluge_handoff_function.dg): paste into Zoho after creating the CRM connection "zcrm". | 9bf9282c |
 | 4 | 2026-10-14 | Railing | Fix | v15.41: Wood Shop Items tasks reach Zoho tagged [Rails] like the rest of the wood shop's work, not with the internal name "[wood-before]". | 2c5b4051 |
 
 ## Workflow (no change to the live product)
