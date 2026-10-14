@@ -18,6 +18,9 @@ while read -r lref lsha rref rsha; do
     if [ "$rsha" != "$zero" ] && git merge-base --is-ancestor "$lsha" "$rsha" 2>/dev/null; then
         echo "Test gate: ${lsha:0:8} was already on ${branch}; no new test run" >&2; continue
     fi
+    if [ "$rsha" != "$zero" ] && ! git diff --name-only "$rsha" "$lsha" | grep -qvE '\.md$'; then
+        echo "Test gate: only notes changed in ${lsha:0:8}; no test run" >&2; continue
+    fi
     if [ -z "$CHECK" ]; then
         echo "Test gate: this project has no automated tests yet (CHECK is empty in project.conf)" >&2; continue
     fi
