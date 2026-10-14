@@ -682,6 +682,26 @@ if(taskListsMap == null)
 	return "Success: Project created in Zoho Projects (no tasks in payload).";
 }
 // =====================================
+// MILESTONES (widget v15.42+)
+// When the widget sends milestones, each one gets its own task list, and the
+// tasks arrive as ONE work-ordered list (ordered_tasks), each naming its list.
+// No milestones in the payload = the single-list behaviour below, unchanged.
+// =====================================
+milestoneMode = "no";
+msList = payloadData.get("milestones");
+orderedTasks = payloadData.get("ordered_tasks");
+if(msList != null && orderedTasks != null)
+{
+	if(msList.size() > 0 && orderedTasks.size() > 0)
+	{
+		milestoneMode = "yes";
+	}
+}
+msOk = 0;
+msFail = 0;
+msFirstError = "";
+msNote = "";
+// =====================================
 // USERS: EXTRACT UNIQUE ASSIGNEES & INVITE
 // ID-based invite first; the e-mail invite only fires as a fallback
 // when the ID attempt fails (halves the API calls in the common case
@@ -821,6 +841,140 @@ if(existingTasks != null)
 failedItems = List();
 skippedCount = 0;
 createdCount = 0;
+// =====================================
+// MILESTONES, THEN THEIR TASK LISTS
+// Milestones need name, start, end, owner and flag. A milestone that already
+// exists by name (a re-run) is re-used. If the owner is refused, it is tried
+// once more without one. Fail-open: a milestone that cannot be created still
+// gets its task list and tasks, just not inside a milestone.
+// Lists are created in list_create_order (the reverse of work order) because
+// Zoho shows the newest list first; that puts the first milestone on top.
+// =====================================
+msIdByList = Map();
+if(milestoneMode == "yes")
+{
+	existingMsByName = Map();
+	try
+	{
+		msGet = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/milestones/"
+			type :GET
+			connection:"zoho_projects_connection"
+		];
+		msExisting = msGet.get("milestones");
+		if(msExisting != null)
+		{
+			for each  em in msExisting
+			{
+				existingMsByName.put(em.get("name"),em.get("id_string"));
+			}
+		}
+	}
+	catch (e)
+	{
+		info "MILESTONE LIST FAILED: " + e.toString();
+	}
+	msUrl = "https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/milestones/";
+	for each  ms in msList
+	{
+		msName = ms.get("name");
+		msId = existingMsByName.get(msName);
+		if(msId == null)
+		{
+			msParams = Map();
+			msParams.put("name",msName);
+			msParams.put("start_date",ms.get("start_date"));
+			msParams.put("end_date",ms.get("end_date"));
+			msParams.put("flag",ms.get("flag"));
+			msOwner = ms.get("owner");
+			if(msOwner != null && msOwner != "")
+			{
+				msParams.put("owner",msOwner);
+			}
+			msResp = invokeurl
+			[
+				url :msUrl
+				type :POST
+				parameters:msParams
+				connection:"zoho_projects_connection"
+			];
+			info "MILESTONE (" + msName + "): " + msResp.toString();
+			msArr = msResp.get("milestones");
+			if(msArr != null && msArr.size() > 0)
+			{
+				msId = msArr.get(0).get("id_string");
+			}
+			if(msId == null && msOwner != null && msOwner != "")
+			{
+				msParams.remove("owner");
+				msResp = invokeurl
+				[
+					url :msUrl
+					type :POST
+					parameters:msParams
+					connection:"zoho_projects_connection"
+				];
+				info "MILESTONE no owner (" + msName + "): " + msResp.toString();
+				msArr = msResp.get("milestones");
+				if(msArr != null && msArr.size() > 0)
+				{
+					msId = msArr.get(0).get("id_string");
+				}
+			}
+			if(msId == null && msFirstError == "")
+			{
+				msFirstError = msName + ": " + msResp.toString();
+				if(msFirstError.length() > 180)
+				{
+					msFirstError = msFirstError.subString(0,180);
+				}
+			}
+		}
+		if(msId != null)
+		{
+			msIdByList.put(ms.get("list"),msId);
+			msOk = msOk + 1;
+		}
+		else
+		{
+			msFail = msFail + 1;
+		}
+	}
+	listCreateOrder = payloadData.get("list_create_order");
+	if(listCreateOrder != null)
+	{
+		for each  ln in listCreateOrder
+		{
+			if(existingListsMap.get(ln) == null)
+			{
+				msListParams = Map();
+				msListParams.put("name",ln);
+				if(msIdByList.get(ln) != null)
+				{
+					msListParams.put("milestone_id",msIdByList.get(ln));
+				}
+				msListResp = invokeurl
+				[
+					url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + newProjectId + "/tasklists/"
+					type :POST
+					parameters:msListParams
+					connection:"zoho_projects_connection"
+				];
+				info "MILESTONE LIST (" + ln + "): " + msListResp.toString();
+				if(msListResp.get("tasklists") != null)
+				{
+					existingListsMap.put(ln,msListResp.get("tasklists").get(0).get("id_string"));
+				}
+			}
+		}
+	}
+	msNote = " Milestones: " + msOk + " set, " + msFail + " failed.";
+	if(msFirstError != "")
+	{
+		msNote = msNote + " First milestone error: " + msFirstError;
+	}
+}
 // Dependency outcomes are reported back in the return string. The execution log
 // is awkward to reach in the CRM UI, and these calls are fail-open, so without
 // this a silent failure looks identical to success.
@@ -852,13 +1006,29 @@ for each  k in rawKeys
 		keys.add(k);
 	}
 }
+// Milestone mode: one pass over every task in work order; each task names its
+// own list, so the dependency chain runs across lists in the order the work happens.
+if(milestoneMode == "yes")
+{
+	keys = List();
+	keys.add("ALL");
+}
 info "TASK LIST CREATION ORDER: " + keys.toString();
+prevTaskId = "";
 for each  listName in keys
 {
 	tasksInList = taskListsMap.get(listName);
+	if(milestoneMode == "yes")
+	{
+		tasksInList = orderedTasks;
+	}
 	if(tasksInList != null && tasksInList.size() > 0)
 	{
 		createdTaskListId = existingListsMap.get(listName);
+		if(milestoneMode == "yes")
+		{
+			createdTaskListId = "PER_TASK";
+		}
 		if(createdTaskListId == null)
 		{
 			taskListParams = Map();
@@ -899,12 +1069,20 @@ for each  listName in keys
 			// Reset per list deliberately. Lists are created in a scrambled order to
 			// control how Zoho displays them, so a chain that crossed lists would run in
 			// display order instead of work order. With the single master list, this is
-			// the entire project in one unbroken chain.
-			prevTaskId = "";
+			// the entire project in one unbroken chain. Milestone mode never resets it.
+			if(milestoneMode == "no")
+			{
+				prevTaskId = "";
+			}
 			for each  taskObj in tasksInList
 			{
 				taskName = taskObj.get("name");
 				thisTaskId = "";
+				thisListId = createdTaskListId;
+				if(milestoneMode == "yes")
+				{
+					thisListId = existingListsMap.get(taskObj.get("list"));
+				}
 				if(existingTaskNames.contains(taskName))
 				{
 					skippedCount = skippedCount + 1;
@@ -913,6 +1091,10 @@ for each  listName in keys
 					{
 						thisTaskId = existingTaskIdsMap.get(taskName);
 					}
+				}
+				else if(thisListId == null)
+				{
+					failedItems.add(taskName + " (list '" + taskObj.get("list") + "' could not be created)");
 				}
 				else
 				{
@@ -943,7 +1125,7 @@ for each  listName in keys
 						taskParams.put("duration",taskObj.get("duration"));
 						taskParams.put("duration_type",taskObj.get("duration_type"));
 					}
-					taskParams.put("tasklist_id",createdTaskListId);
+					taskParams.put("tasklist_id",thisListId);
 					taskResponse = invokeurl
 					[
 						url :taskUrl
@@ -1289,11 +1471,11 @@ if(failedItems.size() > 0)
 			failedNames = failedNames + "; " + failedItem;
 		}
 	}
-	return "Warning: The project is in Zoho Projects, but " + failedItems.size() + " task(s) could not be created: " + failedNames + ".";
+	return "Warning: The project is in Zoho Projects, but " + failedItems.size() + " task(s) could not be created: " + failedNames + "." + msNote;
 }
 if(isReusedProject == "yes")
 {
-	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + kickoffNote + if(depFirstError == "", "", " First error: " + depFirstError);
+	return "Success: RE-USED an existing project (" + createdCount + " task(s) created, " + skippedCount + " already existed). Lists already present: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + kickoffNote + msNote + if(depFirstError == "", "", " First error: " + depFirstError);
 }
 // =====================================
 // ERROR CAPTURE
@@ -1311,5 +1493,5 @@ if(depFail > 0)
 	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
 	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }
-return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + kickoffNote + if(depFirstError == "", "", " First error: " + depFirstError);
+return "Success: NEW project created. Lists present before we added any: [" + foundLists + "]. Dependencies: " + depOk + " linked, " + depFail + " failed." + " Tags: " + tagOk + " applied, " + tagFail + " failed." + if(tagFirstError == "", "", " First tag error: " + tagFirstError) + if(tagFail == 0, "", " Assoc:" + tagAssocLog) + if(ownerTagOk == 0 && ownerTagFail == 0, "", " Owner tags: " + ownerTagOk + " on tasks, " + ownerTagFail + " failed.") + if(ownerTagFirstError == "", "", " First owner tag error: " + ownerTagFirstError) + if(tagShapeWon == "", "", " Tag create shape: " + tagShapeWon + ".") + kickoffNote + msNote + if(depFirstError == "", "", " First error: " + depFirstError);
 }

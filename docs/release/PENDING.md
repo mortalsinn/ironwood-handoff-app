@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 6 | 2026-10-14 | Milestones | New | v15.42: Milestones button above the plan opens a milestone editor with a timeline preview. Sections start grouped into suggested milestones (Construction Stairs, Finished Stairs, Railing, Glass, Close Out); milestones can be renamed, added, removed and reordered, sections dragged between them, and each has an owner and an Internal or Client setting. On Generate, each milestone is created in Zoho Projects with its own task list; task dates and order are unchanged. Deluge change (deluge_handoff_function.dg): paste into Zoho at release. | (this commit) |
 
 ## Workflow (no change to the live product)
 
