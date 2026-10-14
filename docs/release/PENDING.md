@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 7 | 2026-10-14 | Milestones | Improvement | v15.43: "Milestones & Timeline" is a solid blue button with a calendar icon and the milestone count at the top of the plan; it was a small pill that was easy to miss. | (this commit) |
 
 ## Workflow (no change to the live product)
 
