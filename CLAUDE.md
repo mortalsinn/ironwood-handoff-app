@@ -10,5 +10,6 @@ Owner: Jeff (Ironwood Stair & Rail). Short, decisive answers. Runs on the shared
 - "push" = hand Jeff `git push origin dev:main` in its own bash block to Run (or `release/<date>:main` for only some rows).
   After it lands: the Render deploy is manual and the Deluge functions (`*.dg`) are pasted into Zoho by hand; say exactly
   which ones changed. Then move the released rows to the Released table in PENDING.md and post the release to the channel.
+- Live widget: https://ironwood-handoff-app.onrender.com (Render static site srv-d87l60sm0tmc73cuqah0, manual deploy).
 - No automated tests yet (`CHECK` is empty in project.conf).
 - Stage files by explicit path; another session may be editing this repo.
