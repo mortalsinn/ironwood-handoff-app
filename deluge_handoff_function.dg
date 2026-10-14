@@ -140,35 +140,6 @@ if(newProjectId == "")
 	}
 	linkNoteResponse = zoho.crm.createRecord("Notes",linkNote);
 	info "DEAL LINK NOTE RESULT: " + linkNoteResponse.toString();
-	// ---- ROUTE 2, DISABLED UNTIL THE CONNECTION EXISTS ----
-	// Deluge validates connection names when the function is SAVED, not when
-	// it runs, so this block stops the whole function saving with
-	// "connection 'zcrm' does not exist" until that connection is created.
-	// To enable: Setup > Developer Space > Connections > new connection named
-	// exactly zcrm with ZohoCRM scope, then uncomment everything below.
-	// try
-	// {
-	// assocRow = Map();
-	// assocRow.put("name",projectName);
-	// dealRef = Map();
-	// dealRef.put("id",dealId);
-	// assocRow.put("deals",{dealRef});
-	// assocBody = Map();
-	// assocBody.put("data",{assocRow});
-	// assocRest = invokeurl
-	// [
-	// url :"https://www.zohoapis.com/crm/v2/Deals/" + dealId + "/Zoho_Projects/" + newProjectId
-	// type :POST
-	// parameters:assocBody.toString()
-	// connection:"zcrm"
-	// ];
-	// info "DEAL PROJECT ASSOC (rest): " + assocRest.toString();
-	// }
-	// catch (e)
-	// {
-	// info "DEAL PROJECT ASSOC (rest) FAILED: " + e.toString();
-	// }
-	//}
 }
 if(newProjectId == null)
 {
@@ -674,31 +645,36 @@ if(projectTags != null && projectTags.size() > 0)
 // The note is a fallback and stays. This is the real association, so
 // the project appears under the Deal's Zoho Projects sub-menu the way a
 // project created from inside CRM does.
-// Two routes are tried because only the second is confirmed by anyone
-// publicly, and the first needs no new connection:
-//   1. zoho.crm.updateRelatedRecord - native, runs on this function's own
-//      CRM scope. Cross-application (Projects) support is NOT documented,
-//      so it may simply fail, which is why route 2 follows it.
-//   2. POST /crm/v2/Deals/{dealId}/Zoho_Projects/{projectId} - this is the
-//      endpoint the CRM UI itself uses. It needs a connection with CRM
-//      scope named "zcrm"; if that connection does not exist the call
-//      throws, which the try/catch swallows.
-// BOTH ARE FAIL-OPEN. A failure here must never turn a completed handoff
-// into a Warning, so nothing is added to failedItems and nothing returns
-// early. Read the execution log lines below to see which route worked.
-// UNVERIFIED: written from Zoho's docs and a community thread, never yet
-// run against the live portal.
+// FAIL-OPEN. A failure here must never turn a completed handoff into a
+// Warning, so nothing is added to failedItems and nothing returns early.
+// CONFIRMED 2026-10-14: POST /crm/v2/Deals/{dealId}/Zoho_Projects/{projectId}
+// with {"data":[{"name":...,"deals":[{"id":dealId}]}]} answers PROJECT_ASSOCIATED
+// and the project appears under the Deal (16 deals linked this way by API).
+// The native zoho.crm.updateRelatedRecord route never linked one and is gone.
+// Needs the CRM connection "zcrm" (Setup > Developer Hub > Connections, Zoho
+// OAuth, scope ZohoCRM.modules.ALL). Fail-open: a failure is logged only.
 // =====================================
 try
 {
-	linkValues = Map();
-	linkValues.put("name",projectName);
-	assocNative = zoho.crm.updateRelatedRecord("Zoho_Projects",newProjectId,"Deals",dealId,linkValues);
-	info "DEAL PROJECT ASSOC (native): " + assocNative.toString();
+	assocRow = Map();
+	assocRow.put("name",projectName);
+	dealRef = Map();
+	dealRef.put("id",dealId);
+	assocRow.put("deals",{dealRef});
+	assocBody = Map();
+	assocBody.put("data",{assocRow});
+	assocRest = invokeurl
+	[
+		url :"https://www.zohoapis.com/crm/v2/Deals/" + dealId + "/Zoho_Projects/" + newProjectId
+		type :POST
+		parameters:assocBody.toString()
+		connection:"zcrm"
+	];
+	info "DEAL PROJECT ASSOC: " + assocRest.toString();
 }
 catch (e)
 {
-	info "DEAL PROJECT ASSOC (native) FAILED: " + e.toString();
+	info "DEAL PROJECT ASSOC FAILED: " + e.toString();
 }
 taskListsMap = payloadData.get("task_lists");
 if(taskListsMap == null)
