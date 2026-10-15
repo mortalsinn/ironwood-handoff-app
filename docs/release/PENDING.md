@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 20 | 2026-10-15 | Job tags | Improvement | v15.52: Project Tags renamed Job Tags. On a sub-project job the section states the tags are one set for the whole job, shared by all sub-projects, and that removing one removes it from every sub-project. | pending |
+| 20 | 2026-10-15 | Job tags | Improvement | v15.52: Project Tags renamed Job Tags. On a sub-project job the section states the tags are one set for the whole job, shared by all sub-projects, and that removing one removes it from every sub-project. | 48989602 |
 
 ## Workflow (no change to the live product)
 
