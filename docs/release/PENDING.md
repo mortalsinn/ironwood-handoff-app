@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 19 | 2026-10-15 | Sub-projects | Fix | v15.51: the sub-project count is a number box (1 to 12) with Continue; Open and Reset reopen the same deal in the web tab instead of dropping to the job list; no false "blueprint was damaged" notice for a sub-project with no sections; names always show after a switch. | pending |
+| 19 | 2026-10-15 | Sub-projects | Fix | v15.51: the sub-project count is a number box (1 to 12) with Continue; Open and Reset reopen the same deal in the web tab instead of dropping to the job list; no false "blueprint was damaged" notice for a sub-project with no sections; names always show after a switch. | 41786e62 |
 
 ## Workflow (no change to the live product)
 
