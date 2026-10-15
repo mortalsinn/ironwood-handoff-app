@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 25 | 2026-10-15 | Job summary | Improvement | v15.55: the job summary is always the strip under the plan on the right, at every screen size and in the pop-up (it used to fall back to a card on the left below 1500px). On narrow screens the phase bar and its key take their own line inside the strip. | pending |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
