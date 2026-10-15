@@ -326,26 +326,13 @@ catch (e)
 {
 	info "PORTAL ID LOOKUP FAILED: " + e.toString();
 }
-projectTags = payloadData.get("project_tags");
-if(projectTags != null && projectTags.size() > 0)
+// EXISTING TAGS, loaded for every job. This used to sit inside the project-tag
+// branch, so a job with no project tags had an empty map and every owner tag
+// was re-created and refused as "Duplicate Tag name not allowed".
+if(tagPortalId != "")
 {
 	try
 	{
-		if(tagPortalId == "")
-		{
-			// Without the numeric id every tag call is a guaranteed 400. Report that
-			// rather than spending three round trips proving it.
-			tagFail = projectTags.size();
-			tagFirstError = "portal id not found. project probe said: " + portalProbe.toString();
-			if(tagFirstError.length() > 300)
-			{
-				tagFirstError = tagFirstError.subString(0,300);
-			}
-		}
-		// Deluge has neither break nor continue, so the work is guarded rather than
-		// skipped from inside the loop.
-		if(tagPortalId != "")
-		{
 		existingTagsResponse = invokeurl
 		[
 			url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags?index=0&range=200"
@@ -370,6 +357,33 @@ if(projectTags != null && projectTags.size() > 0)
 				}
 			}
 		}
+	}
+	catch (e)
+	{
+		info "EXISTING TAGS FAILED: " + e.toString();
+	}
+}
+projectTags = payloadData.get("project_tags");
+if(projectTags != null && projectTags.size() > 0)
+{
+	try
+	{
+		if(tagPortalId == "")
+		{
+			// Without the numeric id every tag call is a guaranteed 400. Report that
+			// rather than spending three round trips proving it.
+			tagFail = projectTags.size();
+			tagFirstError = "portal id not found. project probe said: " + portalProbe.toString();
+			if(tagFirstError.length() > 300)
+			{
+				tagFirstError = tagFirstError.subString(0,300);
+			}
+		}
+		// Deluge has neither break nor continue, so the work is guarded rather than
+		// skipped from inside the loop.
+		if(tagPortalId != "")
+		{
+		// The portal's existing tags are loaded once above, for owner tags too.
 		for each  ptag in projectTags
 		{
 			ptagName = ptag.get("name");
