@@ -7,8 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 23 | 2026-10-15 | Handoff progress | New | v15.54: a live progress window replaces the button spinner during Generate: percentage, current step and count, completed steps, and time left measured from the run. The Zoho function reports each step through the new helper set_handoff_progress (deluge_set_handoff_progress.dg, returns string; paste as a new standalone function FIRST) into the CRM variable handoff_progress. @mentions in CRM Notes.txt now read as names. Paste both functions. | 9018053c |
-| 22 | 2026-10-15 | Documents (Zoho function) | New | At handoff every CRM attachment on the deal is copied into the project's Documents tab, plus one CRM Notes.txt with the deal description, the handoff production notes and every CRM note (app drafts and project-link notes left out). Re-runs overwrite instead of duplicating. Function pasted; zoho_projects_connection has WorkDrive.files.ALL, WorkDrive.workspace.ALL, ZohoProjects.documents.ALL. Tested: text file, image and notes copied at full size. | d28ff605 |
 
 ## Workflow (no change to the live product)
 
@@ -23,6 +21,8 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | 23 | Handoff progress | New | v15.54: a live progress window replaces the button spinner during Generate: percentage, current step and count, completed steps, and time left measured from the run. The Zoho function reports each step through the new helper set_handoff_progress (deluge_set_handoff_progress.dg, returns string; paste as a new standalone function FIRST) into the CRM variable handoff_progress. @mentions in CRM Notes.txt now read as names. Paste both functions. | 9018053c | a709483 |
+| 2026-10-15 | 22 | Documents (Zoho function) | New | At handoff every CRM attachment on the deal is copied into the project's Documents tab, plus one CRM Notes.txt with the deal description, the handoff production notes and every CRM note (app drafts and project-link notes left out). Re-runs overwrite instead of duplicating. Function pasted; zoho_projects_connection has WorkDrive.files.ALL, WorkDrive.workspace.ALL, ZohoProjects.documents.ALL. Tested: text file, image and notes copied at full size. | d28ff605 | a709483 |
 | 2026-10-15 | 21 | Stair scheduling | Improvement | v15.53: construction and finished stair scheduling (section and all its tasks) default to Matthew De Man; they were left blank. Metal shop scheduling stays with Jeffery Chan. | bb17bf4e | beb3e3d |
 | 2026-10-15 | 20 | Job tags | Improvement | v15.52: Project Tags renamed Job Tags. On a sub-project job the section states the tags are one set for the whole job, shared by all sub-projects, and that removing one removes it from every sub-project. | 48989602 | beb3e3d |
 | 2026-10-15 | 19 | Sub-projects | Fix | v15.51: the sub-project count is a number box (1 to 12) with Continue; Open and Reset reopen the same deal in the web tab instead of dropping to the job list; no false "blueprint was damaged" notice for a sub-project with no sections; names always show after a switch. | 41786e62 | 8e398f6 |
