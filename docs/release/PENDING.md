@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 28 | 2026-10-15 | Timeline | Improvement | v15.58: the Timeline's "Create phases in Zoho Projects" switch is removed. One sub-project is one job with its phases; two or more turn sub-projects on by themselves. | 3a212b67 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
@@ -23,6 +22,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | 28 | Timeline | Improvement | v15.58: the Timeline's "Create phases in Zoho Projects" switch is removed. One sub-project is one job with its phases; two or more turn sub-projects on by themselves. | 3a212b67 | 9f6f34c |
 | 2026-10-15 | 27 | Plan polish | Improvement | v15.57: the task duration is a full-size control (wider number, unit spelled out as days or hrs, wide click area with a drawn arrow); the summary strip has a labelled Hide summary / Show summary button and collapses to one slim line with the finish date and working days, remembered per browser | 85f38377 | 440cd30 |
 | 2026-10-15 | 26 | Plan layout | Improvement | v15.56: the plan's section cards always run in one column, top to bottom, at every screen size, in the tab and the pop-up, detailed and compact (wide tabs used to split them into side-by-side columns). Checked at 1280, 1366, 1920 and 2560. | 819e3598 | b152e3e |
 | 2026-10-15 | 25 | Job summary | Improvement | v15.55: the job summary is always the strip under the plan on the right, at every screen size and in the pop-up (it used to fall back to a card on the left below 1500px). On narrow screens the phase bar and its key take their own line inside the strip. | a26dd9e6 | 5b4e60e |
