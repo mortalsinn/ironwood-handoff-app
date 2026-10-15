@@ -7,6 +7,33 @@ dealInfo = zoho.crm.getRecordById("Deals",dealId.toLong());
 dealName = dealInfo.get("Deal_Name");
 projectName = dealName + " - Production";
 portalId = "ironwoodstairs";
+// LIVE PROGRESS (widget v15.54): the app draws a real progress bar from these.
+// Units: 4 setup steps, every task, the kick-off mail, every attachment plus the
+// notes file, and the finish.
+progTaskCount = 0;
+progTasksIn = payloadData.get("ordered_tasks");
+if(progTasksIn != null)
+{
+	progTaskCount = progTasksIn.size();
+}
+else if(payloadData.get("task_lists") != null)
+{
+	progLists = payloadData.get("task_lists");
+	for each  progKey in progLists.keys()
+	{
+		progTaskCount = progTaskCount + progLists.get(progKey).size();
+	}
+}
+progAttCount = 0;
+progAtts = zoho.crm.getRelatedRecords("Attachments","Deals",dealId.toLong());
+if(progAtts != null)
+{
+	progAttCount = progAtts.size();
+}
+progTotal = 4 + progTaskCount + 1 + progAttCount + 1 + 1;
+progDone = 0;
+progTaskDone = 0;
+standalone.set_handoff_progress(dealId,"1","0",progTotal.toString(),"");
 // =====================================
 // IDEMPOTENCY GUARD: RE-USE AN EXISTING PROJECT IF ONE MATCHES
 // A retried or double-clicked handoff must never create a duplicate
@@ -149,6 +176,8 @@ if(newProjectId == "")
 {
 	return "Error: Could not create Zoho Project.";
 }
+progDone = 1;
+standalone.set_handoff_progress(dealId,"2",progDone.toString(),progTotal.toString(),"");
 // =====================================
 // THE PROJECT'S OWN START AND END DATES
 // Every task carries dates; the project header carried none, so the project
@@ -650,6 +679,8 @@ if(projectTags != null && projectTags.size() > 0)
 		}
 	}
 }
+progDone = 2;
+standalone.set_handoff_progress(dealId,"3",progDone.toString(),progTotal.toString(),"");
 // =====================================
 // POPULATE THE DEAL'S "ZOHO PROJECTS" RELATED LIST
 // Runs on EVERY handoff, not only when the project is created. The link
@@ -856,6 +887,8 @@ if(existingTasks != null)
 		}
 	}
 }
+progDone = 3;
+standalone.set_handoff_progress(dealId,"4",progDone.toString(),progTotal.toString(),"");
 // =====================================
 // CREATE TASK LISTS & TASKS
 // Every failure is collected so the widget can show an honest result
@@ -1112,6 +1145,18 @@ for each  listName in keys
 			}
 			for each  taskObj in tasksInList
 			{
+				// Progress: the first task starts the tasks stage; then every third.
+				if(progTaskDone == 0)
+				{
+					progDone = 4;
+					standalone.set_handoff_progress(dealId,"5",progDone.toString(),progTotal.toString(),"0 of " + progTaskCount.toString());
+				}
+				progTaskDone = progTaskDone + 1;
+				progDone = 4 + progTaskDone;
+				if(progTaskDone % 3 == 0 && progTaskDone < progTaskCount)
+				{
+					standalone.set_handoff_progress(dealId,"5",progDone.toString(),progTotal.toString(),progTaskDone.toString() + " of " + progTaskCount.toString());
+				}
 				taskName = taskObj.get("name");
 				thisTaskId = "";
 				thisListId = createdTaskListId;
@@ -1467,6 +1512,8 @@ for each  listName in keys
 		}
 	}
 }
+progDone = 4 + progTaskCount;
+standalone.set_handoff_progress(dealId,"6",progDone.toString(),progTotal.toString(),"");
 // =====================================
 // KICK-OFF MAIL TO THE FIRST TASK'S OWNER
 // Only on a NEW project: a re-run re-uses the project, and nobody wants the
@@ -1563,6 +1610,9 @@ try
 			for each  att in attList
 			{
 				attName = att.get("File_Name");
+				progFileDone = docOk + docFail;
+				progDone = 5 + progTaskCount + progFileDone;
+				standalone.set_handoff_progress(dealId,"7",progDone.toString(),progTotal.toString(),(progFileDone + 1).toString() + " of " + (progAttCount + 1).toString());
 				try
 				{
 					attFile = invokeurl
@@ -1616,6 +1666,8 @@ try
 			}
 		}
 		// ---- Notes, as one text file ----
+		progDone = 5 + progTaskCount + progAttCount;
+		standalone.set_handoff_progress(dealId,"7",progDone.toString(),progTotal.toString(),(progAttCount + 1).toString() + " of " + (progAttCount + 1).toString());
 		notesText = "CRM NOTES - " + dealName + "\nCopied from the CRM at handoff.\n";
 		dealDesc = dealInfo.get("Description");
 		if(dealDesc != null && dealDesc != "")
@@ -1628,6 +1680,25 @@ try
 			notesText = notesText + "\n============================================================\nPRODUCTION NOTES FROM THE HANDOFF\n\n" + handoffNotes + "\n";
 		}
 		noteCount = 0;
+		// @mentions are stored as crm[user#<id>#<zuid>]crm; show them as @Name.
+		mentionUsers = List();
+		try
+		{
+			usersResp = invokeurl
+			[
+				url :"https://www.zohoapis.com/crm/v7/users?type=AllUsers&per_page=200"
+				type :GET
+				connection:"zcrm"
+			];
+			if(usersResp.get("users") != null)
+			{
+				mentionUsers = usersResp.get("users");
+			}
+		}
+		catch (e)
+		{
+			info "USERS FOR MENTIONS FAILED: " + e.toString();
+		}
 		crmNotes = zoho.crm.getRelatedRecords("Notes","Deals",dealId.toLong(),1,200);
 		if(crmNotes != null)
 		{
@@ -1640,6 +1711,11 @@ try
 					cnBody = ifnull(cn.get("Note_Content"),"");
 					cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>","\n");
 					cnBody = cnBody.replaceAll("<[^>]*>","");
+					for each  mu in mentionUsers
+					{
+						cnBody = cnBody.replaceAll("crm\\[user#" + mu.get("id") + "#[0-9]+\\]crm","@" + ifnull(mu.get("full_name"),""));
+					}
+					cnBody = cnBody.replaceAll("crm\\[user#[0-9]+#[0-9]+\\]crm","@");
 					cnBody = cnBody.replaceAll("&nbsp;"," ").replaceAll("&amp;","&").replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&quot;","\"").replaceAll("&#39;","'");
 					cnWho = "";
 					if(cn.get("Created_By") != null)
@@ -1712,6 +1788,7 @@ catch (e)
 	docNote = " Documents: FAILED " + e.toString();
 }
 msNote = msNote + docNote;
+standalone.set_handoff_progress(dealId,"8",progTotal.toString(),progTotal.toString(),"");
 // =====================================
 // HONEST RESULT
 // The widget parses these prefixes: "Error" -> failure overlay,

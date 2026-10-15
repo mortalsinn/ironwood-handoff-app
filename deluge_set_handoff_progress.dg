@@ -1,0 +1,36 @@
+void standalone.set_handoff_progress(String dealId,String stage,String done,String total,String detail)
+{
+	// Writes the running handoff's progress into the CRM variable handoff_progress
+	// (id 4797857000070535002), which the Handoff app reads about once a second to
+	// draw its progress bar. One small write per step; it never stops a handoff.
+	// Stages: 1 project, 2 tags, 3 deal link, 4 milestones and lists, 5 tasks,
+	// 6 kick-off email, 7 documents, 8 done.
+	try
+	{
+		state = Map();
+		state.put("deal",dealId);
+		state.put("stage",stage);
+		state.put("done",done);
+		state.put("total",total);
+		state.put("detail",detail);
+		state.put("at",zoho.currenttime.toLong());
+		item = Map();
+		item.put("id","4797857000070535002");
+		item.put("value",state.toString());
+		items = List();
+		items.add(item);
+		body = Map();
+		body.put("variables",items);
+		resp = invokeurl
+		[
+			url :"https://www.zohoapis.com/crm/v7/settings/variables/4797857000070535002"
+			type :PUT
+			parameters:body.toString()
+			connection:"zcrm"
+		];
+	}
+	catch (e)
+	{
+		info "PROGRESS WRITE FAILED: " + e.toString();
+	}
+}
