@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 19 | 2026-10-15 | Sub-projects | Fix | v15.51: the sub-project count is a number box (1 to 12) with Continue; Open and Reset reopen the same deal in the web tab instead of dropping to the job list; no false "blueprint was damaged" notice for a sub-project with no sections; names always show after a switch. | 41786e62 |
 
 ## Workflow (no change to the live product)
 
@@ -22,6 +21,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | 19 | Sub-projects | Fix | v15.51: the sub-project count is a number box (1 to 12) with Continue; Open and Reset reopen the same deal in the web tab instead of dropping to the job list; no false "blueprint was damaged" notice for a sub-project with no sections; names always show after a switch. | 41786e62 | 8e398f6 |
 | 2026-10-15 | 18 | Sub-projects | Improvement | v15.50 + Zoho function: the Job Wrap-Up Google review depends on the final invoice of every sub-project (one dependency call each; tested 2 of 2). Function already pasted. | f15c8def | 4bb136b |
 | 2026-10-15 | 16 | Timeline | Improvement | v15.49: the Milestones button is now Timeline; its groups are called phases. On sub-project jobs it is shown too, as one bar per sub-project from the same start plus the Job Wrap-Up (preview only). | 73e1ea4d | b565886 |
 | 2026-10-15 | 17 | Stairs | Improvement | v15.49: Steel Stairs renamed Metal Stairs (tasks too). Stair types in the order Temporary, Construction, Finished, Metal, and their sections follow that order. | 73e1ea4d | b565886 |
