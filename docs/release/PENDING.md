@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 18 | 2026-10-15 | Sub-projects | Improvement | v15.50 + Zoho function: the Job Wrap-Up Google review depends on the final invoice of every sub-project (one dependency call each; tested 2 of 2). Function already pasted. | f15c8def |
 
 ## Workflow (no change to the live product)
 
@@ -22,6 +21,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | 18 | Sub-projects | Improvement | v15.50 + Zoho function: the Job Wrap-Up Google review depends on the final invoice of every sub-project (one dependency call each; tested 2 of 2). Function already pasted. | f15c8def | 4bb136b |
 | 2026-10-15 | 16 | Timeline | Improvement | v15.49: the Milestones button is now Timeline; its groups are called phases. On sub-project jobs it is shown too, as one bar per sub-project from the same start plus the Job Wrap-Up (preview only). | 73e1ea4d | b565886 |
 | 2026-10-15 | 17 | Stairs | Improvement | v15.49: Steel Stairs renamed Metal Stairs (tasks too). Stair types in the order Temporary, Construction, Finished, Metal, and their sections follow that order. | 73e1ea4d | b565886 |
 | 2026-10-15 | 14 | Sub-projects | New | v15.48: a job can be split into named sub-projects. Shared questions (owner, new build or renovation, scope, travel) are asked once; the rest once per sub-project. Each becomes its own task list and milestone in Zoho, all starting today, each on its own timeline with its own follow up and final invoice; one Google review after the last. Split view: sub-project cards, a draggable divider, and the sub-project on screen as one list. One sub-project works as before. | b83bde0d | 8e8789c |
