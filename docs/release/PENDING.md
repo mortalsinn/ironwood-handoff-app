@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 26 | 2026-10-15 | Plan layout | Improvement | v15.56: the plan's section cards always run in one column, top to bottom, at every screen size, in the tab and the pop-up, detailed and compact (wide tabs used to split them into side-by-side columns). Checked at 1280, 1366, 1920 and 2560. | 819e3598 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
@@ -23,6 +22,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | 26 | Plan layout | Improvement | v15.56: the plan's section cards always run in one column, top to bottom, at every screen size, in the tab and the pop-up, detailed and compact (wide tabs used to split them into side-by-side columns). Checked at 1280, 1366, 1920 and 2560. | 819e3598 | b152e3e |
 | 2026-10-15 | 25 | Job summary | Improvement | v15.55: the job summary is always the strip under the plan on the right, at every screen size and in the pop-up (it used to fall back to a card on the left below 1500px). On narrow screens the phase bar and its key take their own line inside the strip. | a26dd9e6 | 5b4e60e |
 | 2026-10-15 | 23 | Handoff progress | New | v15.54: a live progress window replaces the button spinner during Generate: percentage, current step and count, completed steps, and time left measured from the run. The Zoho function reports each step through the new helper set_handoff_progress (deluge_set_handoff_progress.dg, returns string; paste as a new standalone function FIRST) into the CRM variable handoff_progress. @mentions in CRM Notes.txt now read as names. Paste both functions. | 9018053c | a709483 |
 | 2026-10-15 | 22 | Documents (Zoho function) | New | At handoff every CRM attachment on the deal is copied into the project's Documents tab, plus one CRM Notes.txt with the deal description, the handoff production notes and every CRM note (app drafts and project-link notes left out). Re-runs overwrite instead of duplicating. Function pasted; zoho_projects_connection has WorkDrive.files.ALL, WorkDrive.workspace.ALL, ZohoProjects.documents.ALL. Tested: text file, image and notes copied at full size. | d28ff605 | a709483 |
