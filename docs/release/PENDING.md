@@ -7,8 +7,8 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 11 | 2026-10-15 | Stairs | New | v15.46: Steel Stairs is a stair type. One line per stair or landing; the metal shop gets measure, shop drawing, fabrication and coating, Joel gets the install, and the wood shop is not involved (Don Anderson needed this by hand). | pending |
-| 12 | 2026-10-15 | Owner tags | Fix | Zoho function: owner tags work on jobs with no project tags. The existing tags were only loaded when a job had project tags, so every owner tag was re-created and refused as a duplicate. Paste the full create_handoff_tasks into Zoho. | pending |
+| 11 | 2026-10-15 | Stairs | New | v15.46: Steel Stairs is a stair type. One line per stair or landing; the metal shop gets measure, shop drawing, fabrication and coating, Joel gets the install, and the wood shop is not involved (Don Anderson needed this by hand). | 2b1b1192 |
+| 12 | 2026-10-15 | Owner tags | Fix | Zoho function: owner tags work on jobs with no project tags. The existing tags were only loaded when a job had project tags, so every owner tag was re-created and refused as a duplicate. Paste the full create_handoff_tasks into Zoho. | 2b1b1192 |
 
 ## Workflow (no change to the live product)
 
