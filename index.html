@@ -2266,6 +2266,7 @@
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
                             <li><strong class="text-slate-300">The duration on each task is a full-size control</strong>: a wider number box and the unit spelled out (days or hrs) over a wide click area with a clear arrow.</li>
                             <li><strong class="text-slate-300">Hide summary / Show summary.</strong> The summary strip collapses to one slim line with the finish date and working days, for more room on smaller screens. The choice is remembered.</li>
+                            <li><strong class="text-slate-300">No on/off switch in the Timeline.</strong> One sub-project is one job with its phases; two or more turn sub-projects on by themselves.</li>
                         </ul>
                     </div>
                     <div>
@@ -2796,9 +2797,8 @@
                         <div class="ms-sub" id="msSub"></div>
                     </div>
                     <div class="ms-spacer"></div>
-                    <label class="ms-switch" id="msSwitch" title="When off, the project is created as one task list with no phases">
-                        <input type="checkbox" id="msOn"><span class="ms-track"></span><span>Create phases in Zoho Projects</span>
-                    </label>
+                    <!-- No on/off switch (Jeff, 2026-10-15): one sub-project is one job with
+                         its phases, two or more turn sub-projects on by themselves. -->
                     <button type="button" class="ms-x" id="msClose" aria-label="Close">&times;</button>
                 </div>
                 <div class="ms-body" id="msBody">
@@ -9959,7 +9959,7 @@
                 const overlay = document.getElementById('milestoneOverlay');
                 const sv = subView();
                 const editCol = document.getElementById('msEditCol');
-                const sw = document.getElementById('msSwitch');
+                const sw = null;
                 if (editCol) editCol.classList.toggle('hidden', !!sv);
                 const body = document.getElementById('msBody');
                 if (body) body.classList.toggle('ms-preview-only', !!sv);
@@ -9987,7 +9987,6 @@
                 const sched = schedule();
                 reconcile(sched);
                 if (overlay && !overlay.classList.contains('hidden')) {
-                    document.getElementById('msOn').checked = !!plan.on;
                     document.getElementById('msBody').classList.toggle('ms-disabled', !plan.on);
                     renderEditor(sched);
                     renderTimeline(sched);
@@ -10026,7 +10025,6 @@
             document.getElementById('msClose').addEventListener('click', close);
             document.getElementById('msDone').addEventListener('click', close);
             document.getElementById('milestoneOverlay').addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
-            document.getElementById('msOn').addEventListener('change', (e) => { plan.on = e.target.checked; persist(); render(); });
             document.getElementById('msAdd').addEventListener('click', () => {
                 const o = projectOwner();
                 plan.items.push({ id: newId(), name: 'New phase', suggest: '', ownerId: o.id, ownerName: o.name, flag: 'internal', sections: [] });
@@ -10084,7 +10082,9 @@
             window.setMilestonePlan = (raw) => {
                 let p = null;
                 if (raw) { try { p = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { p = null; } }
-                plan = (p && Array.isArray(p.items)) ? { on: p.on !== false, edited: !!p.edited, items: p.items } : { on: true, items: [] };
+                // Always on now that the switch is gone; an old draft saved with it off
+                // comes back on.
+                plan = (p && Array.isArray(p.items)) ? { on: true, edited: !!p.edited, items: p.items } : { on: true, items: [] };
                 const f = field(); if (f) f.value = plan.items.length ? JSON.stringify(plan) : '';
                 updateButton();
             };

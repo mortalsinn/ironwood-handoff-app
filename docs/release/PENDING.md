@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 27 | 2026-10-15 | Plan polish | Improvement | v15.57: the task duration is a full-size control (wider number, unit spelled out as days or hrs, wide click area with a drawn arrow); the summary strip has a labelled Hide summary / Show summary button and collapses to one slim line with the finish date and working days, remembered per browser. | 85f38377 |
+| 27 | 2026-10-15 | Plan polish | Improvement | v15.57: the task duration is a full-size control (wider number, unit spelled out as days or hrs, wide click area with a drawn arrow); the summary strip has a labelled Hide summary / Show summary button and collapses to one slim line with the finish date and working days, remembered per browser; the Timeline's "Create phases in Zoho Projects" switch is removed (phases always on for one sub-project; two or more turn sub-projects on). | 85f38377 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
