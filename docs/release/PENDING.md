@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 22 | 2026-10-15 | Documents (Zoho function) | New | At handoff every CRM attachment on the deal is copied into the project's Documents tab, plus one CRM Notes.txt with the deal description, the handoff production notes and every CRM note (app drafts and project-link notes left out). Re-runs overwrite instead of duplicating. Function pasted; zoho_projects_connection has WorkDrive.files.ALL, WorkDrive.workspace.ALL, ZohoProjects.documents.ALL. Tested: text file, image and notes copied at full size. | pending |
 
 ## Workflow (no change to the live product)
 

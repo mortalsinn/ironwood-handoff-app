@@ -1522,6 +1522,197 @@ if(kickoffNote == "" && isReusedProject == "no")
 	kickoffNote = " Kick-off mail not sent (no e-mail on the first task's owner).";
 }
 // =====================================
+// CRM FILES AND NOTES INTO DOCUMENTS (widget v15.54)
+// Every attachment on the Deal is copied into the project's Documents tab (its
+// WorkDrive folder), plus one "CRM Notes.txt" with the deal description, the
+// production notes from the handoff and every CRM note, so the job can be run
+// from Projects without going back to the CRM. Needs WorkDrive.files.ALL and
+// ZohoProjects.documents.ALL on zoho_projects_connection. Fail-open and
+// counted; a re-run overwrites files of the same name instead of duplicating.
+// =====================================
+docNote = "";
+docOk = 0;
+docFail = 0;
+docFirstError = "";
+try
+{
+	docFolder = "";
+	if(tagPortalId != "")
+	{
+		folderResp = invokeurl
+		[
+			url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/folders"
+			type :GET
+			connection:"zoho_projects_connection"
+		];
+		if(folderResp.get("default_project_folder_id") != null)
+		{
+			docFolder = folderResp.get("default_project_folder_id");
+		}
+	}
+	if(docFolder == "")
+	{
+		docNote = " Documents: project folder not found, nothing copied.";
+	}
+	else
+	{
+		// ---- Attachments ----
+		attList = zoho.crm.getRelatedRecords("Attachments","Deals",dealId.toLong());
+		if(attList != null)
+		{
+			for each  att in attList
+			{
+				attName = att.get("File_Name");
+				try
+				{
+					attFile = invokeurl
+					[
+						url :"https://www.zohoapis.com/crm/v7/Deals/" + dealId + "/Attachments/" + att.get("id")
+						type :GET
+						connection:"zcrm"
+					];
+					// A text attachment comes back as text, not a file; make it one.
+					try
+					{
+						attFile.setFileName(attName);
+					}
+					catch (eName)
+					{
+						attFile = attFile.toString().toFile(attName);
+					}
+					upParts = List();
+					upParts.add({"paramName":"content","content":attFile,"stringPart":"false"});
+					upParts.add({"paramName":"parent_id","content":docFolder,"stringPart":"true"});
+					upParts.add({"paramName":"filename","content":attName,"stringPart":"true"});
+					upParts.add({"paramName":"override-name-exist","content":"true","stringPart":"true"});
+					upResp = invokeurl
+					[
+						url :"https://www.zohoapis.com/workdrive/api/v1/upload"
+						type :POST
+						files:upParts
+						connection:"zoho_projects_connection"
+					];
+					if(upResp.toString().contains("Permalink"))
+					{
+						docOk = docOk + 1;
+					}
+					else
+					{
+						docFail = docFail + 1;
+						if(docFirstError == "")
+						{
+							docFirstError = attName + ": " + upResp.toString();
+						}
+					}
+				}
+				catch (e)
+				{
+					docFail = docFail + 1;
+					if(docFirstError == "")
+					{
+						docFirstError = attName + ": " + e.toString();
+					}
+				}
+			}
+		}
+		// ---- Notes, as one text file ----
+		notesText = "CRM NOTES - " + dealName + "\nCopied from the CRM at handoff.\n";
+		dealDesc = dealInfo.get("Description");
+		if(dealDesc != null && dealDesc != "")
+		{
+			notesText = notesText + "\n============================================================\nDEAL DESCRIPTION\n\n" + dealDesc + "\n";
+		}
+		handoffNotes = payloadData.get("notes");
+		if(handoffNotes != null && handoffNotes != "")
+		{
+			notesText = notesText + "\n============================================================\nPRODUCTION NOTES FROM THE HANDOFF\n\n" + handoffNotes + "\n";
+		}
+		noteCount = 0;
+		crmNotes = zoho.crm.getRelatedRecords("Notes","Deals",dealId.toLong(),1,200);
+		if(crmNotes != null)
+		{
+			for each  cn in crmNotes
+			{
+				cnTitle = ifnull(cn.get("Note_Title"),"");
+				// The app's own draft data and the automatic project links are not notes.
+				if(!cnTitle.startsWith("IRONWOOD_DRAFT") && !cnTitle.startsWith("Zoho Project - "))
+				{
+					cnBody = ifnull(cn.get("Note_Content"),"");
+					cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>","\n");
+					cnBody = cnBody.replaceAll("<[^>]*>","");
+					cnBody = cnBody.replaceAll("&nbsp;"," ").replaceAll("&amp;","&").replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&quot;","\"").replaceAll("&#39;","'");
+					cnWho = "";
+					if(cn.get("Created_By") != null)
+					{
+						cnWho = ifnull(cn.get("Created_By").get("name"),"");
+					}
+					cnWhen = ifnull(cn.get("Created_Time"),"");
+					if(cnWhen.length() >= 16)
+					{
+						cnWhen = cnWhen.subString(0,10) + " " + cnWhen.subString(11,16);
+					}
+					if(cnTitle == "")
+					{
+						cnTitle = "Note";
+					}
+					notesText = notesText + "\n------------------------------------------------------------\n" + cnTitle + "\n" + cnWho + " - " + cnWhen + "\n\n" + cnBody.trim() + "\n";
+					noteCount = noteCount + 1;
+				}
+			}
+		}
+		try
+		{
+			notesFile = notesText.toFile("CRM Notes.txt");
+			nParts = List();
+			nParts.add({"paramName":"content","content":notesFile,"stringPart":"false"});
+			nParts.add({"paramName":"parent_id","content":docFolder,"stringPart":"true"});
+			nParts.add({"paramName":"filename","content":"CRM Notes.txt","stringPart":"true"});
+			nParts.add({"paramName":"override-name-exist","content":"true","stringPart":"true"});
+			nResp = invokeurl
+			[
+				url :"https://www.zohoapis.com/workdrive/api/v1/upload"
+				type :POST
+				files:nParts
+				connection:"zoho_projects_connection"
+			];
+			if(nResp.toString().contains("Permalink"))
+			{
+				docOk = docOk + 1;
+			}
+			else
+			{
+				docFail = docFail + 1;
+				if(docFirstError == "")
+				{
+					docFirstError = "CRM Notes.txt: " + nResp.toString();
+				}
+			}
+		}
+		catch (e)
+		{
+			docFail = docFail + 1;
+			if(docFirstError == "")
+			{
+				docFirstError = "CRM Notes.txt: " + e.toString();
+			}
+		}
+		docNote = " Documents: " + docOk + " copied (" + noteCount + " notes in CRM Notes.txt), " + docFail + " failed.";
+		if(docFirstError != "")
+		{
+			if(docFirstError.length() > 200)
+			{
+				docFirstError = docFirstError.subString(0,200);
+			}
+			docNote = docNote + " First document error: " + docFirstError;
+		}
+	}
+}
+catch (e)
+{
+	docNote = " Documents: FAILED " + e.toString();
+}
+msNote = msNote + docNote;
+// =====================================
 // HONEST RESULT
 // The widget parses these prefixes: "Error" -> failure overlay,
 // "Warning" -> incomplete overlay (retry fills the gaps), else success.
