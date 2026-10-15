@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 13 | 2026-10-15 | Project tags | Improvement | v15.47: smart tags. The tags that fit the job are ticked from the answers; client, address and interior / exterior are matched from the deal and account names; suggested tags are listed first and people tags are hidden from the picker. Only existing Zoho tags are suggested. | 5d2db286 |
 
 ## Workflow (no change to the live product)
 
@@ -22,6 +21,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | 13 | Project tags | Improvement | v15.47: smart tags. The tags that fit the job are ticked from the answers; client, address and interior / exterior are matched from the deal and account names; suggested tags are listed first and people tags are hidden from the picker. Only existing Zoho tags are suggested. | 5d2db286 | 621887c |
 | 2026-10-15 | 11 | Stairs | New | v15.46: Steel Stairs is a stair type. One line per stair or landing; the metal shop gets measure, shop drawing, fabrication and coating, Joel gets the install, and the wood shop is not involved (Don Anderson needed this by hand). | 2b1b1192 | ccada96 |
 | 2026-10-15 | 12 | Owner tags | Fix | Zoho function: owner tags work on jobs with no project tags. The existing tags were only loaded when a job had project tags, so every owner tag was re-created and refused as a duplicate. Paste the full create_handoff_tasks into Zoho. | 2b1b1192 | ccada96 |
 | 2026-10-15 | 9 | Wood shop items | Fix | v15.45: custom wood shop items are saved in the CRM variable handoff_wood_items, so everyone sees one shared list (was per browser). Needs the zcrm connection to have the variables scope. | 720827d1, 53078090 | a512f8f |
