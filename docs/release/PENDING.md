@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 23 | 2026-10-15 | Handoff progress | New | v15.54: a live progress window replaces the button spinner during Generate: percentage, current step and count, completed steps, and time left measured from the run. The Zoho function reports each step through the new helper set_handoff_progress (deluge_set_handoff_progress.dg, paste as a new standalone function FIRST) into the CRM variable handoff_progress. @mentions in CRM Notes.txt now read as names. Paste both functions. | pending |
+| 23 | 2026-10-15 | Handoff progress | New | v15.54: a live progress window replaces the button spinner during Generate: percentage, current step and count, completed steps, and time left measured from the run. The Zoho function reports each step through the new helper set_handoff_progress (deluge_set_handoff_progress.dg, paste as a new standalone function FIRST) into the CRM variable handoff_progress. @mentions in CRM Notes.txt now read as names. Paste both functions. | 9018053c |
 | 22 | 2026-10-15 | Documents (Zoho function) | New | At handoff every CRM attachment on the deal is copied into the project's Documents tab, plus one CRM Notes.txt with the deal description, the handoff production notes and every CRM note (app drafts and project-link notes left out). Re-runs overwrite instead of duplicating. Function pasted; zoho_projects_connection has WorkDrive.files.ALL, WorkDrive.workspace.ALL, ZohoProjects.documents.ALL. Tested: text file, image and notes copied at full size. | d28ff605 |
 
 ## Workflow (no change to the live product)
