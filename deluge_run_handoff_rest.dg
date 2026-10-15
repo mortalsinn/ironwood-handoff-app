@@ -1,0 +1,37 @@
+// ========================================================
+// run_handoff_rest - the REST door to create_handoff_tasks.
+// create_handoff_tasks takes two named string arguments, which the CRM
+// function REST endpoint will not deliver ("Invalid JSON Format String" for
+// every format tried, 2026-10-14). A REST function instead receives the whole
+// request as crmAPIRequest. This reads dealId and payload from the JSON body
+// and hands them to the real handoff function, so a launch from outside the
+// widget runs exactly the same code as the widget's Generate button.
+// Setup: Standalone function, argument crmAPIRequest (Map), REST API OAuth 2.0 on.
+// Call: POST .../crm/v7/functions/run_handoff_rest/actions/execute?auth_type=oauth
+//       body {"dealId":"...","payload":"<the widget's payload JSON as a string>"}
+// ========================================================
+string standalone.run_handoff_rest(Map crmAPIRequest)
+{
+	dealId = "";
+	payload = "";
+	try
+	{
+		bodyText = crmAPIRequest.get("body");
+		if(bodyText != null && bodyText != "")
+		{
+			bodyMap = bodyText.toMap();
+			dealId = ifnull(bodyMap.get("dealId"),"");
+			payload = ifnull(bodyMap.get("payload"),"");
+		}
+	}
+	catch (e)
+	{
+		return "Error: could not read the request body: " + e.toString();
+	}
+	if(dealId == "" || payload == "")
+	{
+		// The safe probe: proves the door works without creating anything.
+		return "Ready: run_handoff_rest needs dealId and payload. Nothing was created.";
+	}
+	return standalone.create_handoff_tasks(dealId,payload);
+}
