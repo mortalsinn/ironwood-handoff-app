@@ -7,8 +7,8 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 9 | 2026-10-15 | Wood shop items | Fix | v15.45: custom wood shop items are saved in the CRM variable handoff_wood_items, so everyone sees one shared list (was per browser). Needs the zcrm connection to have the variables scope. | 720827d1, (this commit) |
-| 10 | 2026-10-15 | Launch from outside | New | New function run_handoff_rest (deluge_run_handoff_rest.dg): the REST door to create_handoff_tasks, so a handoff Claude launches runs the same function as the Generate button. Paste as a new standalone function with REST API OAuth on. | 720827d1, (this commit) |
+| 9 | 2026-10-15 | Wood shop items | Fix | v15.45: custom wood shop items are saved in the CRM variable handoff_wood_items, so everyone sees one shared list (was per browser). Needs the zcrm connection to have the variables scope. | 720827d1, 53078090 |
+| 10 | 2026-10-15 | Launch from outside | New | New function run_handoff_rest (deluge_run_handoff_rest.dg): the REST door to create_handoff_tasks, so a handoff Claude launches runs the same function as the Generate button. Paste as a new standalone function with REST API OAuth on. | 720827d1, 53078090 |
 
 ## Workflow (no change to the live product)
 
