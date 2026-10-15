@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 8 | 2026-10-15 | Milestones | Improvement | v15.44: the milestone window uses the full screen; the timeline has months across the top, shaded alternate months, working days on each bar, room after the last milestone so nothing is cut off, labels beside bars too short for them, and summary chips in the header. | (this commit) |
 
 ## Workflow (no change to the live product)
 
