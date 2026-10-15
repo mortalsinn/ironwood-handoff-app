@@ -7,8 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 11 | 2026-10-15 | Stairs | New | v15.46: Steel Stairs is a stair type. One line per stair or landing; the metal shop gets measure, shop drawing, fabrication and coating, Joel gets the install, and the wood shop is not involved (Don Anderson needed this by hand). | 2b1b1192 |
-| 12 | 2026-10-15 | Owner tags | Fix | Zoho function: owner tags work on jobs with no project tags. The existing tags were only loaded when a job had project tags, so every owner tag was re-created and refused as a duplicate. Paste the full create_handoff_tasks into Zoho. | 2b1b1192 |
 
 ## Workflow (no change to the live product)
 
@@ -23,6 +21,8 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | 11 | Stairs | New | v15.46: Steel Stairs is a stair type. One line per stair or landing; the metal shop gets measure, shop drawing, fabrication and coating, Joel gets the install, and the wood shop is not involved (Don Anderson needed this by hand). | 2b1b1192 | ccada96 |
+| 2026-10-15 | 12 | Owner tags | Fix | Zoho function: owner tags work on jobs with no project tags. The existing tags were only loaded when a job had project tags, so every owner tag was re-created and refused as a duplicate. Paste the full create_handoff_tasks into Zoho. | 2b1b1192 | ccada96 |
 | 2026-10-15 | 9 | Wood shop items | Fix | v15.45: custom wood shop items are saved in the CRM variable handoff_wood_items, so everyone sees one shared list (was per browser). Needs the zcrm connection to have the variables scope. | 720827d1, 53078090 | a512f8f |
 | 2026-10-15 | 10 | Launch from outside | New | New function run_handoff_rest (deluge_run_handoff_rest.dg): the REST door to create_handoff_tasks, so a handoff Claude launches runs the same function as the Generate button. Paste as a new standalone function with REST API OAuth on. | 720827d1, 53078090 | a512f8f |
 | 2026-10-15 | 8 | Milestones | Improvement | v15.44: the milestone window uses the full screen; the timeline has months across the top, shaded alternate months, working days on each bar, room after the last milestone so nothing is cut off, labels beside bars too short for them, and summary chips in the header. | d7c2cd49 | 01f84a2 |
