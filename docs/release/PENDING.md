@@ -7,8 +7,8 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 16 | 2026-10-15 | Timeline | Improvement | v15.49: the Milestones button is now Timeline; its groups are called phases. On sub-project jobs it is shown too, as one bar per sub-project from the same start plus the Job Wrap-Up (preview only). | pending |
-| 17 | 2026-10-15 | Stairs | Improvement | v15.49: Steel Stairs renamed Metal Stairs (tasks too). Stair types in the order Temporary, Construction, Finished, Metal, and their sections follow that order. | pending |
+| 16 | 2026-10-15 | Timeline | Improvement | v15.49: the Milestones button is now Timeline; its groups are called phases. On sub-project jobs it is shown too, as one bar per sub-project from the same start plus the Job Wrap-Up (preview only). | 73e1ea4d |
+| 17 | 2026-10-15 | Stairs | Improvement | v15.49: Steel Stairs renamed Metal Stairs (tasks too). Stair types in the order Temporary, Construction, Finished, Metal, and their sections follow that order. | 73e1ea4d |
 
 ## Workflow (no change to the live product)
 
