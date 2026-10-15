@@ -7,8 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 14 | 2026-10-15 | Sub-projects | New | v15.48: a job can be split into named sub-projects. Shared questions (owner, new build or renovation, scope, travel) are asked once; the rest once per sub-project. Each becomes its own task list and milestone in Zoho, all starting today, each on its own timeline with its own follow up and final invoice; one Google review after the last. Split view: sub-project cards, a draggable divider, and the sub-project on screen as one list. One sub-project works as before. | b83bde0d |
-| 15 | 2026-10-15 | Sub-projects (Zoho function) | New | create_handoff_tasks: each sub-project's task chain starts fresh instead of waiting on the sub-project before it, and the retry check matches list plus task name, so each sub-project's close out tasks are created. Paste the full function into Zoho. | b83bde0d |
 
 ## Workflow (no change to the live product)
 
@@ -23,6 +21,8 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-15 | 14 | Sub-projects | New | v15.48: a job can be split into named sub-projects. Shared questions (owner, new build or renovation, scope, travel) are asked once; the rest once per sub-project. Each becomes its own task list and milestone in Zoho, all starting today, each on its own timeline with its own follow up and final invoice; one Google review after the last. Split view: sub-project cards, a draggable divider, and the sub-project on screen as one list. One sub-project works as before. | b83bde0d | 8e8789c |
+| 2026-10-15 | 15 | Sub-projects (Zoho function) | New | create_handoff_tasks: each sub-project's task chain starts fresh instead of waiting on the sub-project before it, and the retry check matches list plus task name, so each sub-project's close out tasks are created. Paste the full function into Zoho. | b83bde0d | 8e8789c |
 | 2026-10-15 | 13 | Project tags | Improvement | v15.47: smart tags. The tags that fit the job are ticked from the answers; client, address and interior / exterior are matched from the deal and account names; suggested tags are listed first and people tags are hidden from the picker. Only existing Zoho tags are suggested. | 5d2db286 | 621887c |
 | 2026-10-15 | 11 | Stairs | New | v15.46: Steel Stairs is a stair type. One line per stair or landing; the metal shop gets measure, shop drawing, fabrication and coating, Joel gets the install, and the wood shop is not involved (Don Anderson needed this by hand). | 2b1b1192 | ccada96 |
 | 2026-10-15 | 12 | Owner tags | Fix | Zoho function: owner tags work on jobs with no project tags. The existing tags were only loaded when a job had project tags, so every owner tag was re-created and refused as a duplicate. Paste the full create_handoff_tasks into Zoho. | 2b1b1192 | ccada96 |
