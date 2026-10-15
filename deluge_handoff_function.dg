@@ -1047,6 +1047,10 @@ if(chainPerList == null)
 	chainPerList = "";
 }
 prevChainList = "";
+// The last task created in each list. The job's Google review waits on the
+// last task of EVERY sub-project (its final invoice), so it moves if any of
+// them runs late.
+lastTaskByList = Map();
 for each  listName in keys
 {
 	tasksInList = taskListsMap.get(listName);
@@ -1379,7 +1383,26 @@ for each  listName in keys
 							firstOwnerName = taskObj.get("owner_name");
 						}
 					}
+					// Who this task waits on: normally the task before it; the job's Google
+					// review waits on the last task of every sub-project. One call per
+					// predecessor - a comma list in predids keeps only the first.
+					predList = List();
 					if(prevTaskId != "")
+					{
+						predList.add(prevTaskId);
+					}
+					if(taskObj.get("after_all_lists") == "yes")
+					{
+						predList = List();
+						for each  lk in lastTaskByList.keys()
+						{
+							if(lk != taskObj.get("list"))
+							{
+								predList.add(lastTaskByList.get(lk));
+							}
+						}
+					}
+					for each  predOne in predList
 					{
 						// The documented endpoint. Everything before this used
 						// /tasks/{id}/ and /tasks/{id}/dependency/ with a predecessor_ids
@@ -1390,7 +1413,7 @@ for each  listName in keys
 						depParams.put("taskid",thisTaskId);
 						depParams.put("projId",newProjectId);
 						depParams.put("toupdate","dependencyset");
-						depParams.put("predids",prevTaskId);
+						depParams.put("predids",predOne);
 						// REQUIRED, and its absence is why every dependency failed with
 						// error 6831 "To set dependency, pass child project id also."
 						// The parameter exists for cross-project dependencies; for one
@@ -1406,7 +1429,7 @@ for each  listName in keys
 							parameters:depParams
 							connection:"zoho_projects_connection"
 						];
-						info "DEPENDENCY (" + prevTaskId + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
+						info "DEPENDENCY (" + predOne + " -> " + thisTaskId + ") RESULT: " + depResponse.toString();
 						depText = depResponse.toString();
 						if(depText.contains("error") || depText.contains("Error") || depText == "")
 						{
@@ -1435,6 +1458,10 @@ for each  listName in keys
 						}
 					}
 					prevTaskId = thisTaskId;
+					if(taskObj.get("list") != null)
+					{
+						lastTaskByList.put(taskObj.get("list"),thisTaskId);
+					}
 				}
 			}
 		}

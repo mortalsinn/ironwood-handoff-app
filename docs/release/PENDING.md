@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 18 | 2026-10-15 | Sub-projects | Improvement | v15.50 + Zoho function: the Job Wrap-Up Google review depends on the final invoice of every sub-project (one dependency call each; tested 2 of 2). Function already pasted. | pending |
 
 ## Workflow (no change to the live product)
 
