@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 26 | 2026-10-15 | Plan layout | Improvement | v15.56: the plan's section cards always run in one column, top to bottom, at every screen size, in the tab and the pop-up, detailed and compact (wide tabs used to split them into side-by-side columns). Checked at 1280, 1366, 1920 and 2560. | pending |
+| 26 | 2026-10-15 | Plan layout | Improvement | v15.56: the plan's section cards always run in one column, top to bottom, at every screen size, in the tab and the pop-up, detailed and compact (wide tabs used to split them into side-by-side columns). Checked at 1280, 1366, 1920 and 2560. | 819e3598 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
