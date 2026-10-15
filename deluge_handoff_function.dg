@@ -845,6 +845,15 @@ if(existingTasks != null)
 	{
 		existingTaskNames.add(existingTask.get("name"));
 		existingTaskIdsMap.put(existingTask.get("name"),existingTask.get("id_string"));
+		// Sub-projects repeat task names (each has its own close out), so a
+		// retried run also matches on list + name.
+		etList = existingTask.get("tasklist");
+		if(etList != null && etList.get("name") != null)
+		{
+			etKey = etList.get("name") + "|" + existingTask.get("name");
+			existingTaskNames.add(etKey);
+			existingTaskIdsMap.put(etKey,existingTask.get("id_string"));
+		}
 	}
 }
 // =====================================
@@ -1029,6 +1038,15 @@ if(milestoneMode == "yes")
 }
 info "TASK LIST CREATION ORDER: " + keys.toString();
 prevTaskId = "";
+// SUB-PROJECTS (widget v15.48+): each sub-project is its own list with its own
+// timeline, so its chain starts fresh at its first task instead of waiting on
+// the last task of the sub-project before it.
+chainPerList = payloadData.get("chain_per_list");
+if(chainPerList == null)
+{
+	chainPerList = "";
+}
+prevChainList = "";
 for each  listName in keys
 {
 	tasksInList = taskListsMap.get(listName);
@@ -1093,17 +1111,27 @@ for each  listName in keys
 				taskName = taskObj.get("name");
 				thisTaskId = "";
 				thisListId = createdTaskListId;
+				dupKey = taskName;
 				if(milestoneMode == "yes")
 				{
 					thisListId = existingListsMap.get(taskObj.get("list"));
+					dupKey = taskObj.get("list") + "|" + taskName;
 				}
-				if(existingTaskNames.contains(taskName))
+				if(chainPerList == "yes")
+				{
+					if(taskObj.get("list") != prevChainList)
+					{
+						prevTaskId = "";
+					}
+					prevChainList = taskObj.get("list");
+				}
+				if(existingTaskNames.contains(dupKey))
 				{
 					skippedCount = skippedCount + 1;
 					info "SKIPPED (already exists): " + taskName;
-					if(existingTaskIdsMap.get(taskName) != null)
+					if(existingTaskIdsMap.get(dupKey) != null)
 					{
-						thisTaskId = existingTaskIdsMap.get(taskName);
+						thisTaskId = existingTaskIdsMap.get(dupKey);
 					}
 				}
 				else if(thisListId == null)

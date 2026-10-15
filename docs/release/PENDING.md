@@ -7,6 +7,8 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 14 | 2026-10-15 | Sub-projects | New | v15.48: a job can be split into named sub-projects. Shared questions (owner, new build or renovation, scope, travel) are asked once; the rest once per sub-project. Each becomes its own task list and milestone in Zoho, all starting today, each on its own timeline with its own follow up and final invoice; one Google review after the last. Split view: sub-project cards, a draggable divider, and the sub-project on screen as one list. One sub-project works as before. | pending |
+| 15 | 2026-10-15 | Sub-projects (Zoho function) | New | create_handoff_tasks: each sub-project's task chain starts fresh instead of waiting on the sub-project before it, and the retry check matches list plus task name, so each sub-project's close out tasks are created. Paste the full function into Zoho. | pending |
 
 ## Workflow (no change to the live product)
 
