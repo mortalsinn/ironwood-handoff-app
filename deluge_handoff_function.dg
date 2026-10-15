@@ -1633,7 +1633,8 @@ try
 					upParts = List();
 					upParts.add({"paramName":"content","content":attFile,"stringPart":"false"});
 					upParts.add({"paramName":"parent_id","content":docFolder,"stringPart":"true"});
-					upParts.add({"paramName":"filename","content":attName,"stringPart":"true"});
+					// WorkDrive decodes the name it is given, so a "+" arrives as a space.
+					upParts.add({"paramName":"filename","content":attName.replaceAll("\\+","%2B"),"stringPart":"true"});
 					upParts.add({"paramName":"override-name-exist","content":"true","stringPart":"true"});
 					upResp = invokeurl
 					[
