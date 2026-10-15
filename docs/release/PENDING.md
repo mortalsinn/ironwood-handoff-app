@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 13 | 2026-10-15 | Project tags | Improvement | v15.47: smart tags. The tags that fit the job are ticked from the answers; client, address and interior / exterior are matched from the deal and account names; suggested tags are listed first and people tags are hidden from the picker. Only existing Zoho tags are suggested. | pending |
 
 ## Workflow (no change to the live product)
 
