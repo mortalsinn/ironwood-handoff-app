@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 21 | 2026-10-15 | Stair scheduling | Improvement | v15.53: construction and finished stair scheduling (section and all its tasks) default to Matthew De Man; they were left blank. Metal shop scheduling stays with Jeffery Chan. | pending |
+| 21 | 2026-10-15 | Stair scheduling | Improvement | v15.53: construction and finished stair scheduling (section and all its tasks) default to Matthew De Man; they were left blank. Metal shop scheduling stays with Jeffery Chan. | bb17bf4e |
 | 20 | 2026-10-15 | Job tags | Improvement | v15.52: Project Tags renamed Job Tags. On a sub-project job the section states the tags are one set for the whole job, shared by all sub-projects, and that removing one removes it from every sub-project. | 48989602 |
 
 ## Workflow (no change to the live product)
