@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 32 | 2026-10-19 | Job Tags | Improvement | v15.62: Job Tags is one list. Tags on the job show once, as chips at the top; the search box sits under them; the pills below are only tags still to add (a removed suggestion, or the rest behind More tags (N)). Widget only. | pending |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
