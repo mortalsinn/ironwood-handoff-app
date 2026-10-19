@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 32 | 2026-10-19 | Job Tags | Improvement | v15.62: Job Tags is one list. Tags on the job show once, as chips at the top; the search box sits under them; the pills below are only tags still to add (a removed suggestion, or the rest behind More tags (N)). Widget only. | 99963eb7 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
@@ -23,6 +22,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-19 | 32 | Job Tags | Improvement | v15.62: Job Tags is one list. Tags on the job show once, as chips at the top; the search box sits under them; the pills below are only tags still to add (a removed suggestion, or the rest behind More tags (N)). Widget only. | 99963eb7 | 51e712f |
 | 2026-10-19 | 31 | Job Tags | Improvement | v15.61: more tags are ticked from the answers as they are filled in. Interior glass items tick Glass and Interior; stainless steel named in a custom metal, steel stair or interior glass line ticks Stainless Steel Posts or Stainless Steel Rail. Widget only. | 722a7f1f | 06d0aed |
 | 2026-10-19 | 30 | Job Tags | Improvement | v15.60: suggested tags come from the product answers only; client and address names are no longer matched from the deal name. The 11 client and address tags were deleted from Zoho Projects (22 remain: 14 product, 8 people). Widget only. | 2a865cc3 | 822a45f |
 | 2026-10-19 | 29 | Job Tags | Improvement | v15.59: Job Tags opens on only the tags suggested for the job (from the answers and the deal name), not every tag in Zoho Projects. "All tags (N)" opens the full list; the tag box searches as you type and Enter picks the one match or adds a new tag. A restored draft keeps each tag's colour. Widget only, no Zoho function change. | 18a28878 | 008152a |
