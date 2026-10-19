@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 33 | 2026-10-19 | Job Tags + Zoho function | New | v15.63: every job is tagged "Client: <account or contact>" and "Site: <address from the deal name>" (no Site tag when the deal name has no address; 50 characters max). They show as chips on their own job only; More tags and search never offer other jobs' client or site tags. The widget and the function now read every page of tags, not the first 200. Paste the full create_handoff_tasks. | pending |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)

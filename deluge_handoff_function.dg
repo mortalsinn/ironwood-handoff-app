@@ -362,30 +362,55 @@ if(tagPortalId != "")
 {
 	try
 	{
-		existingTagsResponse = invokeurl
-		[
-			url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags?index=0&range=200"
-			type :GET
-			connection:"zoho_projects_connection"
-		];
-		info "EXISTING TAGS: " + existingTagsResponse.toString();
-		existingTagList = existingTagsResponse.get("tags");
-		if(existingTagList != null)
+		// EVERY PAGE. Client: and Site: tags add two per job, so the list passes
+		// 200; a tag missed here is re-created and refused as a duplicate.
+		tagPages = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25};
+		moreTagPages = true;
+		for each  tagPage in tagPages
 		{
-			for each  etag in existingTagList
+			if(moreTagPages)
 			{
-				etagName = etag.get("name");
-				etagId = etag.get("id");
-				if(etagId == null)
+				existingTagsResponse = invokeurl
+				[
+					url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/tags?per_page=200&page=" + tagPage
+					type :GET
+					connection:"zoho_projects_connection"
+				];
+				existingTagList = existingTagsResponse.get("tags");
+				if(existingTagList != null)
 				{
-					etagId = etag.get("id_string");
+					for each  etag in existingTagList
+					{
+						etagName = etag.get("name");
+						etagId = etag.get("id");
+						if(etagId == null)
+						{
+							etagId = etag.get("id_string");
+						}
+						if(etagName != null && etagId != null)
+						{
+							tagIdByName.put(etagName.toLowerCase(),etagId);
+						}
+					}
 				}
-				if(etagName != null && etagId != null)
+				// has_next_page may come back as a boolean or as text; either way only
+				// "true" reads the next page.
+				hasNextTagPage = "false";
+				tagPageInfo = existingTagsResponse.get("page_info");
+				if(existingTagList != null && tagPageInfo != null)
 				{
-					tagIdByName.put(etagName.toLowerCase(),etagId);
+					if(tagPageInfo.get("has_next_page") != null)
+					{
+						hasNextTagPage = tagPageInfo.get("has_next_page").toString();
+					}
+				}
+				if(hasNextTagPage != "true")
+				{
+					moreTagPages = false;
 				}
 			}
 		}
+		info "EXISTING TAGS: " + tagIdByName.size();
 	}
 	catch (e)
 	{
