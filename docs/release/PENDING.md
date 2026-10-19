@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 30 | 2026-10-19 | Job Tags | Improvement | v15.60: suggested tags come from the product answers only; client and address names are no longer matched from the deal name. The 11 client and address tags were deleted from Zoho Projects (22 remain: 14 product, 8 people). Widget only. | 2a865cc3 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
@@ -23,6 +22,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-19 | 30 | Job Tags | Improvement | v15.60: suggested tags come from the product answers only; client and address names are no longer matched from the deal name. The 11 client and address tags were deleted from Zoho Projects (22 remain: 14 product, 8 people). Widget only. | 2a865cc3 | 822a45f |
 | 2026-10-19 | 29 | Job Tags | Improvement | v15.59: Job Tags opens on only the tags suggested for the job (from the answers and the deal name), not every tag in Zoho Projects. "All tags (N)" opens the full list; the tag box searches as you type and Enter picks the one match or adds a new tag. A restored draft keeps each tag's colour. Widget only, no Zoho function change. | 18a28878 | 008152a |
 | 2026-10-15 | 28 | Timeline | Improvement | v15.58: the Timeline's "Create phases in Zoho Projects" switch is removed. One sub-project is one job with its phases; two or more turn sub-projects on by themselves. | 3a212b67 | 9f6f34c |
 | 2026-10-15 | 27 | Plan polish | Improvement | v15.57: the task duration is a full-size control (wider number, unit spelled out as days or hrs, wide click area with a drawn arrow); the summary strip has a labelled Hide summary / Show summary button and collapses to one slim line with the finish date and working days, remembered per browser | 85f38377 | 440cd30 |
