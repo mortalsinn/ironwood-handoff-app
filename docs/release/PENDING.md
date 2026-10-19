@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 29 | 2026-10-19 | Job Tags | Improvement | v15.59: Job Tags opens on only the tags suggested for the job (from the answers and the deal name), not every tag in Zoho Projects. "All tags (N)" opens the full list; the tag box searches as you type and Enter picks the one match or adds a new tag. A restored draft keeps each tag's colour. Widget only, no Zoho function change. | pending |
+| 29 | 2026-10-19 | Job Tags | Improvement | v15.59: Job Tags opens on only the tags suggested for the job (from the answers and the deal name), not every tag in Zoho Projects. "All tags (N)" opens the full list; the tag box searches as you type and Enter picks the one match or adds a new tag. A restored draft keeps each tag's colour. Widget only, no Zoho function change. | 18a28878 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
