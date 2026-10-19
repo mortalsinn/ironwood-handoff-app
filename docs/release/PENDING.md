@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 31 | 2026-10-19 | Job Tags | Improvement | v15.61: more tags are ticked from the answers as they are filled in. Interior glass items tick Glass and Interior; stainless steel named in a custom metal, steel stair or interior glass line ticks Stainless Steel Posts or Stainless Steel Rail. Widget only. | pending |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
