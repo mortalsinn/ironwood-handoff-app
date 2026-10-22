@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 35 | 2026-10-22 | Task tags (Zoho function) | Fix | Handoffs no longer put the owner's name in each task's Tags column; the owner still shows in the Owner column. Paste the full create_handoff_tasks. | pending |
+| 35 | 2026-10-22 | Task tags (Zoho function) | Fix | Handoffs no longer put the owner's name in each task's Tags column; the owner still shows in the Owner column. Paste the full create_handoff_tasks. | 4281a4dc |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
