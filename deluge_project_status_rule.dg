@@ -1,109 +1,69 @@
 // =====================================
-// set_project_in_progress
+// set_project_in_progress  (Zoho PROJECTS task custom function)
 //
-// Runs in ZOHO PROJECTS (not CRM), from a Task workflow rule that fires when a
-// task's status changes to a closed one. Flips the project from Active to
-// In Progress the moment the first task is finished, so nobody has to remember
-// to do it by hand.
+// Setup: Projects > Settings > Marketplace > Custom Functions > Tasks >
+// Create Custom Function. Arguments: portalId = Portal ID, projectId = Project ID.
+// Paste everything BELOW the comment block (the editor writes the first line).
+// Then Task Automation > Workflow Rules: the rule that fires when a task is
+// completed runs this function (Associate Custom Function).
 //
-// THE RULE: some tasks closed AND some still open.
-//   closed >= 1 and open >= 1  ->  work has started but is not finished
-// Written this way on purpose rather than "first task closed":
-//   - two tasks closed in quick succession would both miss a count == 1 test,
-//   - and it can never drag a finished project back to In Progress, because a
-//     finished project has no open tasks left.
-// Setting In Progress on a project already In Progress is harmless, so the
-// rule does not need to know what it ran last time.
+// THE RULE: an Active project moves to In Progress once work has started,
+// meaning at least one task completed and at least one still open.
+//   - Only Active moves. On Hold, Delayed or any status set by hand stays.
+//   - A project with every task done is left alone for whoever closes it.
+//   - Two tasks completed back to back both pass; the second finds In Progress
+//     already set and leaves it.
 //
-// Arguments to map in the workflow rule: portalId, projectId.
-// Connection: a Zoho Projects connection with. The link name must be
-// written as a LITERAL in every invokeurl - Deluge rejects a variable there
-// with "does not match the required data type CONNECTION LINKNAME".
-//   ZohoProjects.portals.ALL, ZohoProjects.projects.ALL
+// WHY THE OCT 8 VERSION NEVER WORKED: GET /module/projects/status/ returns a
+// bare list, not a "project_custom_status" object, and the names in it are
+// keys such as zp.projstatus.inprogress, not "In Progress". It stopped at the
+// first check on every run. The live rule ran Zoho's gallery function instead,
+// which sets the status to the task list's name; no list is named after a status.
+//
+// In Progress is status id 1768463000000020092 in this portal (read from the
+// API 2026-10-22, key zp.projstatus.inprogress). POST custom_status=<id> on
+// /projects/{id}/ was tested the same day: Active -> In Progress -> Active.
+// The project's own custom_status_name reads "Active" / "In Progress".
 // =====================================
 string set_project_in_progress(long portalId, long projectId)
 {
-	// ---- 1. HAS WORK STARTED, AND IS IT STILL RUNNING? ----
-	projResp = invokeurl
-	[
-		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
-		type :GET
-		connection:"connectionprojects"
-	];
-	info "PROJECT READ: " + projResp.toString();
-	projList = projResp.get("projects");
-	if(projList == null || projList.size() == 0)
-	{
-		return "No project returned.";
-	}
-	counts = projList.get(0).get("task_count");
-	if(counts == null)
-	{
-		return "No task_count on the project.";
-	}
-	closedCount = counts.get("closed");
-	openCount = counts.get("open");
-	if(closedCount == null)
-	{
-		closedCount = 0;
-	}
-	if(openCount == null)
-	{
-		openCount = 0;
-	}
-	info "TASKS closed=" + closedCount + " open=" + openCount;
-	if(closedCount < 1 || openCount < 1)
-	{
-		// Either nothing has been finished yet, or everything has. Neither is
-		// "in progress", and the second must not be overwritten.
-		return "Left alone: closed=" + closedCount + " open=" + openCount + ".";
-	}
-	// ---- 2. WHAT IS "IN PROGRESS" CALLED HERE? ----
-	// Looked up by NAME at run time rather than pasted in as an id, so renaming
-	// or rebuilding the status list does not silently stop this working.
-	statusResp = invokeurl
-	[
-		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/module/projects/status/"
-		type :GET
-		connection:"connectionprojects"
-	];
-	info "STATUSES: " + statusResp.toString();
-	statusList = statusResp.get("project_custom_status");
-	if(statusList == null)
-	{
-		return "No custom status list returned.";
-	}
-	wantedId = "";
-	for each  oneStatus in statusList
-	{
-		sName = oneStatus.get("status_name");
-		sId = oneStatus.get("status_id");
-		if(sName != null && sId != null)
-		{
-			// Trimmed and case-insensitive: a trailing space in a status name is
-			// invisible on screen and would match nothing.
-			if(sName.trim().equalsIgnoreCase("In Progress"))
-			{
-				wantedId = sId.toString();
-			}
-		}
-	}
-	if(wantedId == "")
-	{
-		return "No status called In Progress in this portal.";
-	}
-	// ---- 3. SET IT ----
-	updParams = Map();
-	updParams.put("custom_status",wantedId);
-	updResp = invokeurl
-	[
-		url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
-		type :POST
-		parameters:updParams
-		connection:"connectionprojects"
-	];
-	// Zoho generates this as a STRING function, so every exit must return one -
-	// a bare return is rejected with "Return statement must be STRING expression".
-	// They double as the line the execution log shows.
-	return "Set In Progress (" + wantedId + "): " + updResp.toString();
+projResp = invokeurl
+[
+	url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
+	type :GET
+	connection:"connectionprojects"
+];
+projList = projResp.get("projects");
+if(projList == null || projList.size() == 0)
+{
+	return "No project returned: " + projResp.toString();
+}
+proj = projList.get(0);
+statusName = ifnull(proj.get("custom_status_name"),"");
+if(!statusName.trim().equalsIgnoreCase("Active"))
+{
+	return "Left alone: status is " + statusName + ".";
+}
+closedCount = 0;
+openCount = 0;
+counts = proj.get("task_count");
+if(counts != null)
+{
+	closedCount = ifnull(counts.get("closed"),0).toString().toLong();
+	openCount = ifnull(counts.get("open"),0).toString().toLong();
+}
+if(closedCount < 1 || openCount < 1)
+{
+	return "Left alone: closed=" + closedCount + " open=" + openCount + ".";
+}
+updParams = Map();
+updParams.put("custom_status","1768463000000020092");
+updResp = invokeurl
+[
+	url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
+	type :POST
+	parameters:updParams
+	connection:"connectionprojects"
+];
+return "Set In Progress (closed=" + closedCount + " open=" + openCount + "): " + updResp.toString();
 }
