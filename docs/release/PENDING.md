@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 34 | 2026-10-22 | Project status (Zoho Projects function) | Fix | A project moves from Active to In Progress when its first task is completed (and work is still open). Only Active projects move; On Hold, Delayed and finished projects are left alone. Replaces the Oct 8 rule, which never matched a status. The 19 Active projects that already had completed tasks were moved to In Progress by API. Paste set_project_in_progress in Zoho Projects and point the task workflow rule at it. | 53439e02 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
@@ -23,6 +22,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-22 | 34 | Project status (Zoho Projects function) | Fix | A project moves from Active to In Progress when its first task is completed (and work is still open). Only Active projects move; On Hold, Delayed and finished projects are left alone. Replaces the Oct 8 rule, which never matched a status. The 19 Active projects that already had completed tasks were moved to In Progress by API. set_project_in_progress created in Zoho Projects (Developer Space), the Set In Progress task rule now runs it and is switched on (it was off). Tested on UG-940 (moved within 10 s), test undone. | 53439e02 | Zoho Projects |
 | 2026-10-19 | 33 | Job Tags + Zoho function | New | v15.63: every job is tagged "Client: <account or contact>" and "Site: <address from the deal name>" (no Site tag when the deal name has no address; 50 characters max). They show as chips on their own job only; More tags and search never offer other jobs' client or site tags. The widget and the function now read every page of tags, not the first 200. Paste the full create_handoff_tasks (handed to Jeff at release). | 2addad2a | b0e67ca |
 | 2026-10-19 | 32 | Job Tags | Improvement | v15.62: Job Tags is one list. Tags on the job show once, as chips at the top; the search box sits under them; the pills below are only tags still to add (a removed suggestion, or the rest behind More tags (N)). Widget only. | 99963eb7 | 51e712f |
 | 2026-10-19 | 31 | Job Tags | Improvement | v15.61: more tags are ticked from the answers as they are filled in. Interior glass items tick Glass and Interior; stainless steel named in a custom metal, steel stair or interior glass line ticks Stainless Steel Posts or Stainless Steel Rail. Widget only. | 722a7f1f | 06d0aed |
