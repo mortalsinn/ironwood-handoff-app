@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 34 | 2026-10-22 | Project status (Zoho Projects function) | Fix | A project moves from Active to In Progress when its first task is completed (and work is still open). Only Active projects move; On Hold, Delayed and finished projects are left alone. Replaces the Oct 8 rule, which never matched a status. The 19 Active projects that already had completed tasks were moved to In Progress by API. Paste set_project_in_progress in Zoho Projects and point the task workflow rule at it. | pending |
+| 34 | 2026-10-22 | Project status (Zoho Projects function) | Fix | A project moves from Active to In Progress when its first task is completed (and work is still open). Only Active projects move; On Hold, Delayed and finished projects are left alone. Replaces the Oct 8 rule, which never matched a status. The 19 Active projects that already had completed tasks were moved to In Progress by API. Paste set_project_in_progress in Zoho Projects and point the task workflow rule at it. | 53439e02 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
