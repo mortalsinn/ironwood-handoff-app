@@ -237,6 +237,7 @@ tagFirstError = "";
 tagAssocLog = "";
 tagIdsCsv = "";
 tagResolved = 0;
+// PER-TASK OWNER TAGS: SWITCHED OFF 2026-10-22 (see ownerName below).
 // PER-TASK OWNER TAGS. The task's Tags column, one tag per task carrying who
 // owns it. entityType 5 = TASK (2 project, 3 milestone, 4 tasklist, 6 bug).
 // Costs ONE associate call per task, so on a sixty task job this is sixty more
@@ -1263,7 +1264,10 @@ for each  listName in keys
 				// ---- OWNER TAG ON THE TASK ITSELF ----
 				// Fail-open and counted, exactly like the project tags: nobody loses a
 				// handoff because a tag did not stick.
-				ownerName = taskObj.get("owner_name");
+				// SWITCHED OFF 2026-10-22: no names in the task Tags column (the owner
+				// already shows in the Owner column). With ownerName empty the block below
+				// never runs; it stays in case the tags are wanted back.
+				ownerName = "";
 				if(thisTaskId != "" && tagPortalId != "" && ownerName != null && ownerName != "")
 				{
 					try
