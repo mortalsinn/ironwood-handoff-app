@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 40 | 2026-10-23 | Sub-projects + tags | New | v15.68: each sub-project has its own owner, picked beside its name (blank = project owner); it goes on that sub-project's milestone. Tags that read like a person or an address are never offered in the tag list. Rows line up evenly. The 7 employee name tags were deleted from Zoho Projects. Tested on UG-945 (Sub-project 2 owned by Joel). Widget only. | pending |
+| 40 | 2026-10-23 | Sub-projects + tags | New | v15.68: each sub-project has its own owner, picked beside its name (blank = project owner); it goes on that sub-project's milestone. Tags that read like a person or an address are never offered in the tag list. Rows line up evenly. The 7 employee name tags were deleted from Zoho Projects. Tested on UG-945 (Sub-project 2 owned by Joel). Widget only. | bde990f1 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
