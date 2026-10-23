@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 37 | 2026-10-23 | Sub-project tags (widget + Zoho function) | New | v15.65: on a split job, each sub-project's milestone gets the product tags from its own answers (Rail on a railing sub-project, Glass and Interior on a glass one); the project keeps the full list. Paste the full create_handoff_tasks (it is safe to paste before the widget goes live). | 9932ec5b |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
@@ -23,6 +22,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-23 | 37 | Sub-project tags (widget + Zoho function) | New | v15.65: on a split job, each sub-project's milestone gets the product tags from its own answers (Rail on a railing sub-project, Glass and Interior on a glass one); the project keeps the full list. create_handoff_tasks pasted by Jeff. Tested on UG-943: Sub-project 1 Rail, Sub-project 2 Glass + Interior, project all five. | 9932ec5b | 0775f62 |
 | 2026-10-23 | 36 | Milestones | Fix | v15.64: each milestone's task list is named "<milestone> tasks" (Railing tasks under Railing), so the Gantt grouped by milestone no longer shows the same name twice. Zoho requires the task list row; only its name changes. Tested on UG-941 (John Doe test job); the old test job UG-940 was renamed "(old test)". Widget only. | da453e5d | e2ece65 |
 | 2026-10-22 | 35 | Task tags (Zoho function) | Fix | Handoffs no longer put the owner's name in each task's Tags column; the owner still shows in the Owner column. create_handoff_tasks pasted by Jeff. Existing name tags removed from tasks (tags kept in Zoho). | 4281a4dc | Zoho CRM |
 | 2026-10-22 | 34 | Project status (Zoho Projects function) | Fix | A project moves from Active to In Progress when its first task is completed (and work is still open). Only Active projects move; On Hold, Delayed and finished projects are left alone. Replaces the Oct 8 rule, which never matched a status. The 19 Active projects that already had completed tasks were moved to In Progress by API. set_project_in_progress created in Zoho Projects (Developer Space), the Set In Progress task rule now runs it and is switched on (it was off). Tested on UG-940 (moved within 10 s), test undone. | 53439e02 | Zoho Projects |
