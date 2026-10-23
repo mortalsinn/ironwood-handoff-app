@@ -7,12 +7,11 @@
 // Then Task Automation > Workflow Rules: the rule that fires when a task is
 // completed runs this function (Associate Custom Function).
 //
-// THE RULE: an Active project moves to In Progress once work has started,
-// meaning at least one task completed and at least one still open.
-//   - Only Active moves. On Hold, Delayed or any status set by hand stays.
-//   - A project with every task done is left alone for whoever closes it.
-//   - Two tasks completed back to back both pass; the second finds In Progress
-//     already set and leaves it.
+// THE RULES (run on every task update):
+//   - Active, a task completed and others still open  -> In Progress.
+//   - Active or In Progress, every task completed      -> Completed (added 2026-10-23).
+//   - Any other status (On Hold, Delayed, Invoiced, Cancelled, set by hand) stays.
+//   - A reopened task does not move a project back; that stays a person's call.
 //
 // WHY THE OCT 8 VERSION NEVER WORKED: GET /module/projects/status/ returns a
 // bare list, not a "project_custom_status" object, and the names in it are
@@ -39,11 +38,7 @@ if(projList == null || projList.size() == 0)
 	return "No project returned: " + projResp.toString();
 }
 proj = projList.get(0);
-statusName = ifnull(proj.get("custom_status_name"),"");
-if(!statusName.trim().equalsIgnoreCase("Active"))
-{
-	return "Left alone: status is " + statusName + ".";
-}
+statusName = ifnull(proj.get("custom_status_name"),"").trim();
 closedCount = 0;
 openCount = 0;
 counts = proj.get("task_count");
@@ -52,12 +47,34 @@ if(counts != null)
 	closedCount = ifnull(counts.get("closed"),0).toString().toLong();
 	openCount = ifnull(counts.get("open"),0).toString().toLong();
 }
-if(closedCount < 1 || openCount < 1)
+// Active or In Progress only. On Hold, Delayed, Invoiced, Cancelled or any
+// status set by hand stays as it is.
+isActive = statusName.equalsIgnoreCase("Active");
+isInProgress = statusName.equalsIgnoreCase("In Progress");
+if(!isActive && !isInProgress)
 {
-	return "Left alone: closed=" + closedCount + " open=" + openCount + ".";
+	return "Left alone: status is " + statusName + ".";
+}
+// Every task done: Completed (id 1768463000000020116, zp.projstatus.completed).
+// Work started and still open: In Progress (id 1768463000000020092).
+wantedId = "";
+wantedName = "";
+if(closedCount >= 1 && openCount == 0)
+{
+	wantedId = "1768463000000020116";
+	wantedName = "Completed";
+}
+else if(closedCount >= 1 && openCount >= 1 && isActive)
+{
+	wantedId = "1768463000000020092";
+	wantedName = "In Progress";
+}
+if(wantedId == "")
+{
+	return "Left alone: " + statusName + ", closed=" + closedCount + " open=" + openCount + ".";
 }
 updParams = Map();
-updParams.put("custom_status","1768463000000020092");
+updParams.put("custom_status",wantedId);
 updResp = invokeurl
 [
 	url :"https://projectsapi.zoho.com/restapi/portal/" + portalId + "/projects/" + projectId + "/"
@@ -65,5 +82,5 @@ updResp = invokeurl
 	parameters:updParams
 	connection:"connectionprojects"
 ];
-return "Set In Progress (closed=" + closedCount + " open=" + openCount + "): " + updResp.toString();
+return "Set " + wantedName + " (closed=" + closedCount + " open=" + openCount + "): " + updResp.toString();
 }

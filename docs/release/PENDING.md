@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 41 | 2026-10-23 | Project status (Zoho Projects function) | New | A project moves to Completed when every task is completed (from Active or In Progress only; On Hold, Invoiced and other statuses stay). Same set_project_in_progress function and Set In Progress rule. Paste the new body into set_project_in_progress. | pending |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
