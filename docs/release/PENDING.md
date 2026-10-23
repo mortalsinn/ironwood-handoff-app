@@ -8,7 +8,7 @@ each time it goes live. Plain wording, for review with management.
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
 | 38 | 2026-10-23 | Milestones | Fix | v15.66: milestones list in work order (first sub-project on top, Job Wrap-Up at the bottom). Zoho lists milestones newest first, so the handoff now creates them last to first. Tested on UG-944 (old tests renamed). Widget only. | c21abe4d |
-| 39 | 2026-10-23 | Sub-project tags | Fix | v15.67: on a split job, Job Tags shows only the sub-project on screen. Tags added in one sub-project (smart or typed) stay with it, and the next one starts with its own. Each sub-project's milestone gets its own tags; the project gets the tags of every sub-project. Tested locally with 3 sub-projects. Widget only. | pending |
+| 39 | 2026-10-23 | Sub-project tags | Fix | v15.67: on a split job, Job Tags shows only the sub-project on screen. Tags added in one sub-project (smart or typed) stay with it, and the next one starts with its own. Each sub-project's milestone gets its own tags; the project gets the tags of every sub-project. Tested locally with 3 sub-projects. Widget only. | 81421f54 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
