@@ -7,7 +7,6 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 41 | 2026-10-23 | Project status (Zoho Projects function) | New | A project moves to Completed when every task is completed (from Active or In Progress only; On Hold, Invoiced and other statuses stay). Same set_project_in_progress function and Set In Progress rule. Paste the new body into set_project_in_progress. | 96dc8b79 |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
@@ -23,6 +22,7 @@ Checks, automation and tooling. They change nothing customers see.
 
 | Date live | # | Area | Type | Change | Commit | Release |
 |---|---|---|---|---|---|---|
+| 2026-10-23 | 41 | Project status (Zoho Projects function) | New | A project moves to Completed when every task is completed (from Active or In Progress only; On Hold, Invoiced and other statuses stay). Same set_project_in_progress function and Set In Progress rule. Pasted by Jeff. Tested on UG-946: first task done -> In Progress, last task done -> Completed. | 96dc8b79 | Zoho Projects |
 | 2026-10-23 | 40 | Sub-projects + tags | New | v15.68: each sub-project has its own owner, picked beside its name (blank = project owner); it goes on that sub-project's milestone. Tags that read like a person or an address are never offered in the tag list. Rows line up evenly. The 7 employee name tags were deleted from Zoho Projects. Tested on UG-945 (Sub-project 2 owned by Joel). Widget only. | bde990f1 | ce75d9a |
 | 2026-10-23 | 39 | Sub-project tags | Fix | v15.67: on a split job, Job Tags shows only the sub-project on screen. Tags added in one sub-project (smart or typed) stay with it, and the next one starts with its own. Each sub-project's milestone gets its own tags; the project gets the tags of every sub-project. Tested locally with 3 sub-projects. Widget only. | 81421f54 | 3c10590 |
 | 2026-10-23 | 38 | Milestones | Fix | v15.66: milestones list in work order (first sub-project on top, Job Wrap-Up at the bottom). Zoho lists milestones newest first, so the handoff now creates them last to first. Tested on UG-944 (old tests renamed). Widget only. | c21abe4d | 3c10590 |
