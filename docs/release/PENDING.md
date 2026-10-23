@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 38 | 2026-10-23 | Milestones | Fix | v15.66: milestones list in work order (first sub-project on top, Job Wrap-Up at the bottom). Zoho lists milestones newest first, so the handoff now creates them last to first. Tested on UG-944 (old tests renamed). Widget only. | pending |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
