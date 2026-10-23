@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 37 | 2026-10-23 | Sub-project tags (widget + Zoho function) | New | v15.65: on a split job, each sub-project's milestone gets the product tags from its own answers (Rail on a railing sub-project, Glass and Interior on a glass one); the project keeps the full list. Paste the full create_handoff_tasks (it is safe to paste before the widget goes live). | pending |
+| 37 | 2026-10-23 | Sub-project tags (widget + Zoho function) | New | v15.65: on a split job, each sub-project's milestone gets the product tags from its own answers (Rail on a railing sub-project, Glass and Interior on a glass one); the project keeps the full list. Paste the full create_handoff_tasks (it is safe to paste before the widget goes live). | 9932ec5b |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
