@@ -7,7 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
-| 36 | 2026-10-23 | Milestones | Fix | v15.64: each milestone's task list is named "<milestone> tasks" (Railing tasks under Railing), so the Gantt grouped by milestone no longer shows the same name twice. Zoho requires the task list row; only its name changes. Tested on UG-941 (John Doe test job); the old test job UG-940 was renamed "(old test)". Widget only. | pending |
+| 36 | 2026-10-23 | Milestones | Fix | v15.64: each milestone's task list is named "<milestone> tasks" (Railing tasks under Railing), so the Gantt grouped by milestone no longer shows the same name twice. Zoho requires the task list row; only its name changes. Tested on UG-941 (John Doe test job); the old test job UG-940 was renamed "(old test)". Widget only. | da453e5d |
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 
 ## Workflow (no change to the live product)
