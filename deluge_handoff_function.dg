@@ -772,6 +772,8 @@ msOk = 0;
 msFail = 0;
 msFirstError = "";
 msNote = "";
+msTagOk = 0;
+msTagFail = 0;
 // =====================================
 // USERS: EXTRACT UNIQUE ASSIGNEES & INVITE
 // ID-based invite first; the e-mail invite only fires as a fallback
@@ -1022,6 +1024,60 @@ if(milestoneMode == "yes")
 		{
 			msFail = msFail + 1;
 		}
+		// SUB-PROJECT TAGS (widget v15.65+): the tags from this sub-project's own
+		// answers go on its milestone (entityType 3). Each is also a project tag, so
+		// its id is already in tagIdByName. One associate call per milestone with
+		// every id: associate replaces the milestone's tag set.
+		msTags = ms.get("tags");
+		if(msId != null && msTags != null && tagPortalId != "")
+		{
+			msTagCsv = "";
+			for each  msTagName in msTags
+			{
+				msTagId = tagIdByName.get(msTagName.toString().toLowerCase());
+				if(msTagId != null)
+				{
+					if(msTagCsv == "")
+					{
+						msTagCsv = msTagId.toString();
+					}
+					else
+					{
+						msTagCsv = msTagCsv + "," + msTagId.toString();
+					}
+				}
+			}
+			if(msTagCsv != "")
+			{
+				try
+				{
+					msTagParams = Map();
+					msTagParams.put("tag_id",msTagCsv);
+					msTagParams.put("entity_id",msId);
+					msTagParams.put("entityType",3);
+					msTagResp = invokeurl
+					[
+						url :"https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/tags/associate"
+						type :POST
+						parameters:msTagParams
+						connection:"zoho_projects_connection"
+					];
+					msTagText = msTagResp.toString();
+					if(msTagText.contains("error") || msTagText.contains("Error"))
+					{
+						msTagFail = msTagFail + 1;
+					}
+					else
+					{
+						msTagOk = msTagOk + 1;
+					}
+				}
+				catch (e)
+				{
+					msTagFail = msTagFail + 1;
+				}
+			}
+		}
 	}
 	listCreateOrder = payloadData.get("list_create_order");
 	if(listCreateOrder != null)
@@ -1052,6 +1108,10 @@ if(milestoneMode == "yes")
 		}
 	}
 	msNote = " Milestones: " + msOk + " set, " + msFail + " failed.";
+	if(msTagOk > 0 || msTagFail > 0)
+	{
+		msNote = msNote + " Sub-project tags: " + msTagOk + " milestones tagged, " + msTagFail + " failed.";
+	}
 	if(msFirstError != "")
 	{
 		msNote = msNote + " First milestone error: " + msFirstError;
