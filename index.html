@@ -6128,9 +6128,10 @@
             // Const. grade flow: build time is quick, so Matt schedules
             // production + drop off up front. Stairs are normally dropped off
             // only; onsite install is an extra-charge sub-option.
-            // Stair scheduling, const and finished, is Matt's (decided 2026-10-15): he
+            // Construction stairs are Tom's from scheduling through drop off (Jeff, Nov 3
+            // 2026); finished stair scheduling stays Matt's (decided 2026-10-15): he
             // runs all scheduling except the metal shop's, which is Jeffery's.
-            { key: 'conststair-scheduling', abbrev: 'CS', title: 'Const. Stair Scheduling', list: 'Production & Install', owner: 'MATT',
+            { key: 'conststair-scheduling', abbrev: 'CS', title: 'Const. Stair Scheduling', list: 'Production & Install', owner: 'TOM',
               when: s => s.constStair,
               tasks: [
                 // Three independent lines, not a set of either/ors. The old version
@@ -6138,11 +6139,11 @@
                 // - on a job with one stair installed and two dropped at the door,
                 // the two deliveries were never scheduled by anyone. Drop off and
                 // install are per stair now, so the scheduling has to allow both.
-                { name: 'Schedule Production', days: 3, phase: 'setup', owner: 'MATT' },
+                { name: 'Schedule Production', days: 3, phase: 'setup', owner: 'TOM' },
                 // Supply Only has no drop off - the customer collects, and the
                 // Customer Pickup block already covers that end of it.
-                { name: 'Schedule Const. Stair Drop Off', days: 3, phase: 'setup', owner: 'MATT', site: true, cond: s => s.anyConstDropOff && !s.supplyOnly },
-                { name: 'Schedule Const. Stair Install', days: 3, phase: 'setup', owner: 'MATT', site: true, cond: s => s.anyConstInstall && !s.supplyOnly }
+                { name: 'Schedule Const. Stair Drop Off', days: 3, phase: 'setup', owner: 'TOM', site: true, cond: s => s.anyConstDropOff && !s.supplyOnly },
+                { name: 'Schedule Const. Stair Install', days: 3, phase: 'setup', owner: 'TOM', site: true, cond: s => s.anyConstInstall && !s.supplyOnly }
               ] },
             { key: 'conststair-setup', abbrev: 'CD', title: 'Const. Stair Setup & Design', list: 'Production & Install', owner: 'SALES',
               when: s => s.constStair,
@@ -6166,11 +6167,11 @@
             // s.stair is the card this copy belongs to - see expandArchetypes.
             { key: 'conststair-production', perStair: 'const', abbrev: 'CM',
               title: s => 'Const. Stair Manufacturing - ' + window.stairLabel(s.stair),
-              list: 'Production & Install', owner: 'MATT',
+              list: 'Production & Install', owner: 'TOM',
               when: s => s.constStair,
               tasks: [
-                { name: 'Manufacture Stair Package', days: s => 5 + (s.stair.openRise ? 2 : 0) + (s.stair.customTreads ? 2 : 0), phase: 'fab', owner: 'MATT', note: s => window.stairMark(s.stair, s.stair.shapesTypes) },
-                { name: 'QA - Stair Package', days: 1, phase: 'qa', owner: 'MATT', note: s => window.stairMark(s.stair) }
+                { name: 'Manufacture Stair Package', days: s => 5 + (s.stair.openRise ? 2 : 0) + (s.stair.customTreads ? 2 : 0), phase: 'fab', owner: 'TOM', note: s => window.stairMark(s.stair, s.stair.shapesTypes) },
+                { name: 'QA - Stair Package', days: 1, phase: 'qa', owner: 'TOM', note: s => window.stairMark(s.stair) }
               ] },
             // Drop off is the alternative to installing, so the whole block goes when
             // an install is sold - dropping the stairs at the door and photographing
@@ -6178,14 +6179,14 @@
             // removal that used to live here moves to the install block below.
             { key: 'conststair-dropoff', perStair: 'const', abbrev: 'DO',
               title: s => 'Const. Stair Drop Off - ' + window.stairLabel(s.stair),
-              list: 'Production & Install', owner: 'MATT',
+              list: 'Production & Install', owner: 'TOM',
               // Drop off or install is now decided per stair: one can be dropped at
               // the door while another is installed for an extra charge.
               when: s => s.constStair && !s.stair.install,
               tasks: [
                 { name: 'Existing Stair Removal', days: 1, phase: 'install', site: true, cond: s => s.isReno, note: s => window.stairMark(s.stair) },
-                { name: 'Const. Stair Drop Off', days: 1, phase: 'install', owner: 'MATT', site: true, esa: true, note: s => window.stairMark(s.stair) },
-                { name: 'Drop Off Photos', days: 1, phase: 'install', owner: 'MATT', site: true, note: s => window.stairMark(s.stair) }
+                { name: 'Const. Stair Drop Off', days: 1, phase: 'install', owner: 'TOM', site: true, esa: true, note: s => window.stairMark(s.stair) },
+                { name: 'Drop Off Photos', days: 1, phase: 'install', owner: 'TOM', site: true, note: s => window.stairMark(s.stair) }
               ] },
             { key: 'conststair-install', perStair: 'const', abbrev: 'CI',
               title: s => 'Const. Stair Install - ' + window.stairLabel(s.stair),

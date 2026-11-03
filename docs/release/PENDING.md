@@ -8,6 +8,7 @@ each time it goes live. Plain wording, for review with management.
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
+| 42 | 2026-11-03 | Construction stairs (widget) | Improvement | On a construction grade stair, Const. Stair Scheduling, Manufacturing and Drop Off default to Tom (they defaulted to Matt). The spec sheet and the Sales Follow Up stay with the salesperson, the site measure and install with Joel, the final invoice with Jeffery. The manual's owner table says the same. | |
 
 ## Workflow (no change to the live product)
 
