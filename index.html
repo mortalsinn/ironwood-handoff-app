@@ -6128,7 +6128,7 @@
             // Const. grade flow: build time is quick, so Matt schedules
             // production + drop off up front. Stairs are normally dropped off
             // only; onsite install is an extra-charge sub-option.
-            // Construction stairs are Tom's from scheduling through drop off (Jeff, Nov 3
+            // Construction stairs are Tom's, every block and task (Jeff, Nov 3
             // 2026); finished stair scheduling stays Matt's (decided 2026-10-15): he
             // runs all scheduling except the metal shop's, which is Jeffery's.
             { key: 'conststair-scheduling', abbrev: 'CS', title: 'Const. Stair Scheduling', list: 'Production & Install', owner: 'TOM',
@@ -6145,11 +6145,11 @@
                 { name: 'Schedule Const. Stair Drop Off', days: 3, phase: 'setup', owner: 'TOM', site: true, cond: s => s.anyConstDropOff && !s.supplyOnly },
                 { name: 'Schedule Const. Stair Install', days: 3, phase: 'setup', owner: 'TOM', site: true, cond: s => s.anyConstInstall && !s.supplyOnly }
               ] },
-            { key: 'conststair-setup', abbrev: 'CD', title: 'Const. Stair Setup & Design', list: 'Production & Install', owner: 'SALES',
+            { key: 'conststair-setup', abbrev: 'CD', title: 'Const. Stair Setup & Design', list: 'Production & Install', owner: 'TOM',
               when: s => s.constStair,
               tasks: [
-                { name: 'Complete Site Measure', days: 1, phase: 'setup', owner: 'JOEL', site: true, esa: true, cond: s => s.needsMeasure },
-                { name: 'Const. Stair Spec Sheet', days: 1, phase: 'setup', owner: 'SALES' }
+                { name: 'Complete Site Measure', days: 1, phase: 'setup', owner: 'TOM', site: true, esa: true, cond: s => s.needsMeasure },
+                { name: 'Const. Stair Spec Sheet', days: 1, phase: 'setup', owner: 'TOM' }
               ] },
             { key: 'conststair-spec-qa', abbrev: 'QC', title: 'QA - Specs / Blueprints', list: 'Production & Install', owner: 'TOM',
               when: s => s.constStair,
@@ -6190,13 +6190,13 @@
               ] },
             { key: 'conststair-install', perStair: 'const', abbrev: 'CI',
               title: s => 'Const. Stair Install - ' + window.stairLabel(s.stair),
-              list: 'Production & Install', owner: 'JOEL',
+              list: 'Production & Install', owner: 'TOM',
               when: s => s.constStair && s.stair.install,
               tasks: [
-                { name: 'Existing Stair Removal', days: 1, phase: 'install', owner: 'JOEL', site: true, cond: s => s.isReno, note: s => window.stairMark(s.stair) },
-                { name: 'Install Const. Stairs', days: 1, phase: 'install', owner: 'JOEL', site: true, esa: true, note: s => window.stairMark(s.stair) },
-                { name: 'Const. Stair Install Photos', days: 1, phase: 'install', owner: 'JOEL', site: true, note: s => window.stairMark(s.stair) },
-                { name: 'QA - Const. Install', days: 1, phase: 'qa', owner: 'JOEL', site: true, note: s => window.stairMark(s.stair) }
+                { name: 'Existing Stair Removal', days: 1, phase: 'install', owner: 'TOM', site: true, cond: s => s.isReno, note: s => window.stairMark(s.stair) },
+                { name: 'Install Const. Stairs', days: 1, phase: 'install', owner: 'TOM', site: true, esa: true, note: s => window.stairMark(s.stair) },
+                { name: 'Const. Stair Install Photos', days: 1, phase: 'install', owner: 'TOM', site: true, note: s => window.stairMark(s.stair) },
+                { name: 'QA - Const. Install', days: 1, phase: 'qa', owner: 'TOM', site: true, note: s => window.stairMark(s.stair) }
               ] },
 
             // Finished stair flow per review: Sales spec sheet, Tom designs,
