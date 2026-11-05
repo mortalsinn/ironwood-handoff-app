@@ -9,6 +9,7 @@ each time it goes live. Plain wording, for review with management.
 |---|------|------|------|--------|--------|
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
 | 43 | 2026-11-05 | Preferred install date (widget) | New | A Preferred install date field (optional) under the project owner opens a calendar. When it is set, the project and every task lane start on that date in Zoho Projects (a weekend date starts the Monday after); Matthew can still move dates in Projects. Empty, the job starts today as before. The summary says which date the schedule starts on. | |
+| 44 | 2026-11-05 | Preferred install date (widget) | Improvement | The preferred install date opens the app's own calendar in place of the browser's date box: a month at a time with weeks starting Monday, today ringed, past days unavailable, weekends dimmed, a Today button, and the chosen date shown on the button (Wed, Nov 18, 2026). Matches the dark and light themes. | |
 
 ## Workflow (no change to the live product)
 
