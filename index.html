@@ -28,6 +28,8 @@
     <style>
         .sortable-list li { cursor: grab; position: relative; padding-right: 20px; }
         .sortable-list li:active { cursor: grabbing; }
+        .pref-date { color-scheme: dark; }
+        html.light .pref-date { color-scheme: light; }
         .delete-btn { position: absolute; right: 0; top: 50%; transform: translateY(-50%); display: none; cursor: pointer; color: #ef4444; font-weight: bold; font-size: 14px; background: #0f172a; padding-left: 4px; }
         .sortable-list li:hover .delete-btn { display: inline-block; }
         ::-webkit-scrollbar { width: 6px; }
@@ -1497,6 +1499,17 @@
                             </button>
                         </div>
                     </div>
+                    <!-- Preferred install date (Jeff, Nov 5 2026): optional, outside the question flow. When set,
+                         the project and every task lane start on it in Zoho Projects (Matthew can move it there
+                         later); empty, the job starts today as before. -->
+                    <div id="preferredInstallWrap" class="mb-4">
+                        <p class="text-sm font-medium text-slate-300 mb-1"><label for="preferredInstall">Preferred install date <span class="text-slate-500 font-normal">(optional)</span></label></p>
+                        <div class="flex items-center" style="gap:8px">
+                            <input type="date" id="preferredInstall" name="preferredInstall" class="pref-date text-sm bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 cursor-pointer focus:outline-none focus:border-sky-500" title="Choose the preferred install date">
+                            <button type="button" id="preferredInstallClear" class="hidden text-xs text-slate-400 hover:text-white px-2 py-1 rounded" title="Remove the preferred install date">Clear</button>
+                        </div>
+                        <p class="text-xs text-slate-500 mt-1">The project starts on this date in Zoho Projects. Empty: it starts today.</p>
+                    </div>
                     <div id="qProjectContext" class="q hidden" data-q="projectType" data-label="Is this a new build or a renovation?">
                         <p class="q-title text-sm font-medium text-slate-300 mb-1">Is this a new build or a renovation?</p>
                         <p class="q-hint text-xs text-slate-500 mb-2">A renovation adds the removal of the existing work.</p>
@@ -2037,7 +2050,7 @@
                                 <div class="flex h-1.5 rounded-full overflow-hidden bg-slate-800" id="jsPhaseBar"></div>
                                 <div class="flex flex-wrap mt-2" id="jsPhaseKey" style="gap:4px 14px"></div>
                             </div>
-                            <p class="text-[11px] js-foot mt-3 leading-relaxed">Dates assume the job starts today and skip weekends.</p>
+                            <p id="jsStartFoot" class="text-[11px] js-foot mt-3 leading-relaxed">Dates assume the job starts today and skip weekends.</p>
                         </div>
                     </div>
 
@@ -8282,12 +8295,56 @@
             });
         })();
 
+
+        // The day the job's lanes start: the preferred install date when one is set and not in the
+        // past, otherwise today. Every schedule in the widget (summary, timeline, milestones, the
+        // payload sent to Zoho) starts here, so they agree.
+        window.jobStartDate = () => {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const raw = (document.getElementById('preferredInstall') || {}).value;
+            if (!raw) return today;
+            const p = raw.split('-');
+            const d = new Date(+p[0], +p[1] - 1, +p[2]);
+            let start = isNaN(d) || d < today ? today : d;
+            // A weekend date starts on the Monday after, as every lane does.
+            while (start.getDay() === 0 || start.getDay() === 6) start = new Date(start.getFullYear(), start.getMonth(), start.getDate() + 1);
+            return start;
+        };
+        document.addEventListener('click', (e) => {
+            const el = e.target;
+            if (el && el.id === 'preferredInstall' && el.showPicker) { try { el.showPicker(); } catch (_) {} }
+            if (el && el.id === 'preferredInstallClear') {
+                const inp = document.getElementById('preferredInstall');
+                if (inp) { inp.value = ''; inp.dispatchEvent(new Event('change', { bubbles: true })); inp.dispatchEvent(new Event('input', { bubbles: true })); }
+            }
+        });
+        const syncPreferredInstall = () => {
+            const inp = document.getElementById('preferredInstall');
+            const clr = document.getElementById('preferredInstallClear');
+            if (inp) { const t = new Date(); inp.min = t.getFullYear() + '-' + String(t.getMonth() + 1).padStart(2, '0') + '-' + String(t.getDate()).padStart(2, '0'); }
+            if (clr && inp) clr.classList.toggle('hidden', !inp.value);
+            const foot = document.getElementById('jsStartFoot');
+            if (foot) {
+                const d = window.jobStartDate();
+                foot.textContent = inp && inp.value
+                    ? 'Dates start on ' + d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' }) + ' (preferred install date) and skip weekends.'
+                    : 'Dates assume the job starts today and skip weekends.';
+            }
+        };
+        document.addEventListener('DOMContentLoaded', syncPreferredInstall);
+        setTimeout(syncPreferredInstall, 0);
         // The verdict lives in the summary card, so changing the date has to redraw
         // it. It is outside the question flow on purpose - it is a fact about the
         // job, not a step - so it does not disturb the order he signed off on.
         document.addEventListener('change', (e) => {
             if (e.target && e.target.id === 'neededBy' && window.renderJobSummary) {
                 window.renderJobSummary();
+            }
+            if (e.target && e.target.id === 'preferredInstall') {
+                syncPreferredInstall();
+                if (window.renderJobSummary) window.renderJobSummary();
+                if (window.renderMilestones) window.renderMilestones();
+                if (window.saveDraftState) window.saveDraftState();
             }
         });
 
@@ -8359,6 +8416,7 @@
         });
 
         window.renderJobSummary = () => {
+            if (typeof syncPreferredInstall === 'function') syncPreferredInstall();
             const card = document.getElementById('jobSummary');
             if (!card) return;
 
@@ -8381,7 +8439,7 @@
             const cursors = {};
             const laneStart = (list) => {
                 if (!cursors[list]) {
-                    let d = new Date();
+                    let d = window.jobStartDate();
                     // ONE list, so one lane. Blocks are emitted stairs-first, so the
                     // schedule runs stairs then railing without needing the two lanes
                     // to be chained together the way they were when they were split.
@@ -8819,8 +8877,8 @@
                     const targetList = listFor ? listFor(r) : r.list;
                     if (!task_lists[targetList]) task_lists[targetList] = [];
                     if (!cursors[targetList]) {
-                        // Every lane starts on the same working day, today.
-                        let d = new Date();
+                        // Every lane starts on the same working day: the preferred install date, or today.
+                        let d = window.jobStartDate();
                         while (isWeekend(d)) d = nextBusinessDay(d);
                         cursors[targetList] = d;
                     }
@@ -8950,6 +9008,7 @@
                 // What was promised. Carried through so the date lives with the work
                 // rather than only in the head of whoever ran the handoff.
                 needed_by: (document.getElementById('neededBy') || {}).value || "",
+                preferred_install_date: (document.getElementById('preferredInstall') || {}).value || "",
                 // The project's own dates. Every task carries dates already; the
                 // project header showed nothing.
                 project_start: projectStart ? fmtProjectsDate(projectStart) : "",
@@ -9591,7 +9650,7 @@
         // =====================================
         (() => {
             const SHARED_FORM = ['projectOwnerAssignee', 'projectType', 'scopeOfWork', 'siteProtection', 'demoDisposal',
-                                 'jobHasTravel', 'subCount', 'notes[]', 'neededBy'];
+                                 'jobHasTravel', 'subCount', 'notes[]', 'neededBy', 'preferredInstall'];
             const SHARED_ASSIGNEES = ['projectOwnerAssigneeInput'];
             let sub = { names: [], active: 0, snaps: {}, owners: {} };
             const count = () => {
@@ -9905,7 +9964,7 @@
                 const cursors = {};
                 const laneStart = (list) => {
                     if (!cursors[list]) {
-                        let d = new Date(); d.setHours(0, 0, 0, 0);
+                        let d = window.jobStartDate();
                         while (isWeekend(d)) d = nextBusinessDay(d);
                         cursors[list] = d;
                     }
@@ -10149,7 +10208,7 @@
                 const sched = {}, items = [];
                 let last = null, review = false;
                 sp.forEach((p, i) => {
-                    let cur = new Date(); cur.setHours(0, 0, 0, 0);
+                    let cur = window.jobStartDate();
                     while (isWeekend(cur)) cur = nextBusinessDay(cur);
                     const secs = [];
                     p.rows.forEach(r => {

@@ -8,6 +8,7 @@ each time it goes live. Plain wording, for review with management.
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
 | 24 | 2026-10-15 | Documents (Zoho function) | Fix | A "+" in an attachment's file name is kept when it is copied into Documents (WorkDrive turned it into a space). Paste the full create_handoff_tasks. | 7a99623e |
+| 43 | 2026-11-05 | Preferred install date (widget) | New | A Preferred install date field (optional) under the project owner opens a calendar. When it is set, the project and every task lane start on that date in Zoho Projects (a weekend date starts the Monday after); Matthew can still move dates in Projects. Empty, the job starts today as before. The summary says which date the schedule starts on. | |
 
 ## Workflow (no change to the live product)
 
