@@ -141,7 +141,7 @@ test('sub-projects: shared start, the longest fills the time, close out after ea
     assert.equal(r.finish, r.tail.end);
     // Same stretch rate: the shorter lane's production stretches by the same factor.
     const fA = a.tasks[1].minutes / (24 * 60), fB = b.tasks[1].minutes / (8 * 60);
-    assert.ok(Math.abs(fA - fB) < 0.01, fA + ' vs ' + fB);
+    assert.ok(Math.abs(b.tasks[1].minutes - 8 * 60 * fA) <= 30, fA + ' vs ' + fB);   // within the quarter-hour rounding
 });
 
 test('close out comes after the install date, at its planned length', () => {
@@ -240,11 +240,12 @@ test('less time than planned: scheduling squeezes hard, production keeps 75%, su
     // 200 h: only scheduling gives up time.
     let f = F(200);
     assert.equal(JSON.stringify(f.mins.map(m => m / 60)), '[9,11,18,45,9,90,18]');
-    // 175 h: scheduling to its floor (15%), then orders and checks to half, then production.
+    // 175 h: scheduling down to 15 minutes first, then orders and checks; production untouched.
     f = F(175);
-    assert.equal(f.mins[1], Math.ceil(27 * 60 * 0.15));
-    assert.equal(f.mins[2], 9 * 60); assert.equal(f.mins[4], 60);   // a QA check keeps one hour
-    assert.ok(f.mins[3] < 45 * 60 && f.mins[3] >= 45 * 60 * 0.75);
+    assert.equal(f.mins[1], 15);
+    assert.ok(f.mins[2] < 18 * 60 && f.mins[2] >= 9 * 60);
+    assert.ok(f.mins[4] < 9 * 60 && f.mins[4] >= 60);              // a QA check keeps at least an hour
+    assert.equal(f.mins[3], 45 * 60);
     assert.equal(f.mins[5], 90 * 60); assert.equal(f.mins[0], 540); assert.equal(f.mins[6], 18 * 60);
     assert.equal(f.belowFloor, false);
     assert.equal(f.mins.reduce((a, b) => a + b, 0), 175 * 60);
@@ -350,7 +351,7 @@ test('below the floors, scheduling goes first and production last', () => {
     // Floors: 4.05 + 4.5 + 33.75 + 18 = 60.3 h. At 50 h production loses the least share.
     const f = S.fit(lane, 50 * 60);
     assert.equal(f.belowFloor, true);
-    assert.equal(f.mins[0], 1);                       // scheduling down to a minute
+    assert.equal(f.mins[0], 15);                      // scheduling down to 15 minutes
     assert.equal(f.mins[1], 60);                      // a QA check keeps its hour
     assert.equal(f.mins[3], 18 * 60);                 // fixed untouched
     assert.equal(f.mins.reduce((a, b) => a + b, 0), 3000);
@@ -431,7 +432,7 @@ test('squeezing below the minimums: everything else goes to a minute before site
     const g = S.fit(ts, 70 * 60);
     assert.equal(g.squeezed, true);
     assert.ok(g.short.length && g.short.every(x => ts[x.index].cat === 'fixed'));
-    ts.forEach((t, i) => { if (t.cat !== 'fixed') assert.equal(g.mins[i], 1); });
+    ts.forEach((t, i) => { if (t.cat !== 'fixed') assert.equal(g.mins[i], 15); });
     assert.equal(g.mins.reduce((a, b) => a + b, 0), 70 * 60);
 });
 
@@ -490,4 +491,42 @@ test('M1: opening another sub-project keeps the draft schedule version', () => {
     const fn = /window\.openSubProject = \(j\) => \{[\s\S]*?window\.location\.reload\(\);/.exec(html);
     assert.ok(fn, 'openSubProject not found');
     assert.ok(/next\.scheduleVersion = cur\.scheduleVersion;/.test(fn[0]));
+});
+
+
+test('minimums are on the quarter hour (never "4 h 3 min")', () => {
+    const lane = [['scheduling', 27], ['ordering', 7], ['production', 13], ['checks', 3], ['fixed', 9]].map(([cat, h]) => ({ p: h * 60, cat }));
+    const f = S.fit(lane, 30 * 60);
+    // Every floor reported is a multiple of 15 minutes.
+    const g = S.fit(lane, 12 * 60);
+    g.short.forEach(x => assert.equal(x.floor % 15, 0, String(x.floor)));
+    assert.equal(S.fmt.duration(g.short[0].floor).indexOf(' 3 min'), -1);
+});
+
+test('every due time lands on the quarter hour, and checks keep their time unless squeezed', () => {
+    const T = (hours, cat, days) => days ? { days, cat } : { hours, cat };
+    const lanes = [
+        [T(0, 'fixed', 1), T(0, 'fixed', 3), T(2, 'fixed'), T(0, 'scheduling', 3), T(2, 'checks'), T(0, 'production', 5), T(3, 'checks'),
+         T(0, 'fixed', 2), T(1, 'checks'), T(2, 'checks'), T(0, 'closeout', 1), T(2, 'closeout')],
+        [T(0, 'fixed', 1), T(2, 'fixed'), T(0, 'scheduling', 1), T(0, 'production', 3), T(3, 'checks'), T(0, 'fixed', 2), T(2, 'checks'), T(0, 'closeout', 1), T(2, 'closeout')],
+        [T(0, 'fixed', 1), T(0, 'supplierWait', 14), T(0, 'scheduling', 1), T(1, 'checks'), T(0, 'closeout', 1)]
+    ];
+    ['2026-12-23', '2027-01-15', '2027-05-21', '2026-12-11'].forEach(d => {
+        const r = S.schedule({ lanes, tail: 1, installDate: d, nowMs: NOW });
+        if (r.status === 'none' || r.status === 'past') return;
+        const squeezed = r.status === 'confirm';
+        r.lanes.forEach((l, li) => l.tasks.forEach((t, i) => {
+            assert.equal(t.start % 15, 0, d + ' lane ' + li + ' task ' + i + ' start ' + S.fmt.dayTime(t.start));
+            assert.equal(t.end % 15, 0, d + ' lane ' + li + ' task ' + i + ' end ' + S.fmt.dayTime(t.end));
+            if (!squeezed && lanes[li][i].cat === 'checks') assert.equal(t.minutes, lanes[li][i].hours * 60, d + ' check lane ' + li + ' task ' + i);
+        }));
+        assert.equal(r.tail.end % 15, 0);
+    });
+});
+
+test('squeezed: no task under 15 minutes, ends on the quarter hour', () => {
+    const lane = Array.from({ length: 30 }, (_, i) => (i % 5 === 0 ? { hours: 40, cat: 'fixed' } : { hours: 8, cat: 'production' }));
+    const r = S.schedule({ lanes: [lane], tail: null, installDate: '2026-11-20', nowMs: NOW });
+    assert.equal(r.status, 'confirm');
+    r.lanes[0].tasks.forEach(t => { assert.ok(t.minutes >= 15); assert.equal(t.end % 15, 0); });
 });
