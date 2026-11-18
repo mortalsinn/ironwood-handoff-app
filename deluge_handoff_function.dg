@@ -102,7 +102,12 @@ if(newProjectId == "")
 	// same date from an older widget.
 	if(payloadData.get("install_date_label") != null && payloadData.get("install_date_label") != "")
 	{
-		projDesc = projDesc + "Install date: " + payloadData.get("install_date_label") + "\n";
+		dateTitle = "Install date";
+		if(payloadData.get("install_date_title") != null && payloadData.get("install_date_title") != "")
+		{
+			dateTitle = payloadData.get("install_date_title");
+		}
+		projDesc = projDesc + dateTitle + ": " + payloadData.get("install_date_label") + "\n";
 	}
 	else if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
 	{
@@ -1334,8 +1339,7 @@ for each  listName in keys
 					// sending times for the rest of the run so no other task costs two calls.
 					if(taskResponse.get("tasks") == null && taskParams.containKey("start_time"))
 					{
-						timesRefused = true;
-						info "TASK TIMES REFUSED, retrying with dates only (and dates only from now on): " + taskName + " | " + taskResponse.toString();
+						info "TASK TIMES REFUSED, retrying with dates only: " + taskName + " | " + taskResponse.toString();
 						taskParams.remove("start_time");
 						taskParams.remove("end_time");
 						taskResponse = invokeurl
@@ -1345,6 +1349,11 @@ for each  listName in keys
 							parameters:taskParams
 							connection:"zoho_projects_connection"
 						];
+						// Dates alone worked, so the times were the problem: dates only from now on.
+						if(taskResponse.get("tasks") != null)
+						{
+							timesRefused = true;
+						}
 					}
 					if(taskResponse.get("tasks") == null)
 					{
@@ -1661,7 +1670,12 @@ if(isReusedProject == "no" && firstOwnerEmail != "" && firstTaskName != "")
 		}
 		if(payloadData.get("install_date_label") != null && payloadData.get("install_date_label") != "")
 		{
-			kickoffBody = kickoffBody + "<p><b>Install date:</b> " + payloadData.get("install_date_label") + "</p>";
+			kickTitle = "Install date";
+			if(payloadData.get("install_date_title") != null && payloadData.get("install_date_title") != "")
+			{
+				kickTitle = payloadData.get("install_date_title");
+			}
+			kickoffBody = kickoffBody + "<p><b>" + kickTitle + ":</b> " + payloadData.get("install_date_label") + "</p>";
 		}
 		else if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
 		{

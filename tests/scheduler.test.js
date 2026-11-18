@@ -69,7 +69,7 @@ test('backward schedule: last task ends at close on the install date, first star
         assert.ok(S.nextWorkStart(t.start) === t.start);
     });
     // Shares follow the planned lengths: the 40 h task gets 5 times the 8 h one (to the minute).
-    assert.ok(Math.abs(tasks[3].minutes - 5 * tasks[1].minutes) <= 5);
+    assert.ok(Math.abs(tasks[3].minutes - 5 * tasks[1].minutes) <= 60);   // ends fall on the quarter hour
     assert.equal(r.lanes[0].tasks.reduce((a, t) => a + t.percent, 0), 100);
     assert.equal(r.status, 'tight'); // 95 h for 128 planned
 });
@@ -441,4 +441,53 @@ test('notes behind a task name do not change its category', () => {
     assert.equal(S.categoryOf('[Stairs] [ESA] Install Finished Stair [Western, Straight - Stair 1]'), 'fixed');
     assert.equal(S.categoryOf('[Rails] Review (Drawing, Take Off)'), 'checks');
     assert.equal(S.categoryOf('[Welding] Install Full Metal Railing (Framework)'), 'fixed');
+});
+
+test('M3: a day task is days x 9 h and runs whole working days whenever it gets its planned time', () => {
+    assert.equal(CFG.categories.fixed.stretch, 0);
+    assert.equal(CFG.categories.checks.stretch, 0);
+    // Plenty of time (stretch): a 1 day site measure starting Fri 8:00 ends Fri 4:00 PM, not Monday.
+    const r = S.schedule({ lanes: [[{ days: 1, cat: 'fixed' }, { days: 5, cat: 'production' }, { days: 2, cat: 'fixed' }, { days: 1, cat: 'closeout' }]],
+                           tail: null, installDate: '2027-01-15', nowMs: ab(2026, 11, 27, 8, 0) });
+    assert.equal(r.status, 'ok');
+    assert.equal(r.plannedMinutes, 8 * 540);                     // days x 9 h
+    const t = r.lanes[0].tasks;
+    assert.equal(t[0].start, wall(2026, 11, 27, 8));
+    assert.equal(t[0].end, wall(2026, 11, 27, 16));
+    assert.equal(t[0].keptDays, 1); assert.equal(t[0].delta, 0);
+    // The 2 day install is two whole working days ending at the install date's close (Fri 4:00 PM).
+    assert.equal(t[2].keptDays, 2); assert.equal(t[2].delta, 0);
+    assert.equal(t[2].end, wall(2027, 1, 15, 16));
+    assert.equal(t[2].start, wall(2027, 1, 14, 8));
+    assert.equal(S.workDaysBetween(t[2].start, t[2].end), 2);
+    // Production took all the extra time.
+    assert.ok(t[1].delta > 0);
+    // Due times fall on the quarter hour.
+    t.forEach(x => assert.equal(x.end % 15, 0, S.fmt.dayTime(x.end)));
+});
+
+test('M3: never "planned 2 days, scheduled 1 day 8 h": kept day tasks report their days', () => {
+    const lane = [{ days: 1, cat: 'fixed' }, { days: 3, cat: 'fixed' }, { hours: 2, cat: 'fixed' }, { days: 3, cat: 'scheduling' },
+                  { days: 5, cat: 'production' }, { days: 2, cat: 'fixed' }, { hours: 2, cat: 'checks' }, { days: 1, cat: 'closeout' }];
+    [['2026-12-23', NOW], ['2027-05-21', NOW], ['2026-12-11', NOW]].forEach(([d, now]) => {
+        const r = S.schedule({ lanes: [lane], tail: null, installDate: d, nowMs: now });
+        r.lanes[0].tasks.forEach((x, i) => {
+            if (lane[i].cat === 'fixed' && lane[i].days) {
+                assert.equal(x.keptDays, lane[i].days, d + ' task ' + i);
+                assert.equal(S.workDaysBetween(x.start, x.end), lane[i].days, d + ' task ' + i);
+            }
+        });
+    });
+});
+
+test('M2: duration boxes step by a quarter from a quarter (5 to 5.25, 2 h to 1.75)', () => {
+    const inputs = html.match(/<input type="number"[^>]*class="task-days-input[^"]*"[^>]*>/g) || [];
+    assert.ok(inputs.length >= 3);
+    inputs.forEach(tag => { assert.ok(/min="0.25"/.test(tag), tag); assert.ok(/step="0.25"/.test(tag), tag); });
+});
+
+test('M1: opening another sub-project keeps the draft schedule version', () => {
+    const fn = /window\.openSubProject = \(j\) => \{[\s\S]*?window\.location\.reload\(\);/.exec(html);
+    assert.ok(fn, 'openSubProject not found');
+    assert.ok(/next\.scheduleVersion = cur\.scheduleVersion;/.test(fn[0]));
 });
