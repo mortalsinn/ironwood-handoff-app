@@ -135,7 +135,8 @@ test('sub-projects: shared start, the longest fills the time, close out after ea
     assert.equal(a.tasks[3].end, wall(2026, 12, 3, 16));
     // The shorter sub-project finishes earlier and closes out right after its own install.
     assert.ok(b.installEnd < a.installEnd);
-    assert.equal(b.tasks[2].start, S.nextWorkStart(b.installEnd));
+    assert.equal(S.fmt.zohoTime(b.tasks[2].start), '08:00');        // close out from 8:00 the next working day
+    assert.ok(b.tasks[2].start > b.installEnd);
     // Wrap-up after the last close out.
     assert.equal(r.tail.start, S.nextWorkStart(a.tasks[3].end));
     assert.equal(r.finish, r.tail.end);
@@ -529,4 +530,29 @@ test('squeezed: no task under 15 minutes, ends on the quarter hour', () => {
     const r = S.schedule({ lanes: [lane], tail: null, installDate: '2026-11-20', nowMs: NOW });
     assert.equal(r.status, 'confirm');
     r.lanes[0].tasks.forEach(t => { assert.ok(t.minutes >= 15); assert.equal(t.end % 15, 0); });
+});
+
+test('sub-projects that fit: every check keeps its time in every lane; close out starts at 8:00 the next working day', () => {
+    const T = (h, cat, days) => days ? { days, cat } : { hours: h, cat };
+    const stair = [T(2, 'fixed'), T(0, 'fixed', 3), T(2, 'fixed'), T(0, 'scheduling', 3), T(0, 'production', 20), T(4, 'checks'),
+                   T(0, 'fixed', 2), T(1, 'checks'), T(2, 'checks'), T(0, 'closeout', 1), T(2, 'closeout')];
+    const rail = [T(0, 'fixed', 1), T(0, 'fixed', 3), T(2, 'fixed'), T(1, 'checks'), T(0, 'scheduling', 3), T(0, 'scheduling', 1), T(2, 'checks'),
+                  T(0, 'production', 5), T(3, 'checks'), T(0, 'fixed', 2), T(1, 'checks'), T(2, 'checks'), T(0, 'closeout', 1), T(2, 'closeout')];
+    ['2027-01-15', '2026-12-23', '2027-02-26', '2027-04-30'].forEach(d => {
+        const r = S.schedule({ lanes: [stair, rail], tail: 1, installDate: d, nowMs: NOW });
+        assert.ok(r.status === 'ok' || r.status === 'tight', d + ' ' + r.status);
+        [stair, rail].forEach((lane, li) => {
+            const tasks = r.lanes[li].tasks;
+            lane.forEach((t, i) => {
+                if (t.cat === 'checks' && r.status === 'ok') assert.equal(tasks[i].minutes, t.hours * 60, d + ' lane ' + li + ' check ' + i);
+                if (t.cat === 'checks') assert.ok(tasks[i].minutes >= Math.min(60, t.hours * 60));
+                assert.equal(tasks[i].end % 15, 0, d + ' lane ' + li + ' task ' + i);
+            });
+            const first = lane.findIndex(t => t.cat === 'closeout');
+            const fc = tasks[first];
+            assert.equal(S.fmt.zohoTime(fc.start), '08:00', d + ' lane ' + li + ' close out start');
+            assert.ok(fc.start > r.lanes[li].installEnd);
+            assert.equal(fc.end, S.advanceDays(fc.start, 1), 'follow up runs the whole day');
+        });
+    });
 });

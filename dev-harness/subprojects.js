@@ -21,6 +21,7 @@ const pick = (page, pairs) => page.evaluate(async (pairs) => {
   console.log('ACTIVE', await page.evaluate(() => window.activeSubName()));
   console.log('CARDS', await page.evaluate(() => Array.from(document.querySelectorAll('.sub-card .sub-meta')).map(e => e.textContent).join(' | ')));
   console.log('SUMMARY planned', await page.evaluate(() => document.getElementById('jsDays').textContent));
+  if (process.env.PLAN) console.log(JSON.stringify(await h.plan(page), null, 1));
   const g = await h.generate(page);
   let p = g.payload;
   if (!p && g.checkOpen) { await page.evaluate(() => document.querySelector('#schedCheckOverlay [data-sc="squeeze"]').click()); await sleep(2500); p = await page.evaluate(() => window.__LAST_PAYLOAD); }
