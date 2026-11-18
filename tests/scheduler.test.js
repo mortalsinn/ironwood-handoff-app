@@ -390,3 +390,55 @@ test('default durations in the plan', () => {
     assert.ok(arch.indexOf("key: 'sales-followup'") < arch.indexOf("key: 'accounting'"));
     assert.ok(arch.indexOf("key: 'accounting'") < arch.indexOf("key: 'review-request'"));
 });
+
+test('a day is a working day: day tasks end at close, even on a Friday', () => {
+    // advanceDays: from opening, 1 day ends at that day's close; Friday closes at 4.
+    assert.equal(S.advanceDays(wall(2026, 11, 27, 8), 1), wall(2026, 11, 27, 16));
+    assert.equal(S.advanceDays(wall(2026, 11, 26, 8), 2), wall(2026, 11, 27, 16));
+    assert.equal(S.advanceDays(wall(2026, 11, 27, 8), 1.5), wall(2026, 11, 30, 12, 30));
+    // Part way into Friday (4 of 8 h): one day later is half way into Monday.
+    assert.equal(S.advanceDays(wall(2026, 11, 27, 12), 1), wall(2026, 11, 30, 12, 30));
+    // Close out after a Thursday install: the 1 day follow up runs all of Friday and ends at 4,
+    // not Monday 9:00; the invoice (2 h) and review (1 h) follow on Monday.
+    const r = S.schedule({ lanes: [[{ days: 1, cat: 'fixed' }, { days: 1, cat: 'closeout' }, { hours: 2, cat: 'closeout' }, { hours: 1, cat: 'closeout' }]],
+                           tail: null, installDate: '2026-11-26', nowMs: NOW });
+    const t = r.lanes[0].tasks;
+    assert.equal(t[1].start, wall(2026, 11, 27, 8));
+    assert.equal(t[1].end, wall(2026, 11, 27, 16));
+    assert.equal(t[2].end, wall(2026, 11, 30, 10));
+    assert.equal(t[3].end, wall(2026, 11, 30, 11));
+    // Before the install, a fixed day task that keeps its length runs whole days; the elastic
+    // task takes up the difference and the lane still ends at the install date's close.
+    const r2 = S.schedule({ lanes: [[{ days: 1, cat: 'fixed' }, { days: 5, cat: 'production' }, { days: 1, cat: 'fixed' }]],
+                            tail: null, installDate: '2026-12-04', nowMs: ab(2026, 11, 26, 8) });
+    const u = r2.lanes[0].tasks;
+    assert.equal(u[2].end, wall(2026, 12, 4, 16));
+    assert.equal(u[2].start, wall(2026, 12, 4, 8));                // the last day task is all of Friday
+    assert.equal(u[2].keptDays, 1);
+    assert.equal(u[0].end, wall(2026, 11, 26, 17));
+});
+
+test('squeezing below the minimums: everything else goes to a minute before site work shrinks', () => {
+    const ts = [['fixed', 9], ['fixed', 27], ['fixed', 2], ['fixed', 9], ['fixed', 9], ['checks', 1], ['scheduling', 27], ['scheduling', 9],
+        ['checks', 2], ['production', 63], ['checks', 3], ['fixed', 18], ['checks', 1], ['checks', 2]].map(([c, h]) => ({ cat: c, p: h * 60 }));
+    // Fixed work is 74 h; 77 h are available: fixed keeps every minute.
+    const f = S.fit(ts, 77 * 60);
+    assert.equal(f.squeezed, false);
+    ts.forEach((t, i) => { if (t.cat === 'fixed') assert.equal(f.mins[i], t.p); });
+    assert.equal(f.mins.reduce((a, b) => a + b, 0), 77 * 60);
+    assert.ok(f.short.every(x => ts[x.index].cat !== 'fixed'));
+    // 70 h: the fixed work alone does not fit; now it shrinks and is what gets listed.
+    const g = S.fit(ts, 70 * 60);
+    assert.equal(g.squeezed, true);
+    assert.ok(g.short.length && g.short.every(x => ts[x.index].cat === 'fixed'));
+    ts.forEach((t, i) => { if (t.cat !== 'fixed') assert.equal(g.mins[i], 1); });
+    assert.equal(g.mins.reduce((a, b) => a + b, 0), 70 * 60);
+});
+
+test('notes behind a task name do not change its category', () => {
+    assert.equal(S.categoryOf('[Stairs] Finished Stair Install Photos [Stair 1]'), 'checks');
+    assert.equal(S.categoryOf('[Stairs] Drop Off Photos [Western, Straight - Stair 2]'), 'checks');
+    assert.equal(S.categoryOf('[Stairs] [ESA] Install Finished Stair [Western, Straight - Stair 1]'), 'fixed');
+    assert.equal(S.categoryOf('[Rails] Review (Drawing, Take Off)'), 'checks');
+    assert.equal(S.categoryOf('[Welding] Install Full Metal Railing (Framework)'), 'fixed');
+});

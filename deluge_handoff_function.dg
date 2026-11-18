@@ -1163,6 +1163,8 @@ if(milestoneMode == "yes")
 }
 info "TASK LIST CREATION ORDER: " + keys.toString();
 prevTaskId = "";
+// v15.75: set when Zoho refuses task start/end times; the run then sends dates only.
+timesRefused = false;
 // SUB-PROJECTS (widget v15.48+): each sub-project is its own list with its own
 // timeline, so its chain starts fresh at its first task instead of waiting on
 // the last task of the sub-project before it.
@@ -1302,11 +1304,12 @@ for each  listName in keys
 					// TIMES (v15.70). With an install date the widget schedules every task
 					// to the minute (Alberta time, 24 hour HH:MM) and sends no duration:
 					// Zoho works the duration out from the start and end.
-					if(taskObj.get("start_time") != null && taskObj.get("start_time") != "")
+					// Once Zoho has refused the times, the rest of the run sends dates only.
+					if(timesRefused == false && taskObj.get("start_time") != null && taskObj.get("start_time") != "")
 					{
 						taskParams.put("start_time",taskObj.get("start_time"));
 					}
-					if(taskObj.get("end_time") != null && taskObj.get("end_time") != "")
+					if(timesRefused == false && taskObj.get("end_time") != null && taskObj.get("end_time") != "")
 					{
 						taskParams.put("end_time",taskObj.get("end_time"));
 					}
@@ -1327,10 +1330,12 @@ for each  listName in keys
 						parameters:taskParams
 						connection:"zoho_projects_connection"
 					];
-					// Times refused: create the task with its dates alone rather than lose it.
+					// Times refused: create the task with its dates alone rather than lose it, and stop
+					// sending times for the rest of the run so no other task costs two calls.
 					if(taskResponse.get("tasks") == null && taskParams.containKey("start_time"))
 					{
-						info "TASK TIMES REFUSED, retrying with dates only: " + taskName + " | " + taskResponse.toString();
+						timesRefused = true;
+						info "TASK TIMES REFUSED, retrying with dates only (and dates only from now on): " + taskName + " | " + taskResponse.toString();
 						taskParams.remove("start_time");
 						taskParams.remove("end_time");
 						taskResponse = invokeurl
