@@ -11,5 +11,5 @@ Owner: Jeff (Ironwood Stair & Rail). Short, decisive answers. Runs on the shared
   After it lands: the Render deploy is manual and the Deluge functions (`*.dg`) are pasted into Zoho by hand; say exactly
   which ones changed. Then move the released rows to the Released table in PENDING.md and post the release to the channel.
 - Live widget: https://ironwood-handoff-app.onrender.com (Render static site srv-d87l60sm0tmc73cuqah0, manual deploy).
-- No automated tests yet (`CHECK` is empty in project.conf).
+- Tests: `node --test tests/scheduler.test.js` (the install date scheduler, the SCHEDULER block in index.html); it is `CHECK` in project.conf, so it runs before every push.
 - Stage files by explicit path; another session may be editing this repo.

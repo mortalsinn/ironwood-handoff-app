@@ -98,7 +98,13 @@ if(newProjectId == "")
 	{
 		projDesc = projDesc + "Site: " + payloadData.get("job_address") + "\n";
 	}
-	if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
+	// v15.70: the install date (the day the last task is due). needed_by is the
+	// same date from an older widget.
+	if(payloadData.get("install_date_label") != null && payloadData.get("install_date_label") != "")
+	{
+		projDesc = projDesc + "Install date: " + payloadData.get("install_date_label") + "\n";
+	}
+	else if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
 	{
 		projDesc = projDesc + "Needed by: " + payloadData.get("needed_by") + "\n";
 	}
@@ -1293,6 +1299,17 @@ for each  listName in keys
 					{
 						taskParams.put("end_date",taskObj.get("end_date"));
 					}
+					// TIMES (v15.70). With an install date the widget schedules every task
+					// to the minute (Alberta time, 24 hour HH:MM) and sends no duration:
+					// Zoho works the duration out from the start and end.
+					if(taskObj.get("start_time") != null && taskObj.get("start_time") != "")
+					{
+						taskParams.put("start_time",taskObj.get("start_time"));
+					}
+					if(taskObj.get("end_time") != null && taskObj.get("end_time") != "")
+					{
+						taskParams.put("end_time",taskObj.get("end_time"));
+					}
 					// DURATION. Zoho takes duration (int) with duration_type "days" or
 					// "hrs". The widget decides the unit per task; a half day is sent
 					// as 4 hrs rather than rounded up into a whole day it never takes.
@@ -1310,6 +1327,20 @@ for each  listName in keys
 						parameters:taskParams
 						connection:"zoho_projects_connection"
 					];
+					// Times refused: create the task with its dates alone rather than lose it.
+					if(taskResponse.get("tasks") == null && taskParams.containKey("start_time"))
+					{
+						info "TASK TIMES REFUSED, retrying with dates only: " + taskName + " | " + taskResponse.toString();
+						taskParams.remove("start_time");
+						taskParams.remove("end_time");
+						taskResponse = invokeurl
+						[
+							url :taskUrl
+							type :POST
+							parameters:taskParams
+							connection:"zoho_projects_connection"
+						];
+					}
 					if(taskResponse.get("tasks") == null)
 					{
 						info "FAILED TO CREATE TASK: " + taskName + " | ERROR: " + taskResponse.toString();
@@ -1623,7 +1654,11 @@ if(isReusedProject == "no" && firstOwnerEmail != "" && firstTaskName != "")
 		{
 			kickoffBody = kickoffBody + "<p><b>Site:</b> " + payloadData.get("job_address") + "</p>";
 		}
-		if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
+		if(payloadData.get("install_date_label") != null && payloadData.get("install_date_label") != "")
+		{
+			kickoffBody = kickoffBody + "<p><b>Install date:</b> " + payloadData.get("install_date_label") + "</p>";
+		}
+		else if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
 		{
 			kickoffBody = kickoffBody + "<p><b>Needed by:</b> " + payloadData.get("needed_by") + "</p>";
 		}
