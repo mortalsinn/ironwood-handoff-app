@@ -357,16 +357,17 @@ test('below the floors, scheduling goes first and production last', () => {
     assert.ok(f.mins[2] > 45 * 60 * 0.55);
 });
 
-test('close out: invoice right after the install, follow up a working day later, review after it', () => {
+test('close out: follow up a working day after the install, then the invoice, then the review', () => {
     const T = (hours, cat) => ({ hours, cat });
-    const lane = [T(9, 'fixed'), T(45, 'production'), T(18, 'fixed'), T(2, 'checks'), T(2, 'closeout'), T(9, 'closeout'), T(1, 'closeout')];
+    const lane = [T(9, 'fixed'), T(45, 'production'), T(18, 'fixed'), T(2, 'checks'), T(9, 'closeout'), T(2, 'closeout'), T(1, 'closeout')];
     const r = S.schedule({ lanes: [lane], tail: null, installDate: '2026-12-02', nowMs: NOW });
     const t = r.lanes[0].tasks;
     assert.equal(t[3].end, wall(2026, 12, 2, 17));                 // install work finished on the date
-    assert.equal(t[4].start, wall(2026, 12, 3, 8));                // invoice first thing next morning, 2 h
-    assert.equal(t[4].end, wall(2026, 12, 3, 10));
-    assert.equal(t[5].end, wall(2026, 12, 4, 10));                 // follow up a working day later (Fri closes at 4)
-    assert.equal(t[6].end, wall(2026, 12, 4, 11));                 // review an hour after
+    assert.equal(t[4].start, wall(2026, 12, 3, 8));                // follow up: the next working day
+    assert.equal(t[4].end, wall(2026, 12, 3, 17));
+    assert.equal(t[5].start, wall(2026, 12, 4, 8));                // invoice 2 h after it
+    assert.equal(t[5].end, wall(2026, 12, 4, 10));
+    assert.equal(t[6].end, wall(2026, 12, 4, 11));                 // review an hour after the invoice
     t.slice(4).forEach(x => assert.ok(x.start >= r.end, 'close out never before the install'));
 });
 
@@ -385,6 +386,7 @@ test('default durations in the plan', () => {
     assert.equal(dur('QA - Materials'), 'hours 2');
     assert.equal(dur('QA - Install'), 'hours 2');
     assert.equal(dur('Railing Take Off Sheet'), 'hours 2');
-    // The final invoice section now comes before the follow up.
-    assert.ok(arch.indexOf("key: 'accounting'") < arch.indexOf("key: 'sales-followup'"));
+    // Follow up, then the invoice, then the review.
+    assert.ok(arch.indexOf("key: 'sales-followup'") < arch.indexOf("key: 'accounting'"));
+    assert.ok(arch.indexOf("key: 'accounting'") < arch.indexOf("key: 'review-request'"));
 });
