@@ -24,7 +24,7 @@ Checks, automation and tooling. They change nothing customers see.
 | 2 | 2026-10-13 | Development workflow | Improvement | Updates that change only notes and lists skip the test run before uploading; code changes are still fully tested. | 82a092d4 |
 | 3 | 2026-11-18 | Development workflow | Improvement | First automated tests: the install date scheduler (tests/scheduler.test.js, 12 checks) runs before every upload. | d8fe673e |
 | 4 | 2026-11-18 | Development workflow | Improvement | The test run before every upload is node --test tests/*.test.js (works on Node 24). Rows 24, 43 and 44 (already live) moved to Released. | 1a1f114a |
-| 5 | 2026-11-18 | Test copy | New | A test copy for coworkers on the office network at http://192.168.1.195:5050 (Jeff's desktop): the current dev form with sample deals and people, a banner reading "Test copy: sample data, nothing is sent to Zoho", and Generate showing what would have been sent. Runs as a user service that starts at boot (dev-harness/serve.js, handoff-testcopy.service, README). The local puppeteer harness and scenario scripts are in dev-harness. Needs the firewall opened for port 5050 on 192.168.1.0/24 (sudo, Jeff). | |
+| 5 | 2026-11-18 | Test copy | New | A test copy for coworkers on the office network at http://192.168.1.195:5050 (Jeff's desktop): the current dev form with sample deals and people, a banner reading "Test copy: sample data, nothing is sent to Zoho", and Generate showing what would have been sent. Runs as a user service that starts at boot (dev-harness/serve.js, handoff-testcopy.service, README). The local puppeteer harness and scenario scripts are in dev-harness. Needs the firewall opened for port 5050 on 192.168.1.0/24 (sudo, Jeff). | 04b1a6f4 |
 
 ## Released
 
