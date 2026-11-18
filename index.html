@@ -1570,7 +1570,7 @@
                                 <button type="button" id="prefLegacyChange" class="text-xs font-semibold rounded border border-slate-600 text-slate-200 hover:bg-slate-700" style="padding:5px 10px">Choose another date</button>
                             </div>
                         </div>
-                        <p id="prefSchedHint" class="text-xs text-slate-500 mt-1">The install is finished by this date; close out follows. Empty: tasks run their planned days from today.</p>
+                        <p id="prefSchedHint" class="text-xs text-slate-500 mt-1">Install finish date. Empty: planned days from today.</p>
                     </div>
                     <div id="qProjectContext" class="q hidden" data-q="projectType" data-label="Is this a new build or a renovation?">
                         <p class="q-title text-sm font-medium text-slate-300 mb-1">Is this a new build or a renovation?</p>
@@ -2105,7 +2105,7 @@
                                 <div class="flex h-1.5 rounded-full overflow-hidden bg-slate-800" id="jsPhaseBar"></div>
                                 <div class="flex flex-wrap mt-2" id="jsPhaseKey" style="gap:4px 14px"></div>
                             </div>
-                            <p id="jsStartFoot" class="text-[11px] js-foot mt-3 leading-relaxed">Dates assume the job starts today and skip weekends and stat holidays.</p>
+                            <p id="jsStartFoot" class="text-[11px] js-foot mt-3 leading-relaxed">Starts today. No weekends or stat holidays.</p>
                         </div>
                     </div>
 
@@ -9137,30 +9137,30 @@
             if (!js || !js.install) return null;
             const r = js.result;
             const when = isoLabel(js.install);
-            if (js.status === 'past') { const t = when + ' has passed. Tasks run their planned days from today.'; return { tone: 'bad', head: t, body: t }; }
-            if (js.status === 'none') { const t = 'No working hours are left before ' + when + '. Tasks run their planned days from today.'; return { tone: 'bad', head: t, body: t }; }
-            const planned = hoursText(r.plannedMinutes).replace(' working', '');
-            const closeOut = js.finishLabel && js.finishLabel !== js.endLabel ? ' Close out follows: last task due ' + js.finishLabel + '.' : '';
-            // head: when the install is finished and the close out (under the field).
-            // body: how the work before the install fits, then the close out (summary).
-            const head = (r.endsBeforeInstallDay ? when + ' is ' + r.installDayNote + ', so the install is finished by ' : 'Install finished by ')
-                + js.endLabel + '.' + closeOut;
+            if (js.status === 'past') { const t = when + ' has passed. Planned days from today.'; return { tone: 'bad', head: t, body: t }; }
+            if (js.status === 'none') { const t = 'No working hours left before ' + when + '. Planned days from today.'; return { tone: 'bad', head: t, body: t }; }
+            const hrs = (min) => hoursText(min).replace(' working', '');
+            const closeOut = js.finishLabel && js.finishLabel !== js.endLabel ? ' Close out done ' + js.finishLabel + '.' : '';
+            // head: install finish and close out (under the field). body: fit before the install (summary).
+            const head = 'Install finished ' + js.endLabel
+                + (r.endsBeforeInstallDay ? ' (' + when + ' is ' + r.installDayNote + ').' : '.') + closeOut;
             let body, tone, shortHint = '';
             if (js.status === 'confirm') {
                 tone = 'bad';
                 const names = shortTaskList(js, 3);
-                const first = 'Only ' + hoursText(r.availableMinutes) + ' remain before the install'
-                    + (r.belowFloor ? '; the work needs at least ' + hoursText(r.floorMinutes).replace(' working', '') + '.' : '.');
-                body = first + (r.belowFloor && names ? ' Too little time for ' + names + '.' : '');
-                shortHint = first + ' Generate asks how to go ahead.';
+                const first = 'Not enough time: ' + hrs(r.availableMinutes) + ' left before the install'
+                    + (r.belowFloor ? ', ' + hrs(r.floorMinutes) + ' needed.' : '.');
+                body = first + (r.belowFloor && names ? ' Short: ' + names + '.' : '');
+                shortHint = first + ' Generate asks how to proceed.';
             } else if (js.status === 'tight') {
                 tone = 'warn';
-                body = 'Work before the install shares ' + hoursText(r.availableMinutes) + ', ' + Math.round(r.ratio * 100) + '% of the ' + planned
-                    + ' planned. Scheduling is shortened first, then orders, checks and production; site work, drawings and supplier lead times keep their time.';
+                body = 'Shortened to fit: ' + Math.round(r.availableMinutes / 60).toLocaleString('en-CA') + ' of '
+                    + hrs(r.plannedMinutes) + ' before the install.';
             } else {
                 tone = 'ok';
-                body = 'Work before the install shares ' + hoursText(r.availableMinutes)
-                    + (r.availableMinutes > r.plannedMinutes ? '. The extra time goes to scheduling, production and orders.' : '.');
+                body = r.availableMinutes > r.plannedMinutes
+                    ? 'Fits: ' + hrs(r.plannedMinutes) + ' planned, ' + hrs(r.availableMinutes) + ' available before the install.'
+                    : 'Fits: ' + hrs(r.plannedMinutes) + ' before the install.';
             }
             // Hover: which tasks gained or gave up the most time.
             const detail = (js.absorbed || []).slice(0, 6).map(a => {
@@ -9216,18 +9216,15 @@
                 const plannedText = r.unit === 'hrs' ? F.duration(Math.round(parseFloat(r.amount) * 60)) : dayWord(parseFloat(r.amount) || 1);
                 chip.textContent = (isTail ? 'Wrap-up ' : 'Due ') + r.endLabel.replace(/^\w+, /, '');
                 chip.classList.toggle('task-due-after', !!r.after);
-                const cat = (HandoffScheduler.config.categories[r.cat] || {}).label || '';
                 let how;
-                if (r.delta > 0) how = ' (+' + F.duration(r.delta) + '; ' + ((HandoffScheduler.config.categories[r.cat] || {}).stretch >= 0.5
-                    ? 'extra time goes to ' + cat : cat + ' stretch only a little') + ').';
-                else if (r.delta < 0) how = ' (\u2212' + F.duration(-r.delta) + ((HandoffScheduler.config.categories[r.cat] || {}).order >= 4 ? '; even the fixed work does not fit).' : '; shortened before site visits, drawings, approvals and installs).');
+                if (r.delta > 0) how = ' (+' + F.duration(r.delta) + ').';
+                else if (r.delta < 0) how = ' (\u2212' + F.duration(-r.delta) + ').';
                 else how = '.';
                 chip.title = isTail
-                    ? 'Asked once for the whole job, in the Job Wrap-Up after every sub-project. Starts ' + r.startLabel + '. Due ' + r.endLabel + '.'
+                    ? 'Once per job, in Job Wrap-Up. Starts ' + r.startLabel + '. Due ' + r.endLabel + '.'
                     : r.after
-                    ? 'Close out, after the install, at its planned ' + plannedText + '. Starts ' + r.startLabel + '. Due ' + r.endLabel + '.'
-                    : 'Starts ' + r.startLabel + '. Due ' + r.endLabel + '. Planned ' + plannedText + ', scheduled ' + (r.keptDays ? plannedText : F.duration(r.minutes)) + how
-                      + ' ' + r.percent + '% of the time before the install.';
+                    ? 'Close out: ' + plannedText + '. Starts ' + r.startLabel + '. Due ' + r.endLabel + '.'
+                    : 'Starts ' + r.startLabel + '. Due ' + r.endLabel + '. Planned ' + plannedText + ', scheduled ' + (r.keptDays ? plannedText : F.duration(r.minutes)) + how;
             });
         };
         // The calendar: a month at a time, past days off, weekends shown dimmer (a weekend start
@@ -9323,14 +9320,13 @@
                 const sqTitle = el('schedCheckSqueeze');
                 if (checkMode === 'legacy') {
                     // A draft from before v15.70: confirm what the date means before anything else.
-                    el('schedCheckMsg').textContent = 'This draft was saved when ' + when + ' was the project start. It now means the install is finished by '
-                        + when + ', with close out after it.';
+                    el('schedCheckMsg').textContent = 'Saved as the project start in an older version. Now read as the install finish date: ' + when + '.';
                     el('schedCheckList').classList.add('hidden');
                     o.querySelector('[data-sc="squeeze"]').classList.remove('hidden');
                     sqTitle.textContent = 'Keep ' + when + ' as the install date';
-                    el('schedCheckSqueezeNote').textContent = 'The schedule is then checked against it as usual.';
+                    el('schedCheckSqueezeNote').textContent = 'Tasks are scheduled back from this date.';
                     const pl = window.computeJobSchedule({ mode: 'planned' });
-                    el('schedCheckPlannedNote').textContent = pl.end ? 'Ignores the install date. Last task due ' + dayLabel(pl.end) + '.' : 'Ignores the install date.';
+                    el('schedCheckPlannedNote').textContent = pl.end ? 'Planned days from today. Last task due ' + dayLabel(pl.end) + '.' : 'Planned days from today.';
                     o.classList.remove('hidden');
                     o.querySelector('[data-sc="date"]').focus();
                     return;
@@ -9339,12 +9335,12 @@
                 const steps = js.lanes.reduce((a, l) => Math.max(a, l.rows.filter(x => !x.after).length), 0);
                 const squeeze = js.status === 'confirm';
                 let msg;
-                if (js.status === 'past') msg = when + ' has passed, so the tasks cannot be scheduled back from it.';
-                else if (js.status === 'none') msg = 'No working hours are left before ' + when + ', so the tasks cannot be scheduled back from it.';
-                else msg = when + ' leaves ' + hoursText(r.availableMinutes) + ' before the install for ' + hoursText(r.plannedMinutes).replace(' working', '')
-                    + ' of planned work. ' + (r.belowFloor
-                        ? 'Even shortened as far as it goes, the work needs ' + hoursText(r.floorMinutes).replace(' working', '') + '. Too little time for:'
-                        : 'Each task gets about ' + HandoffScheduler.fmt.minutes(Math.max(1, Math.round(r.availableMinutes / Math.max(1, steps)))) + '.');
+                if (js.status === 'past') msg = when + ' has passed.';
+                else if (js.status === 'none') msg = 'No working hours left before ' + when + '.';
+                else msg = hoursText(r.availableMinutes).replace(' working', '') + ' available, ' + hoursText(r.plannedMinutes).replace(' working', '')
+                    + ' planned' + (r.belowFloor
+                        ? ', ' + hoursText(r.floorMinutes).replace(' working', '') + ' minimum. Short:'
+                        : '.');
                 el('schedCheckMsg').textContent = msg;
                 const ul = el('schedCheckList');
                 const items = js.status === 'confirm' && r.belowFloor ? shortTaskItems(js) : [];
@@ -9354,11 +9350,11 @@
                 ul.classList.toggle('hidden', !items.length);
                 const sq = o.querySelector('[data-sc="squeeze"]');
                 sq.classList.toggle('hidden', !squeeze);
-                if (squeeze) el('schedCheckSqueezeNote').textContent = (r.fixedShort ? 'Every task squeezed to fit' : 'The listed tasks squeezed to fit')
-                    + '. Install finished by ' + js.endLabel + ', close out after it.';
+                if (squeeze) el('schedCheckSqueezeNote').textContent = (r.fixedShort ? 'All tasks shortened' : 'Listed tasks shortened')
+                    + '. Install finished ' + js.endLabel + '.';
                 const planned = window.computeJobSchedule({ mode: 'planned' });
                 el('schedCheckPlannedNote').textContent = planned.end
-                    ? 'Ignores the install date. Last task due ' + dayLabel(planned.end) + '.' : 'Ignores the install date.';
+                    ? 'Planned days from today. Last task due ' + dayLabel(planned.end) + '.' : 'Planned days from today.';
                 o.classList.remove('hidden');
                 o.querySelector('[data-sc="date"]').focus();
             };
@@ -9404,7 +9400,7 @@
                 legacyBox.classList.toggle('hidden', !legacy);
                 if (legacy) {
                     const lab = isoLabel(inp.value);
-                    document.getElementById('prefLegacyMsg').textContent = 'This draft was saved when this date was the project start. It now means the install is finished by ' + lab + ', with close out after it.';
+                    document.getElementById('prefLegacyMsg').textContent = 'Saved as the project start in an older version. Now read as the install finish date: ' + lab + '.';
                     document.getElementById('prefLegacyKeep').textContent = 'Keep ' + lab + ' as the install date';
                 }
             }
@@ -9419,15 +9415,15 @@
                     hint.textContent = st.tone === 'bad' && st.head !== st.body ? (st.short || st.body) : st.head;
                     hint.className = 'text-xs mt-1 ' + (st.tone === 'bad' ? 'sched-bad' : 'text-slate-400');
                 } else {
-                    hint.textContent = inp && inp.value ? 'The install is finished by this date; close out follows. Answer the job questions to see the schedule.'
-                        : 'The install is finished by this date; close out follows. Empty: tasks run their planned days from today.';
+                    hint.textContent = inp && inp.value ? 'Install finish date. Answer the job questions to see the schedule.'
+                        : 'Install finish date. Empty: planned days from today.';
                     hint.className = 'text-xs text-slate-500 mt-1';
                 }
             }
             if (foot) {
                 foot.textContent = js && js.mode === 'install'
-                    ? 'Working hours: ' + HandoffScheduler.describeWeek() + '; no stat holidays. Site visits, drawings, approvals and installs keep their planned time; scheduling, production and orders take up the difference.'
-                    : 'Dates assume the job starts today and skip weekends and stat holidays.';
+                    ? 'Working hours: ' + HandoffScheduler.describeWeek() + '. No weekends or stat holidays.'
+                    : 'Starts today. No weekends or stat holidays.';
             }
             return js;
         };
