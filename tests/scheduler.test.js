@@ -81,12 +81,15 @@ test('plenty of time: tasks stretch, status ok', () => {
     assert.ok(r.ratio > 1);
 });
 
-test('very short timeline: squeezed in proportion, asks first', () => {
-    const weights = Array.from({ length: 30 }, (_, i) => (i % 5 === 0 ? 40 : 8)); // 336 h planned
-    const r = S.schedule({ lanes: [weights], tail: null, installDate: '2026-11-20', nowMs: NOW });
+test('very short timeline: the fixed work does not fit, so it asks first', () => {
+    // 336 h planned, 240 h of it fixed site work and drawings.
+    const lane = Array.from({ length: 30 }, (_, i) => (i % 5 === 0 ? { hours: 40, cat: 'fixed' } : { hours: 8, cat: 'production' }));
+    const r = S.schedule({ lanes: [lane], tail: null, installDate: '2026-11-20', nowMs: NOW });
     // Wed 10-5 (7) + Thu (9) + Fri (8) = 24 h for 336 planned.
     assert.equal(r.availableMinutes, 24 * 60);
     assert.equal(r.status, 'confirm');
+    assert.equal(r.fixedShort, true);
+    assert.equal(r.fixedMinutes, 240 * 60);
     const t = r.lanes[0].tasks;
     assert.equal(t[t.length - 1].end, wall(2026, 11, 20, 16));
     assert.equal(t.reduce((a, x) => a + x.minutes, 0), 24 * 60);
@@ -96,6 +99,19 @@ test('very short timeline: squeezed in proportion, asks first', () => {
     assert.equal(today.availableMinutes, 180);
     assert.equal(today.status, 'confirm');
     assert.equal(today.lanes[0].tasks[2].end, wall(2026, 11, 18, 17));
+});
+
+test('short but the fixed work fits: elastic work is cut, no question asked', () => {
+    const T = (hours, cat) => ({ hours, cat });
+    const lane = [T(8, 'fixed'), T(24, 'fixed'), T(24, 'scheduling'), T(40, 'production'), T(8, 'checks'), T(16, 'fixed'), T(8, 'closeout')];
+    const r = S.schedule({ lanes: [lane], tail: null, installDate: '2026-11-25', nowMs: NOW }); // 7+9+8+9+9+9 = 51 h
+    assert.equal(r.availableMinutes, 51 * 60);
+    assert.equal(r.status, 'tight');
+    const t = r.lanes[0].tasks;
+    assert.equal(t[0].minutes, 480); assert.equal(t[1].minutes, 1440); assert.equal(t[5].minutes, 960);
+    assert.equal(t[5].end, wall(2026, 11, 25, 17));
+    assert.ok(t[3].minutes < 40 * 60 * 0.25);   // production went under its floor
+    assert.equal(r.belowFloor, true);
 });
 
 test('no time left, and an install date in the past', () => {
@@ -115,17 +131,139 @@ test('install date on a weekend ends the Friday before', () => {
     assert.equal(weekday.endsBeforeInstallDay, false);
 });
 
-test('sub-projects: shared start, the longest fills the window, the wrap-up ends on the install date', () => {
-    const r = S.schedule({ lanes: [[8, 24, 8], [8, 8]], tail: 8, installDate: '2026-12-02', nowMs: NOW });
+test('sub-projects: shared start, the longest fills the time, close out after each install, wrap-up last', () => {
+    const T = (hours, cat) => ({ hours, cat });
+    const r = S.schedule({ lanes: [[T(8, 'fixed'), T(24, 'production'), T(8, 'fixed'), T(8, 'closeout')],
+                                   [T(8, 'fixed'), T(8, 'production'), T(8, 'closeout')]],
+                           tail: 8, installDate: '2026-12-02', nowMs: NOW });
     const [a, b] = r.lanes;
     assert.equal(a.tasks[0].start, wall(2026, 11, 18, 10));
     assert.equal(b.tasks[0].start, wall(2026, 11, 18, 10));
-    assert.equal(r.tail.end, wall(2026, 12, 2, 17));
-    assert.equal(r.tail.start, S.nextWorkStart(a.tasks[2].end));
-    assert.ok(b.tasks[1].end < a.tasks[2].end, 'shorter sub-project finishes earlier');
-    // Same rate of minutes per planned hour in both lanes.
-    assert.ok(Math.abs(b.minutes / 16 - a.minutes / 40) < 1);
-    assert.equal(a.minutes + r.tail.minutes, r.availableMinutes);
+    // The longest lane's install work ends at close on the install date.
+    assert.equal(a.tasks[2].end, wall(2026, 12, 2, 17));
+    assert.equal(a.installEnd, wall(2026, 12, 2, 17));
+    // Its close out follows, at its planned 8 hours: Dec 3 8:00 to 4:00 PM.
+    assert.equal(a.tasks[3].after, true);
+    assert.equal(a.tasks[3].start, wall(2026, 12, 3, 8));
+    assert.equal(a.tasks[3].end, wall(2026, 12, 3, 16));
+    // The shorter sub-project finishes earlier and closes out right after its own install.
+    assert.ok(b.installEnd < a.installEnd);
+    assert.equal(b.tasks[2].start, S.nextWorkStart(b.installEnd));
+    // Wrap-up after the last close out.
+    assert.equal(r.tail.start, S.nextWorkStart(a.tasks[3].end));
+    assert.equal(r.finish, r.tail.end);
+    // Same stretch rate: the shorter lane's production stretches by the same factor.
+    const fA = a.tasks[1].minutes / (24 * 60), fB = b.tasks[1].minutes / (8 * 60);
+    assert.ok(Math.abs(fA - fB) < 0.01, fA + ' vs ' + fB);
+});
+
+test('close out comes after the install date, at its planned length', () => {
+    const T = (hours, cat) => ({ hours, cat });
+    const lane = [T(8, 'fixed'), T(40, 'production'), T(16, 'fixed'), T(8, 'closeout'), T(8, 'closeout'), T(8, 'closeout')];
+    const r = S.schedule({ lanes: [lane], tail: null, installDate: '2026-12-02', nowMs: NOW });
+    const t = r.lanes[0].tasks;
+    assert.equal(t[2].end, wall(2026, 12, 2, 17));            // install finished on the date
+    assert.equal(JSON.stringify(t.slice(3).map(x => x.minutes)), '[480,480,480]');
+    assert.equal(t[3].start, wall(2026, 12, 3, 8));
+    assert.equal(t[5].end, wall(2026, 12, 7, 15));             // 24 h back to back from Thu 8:00 (Fri closes at 4)
+    assert.equal(r.finish, t[5].end);
+    // Shares of the time before the install total 100; close out is not in them.
+    assert.equal(t.slice(0, 3).reduce((x, y) => x + y.percent, 0), 100);
+});
+
+test('more time than planned: production and orders absorb it, site work keeps its length', () => {
+    const T = (hours, cat) => ({ hours, cat });
+    const lane = [T(8, 'fixed'), T(24, 'fixed'), T(8, 'fixed'), T(24, 'scheduling'), T(8, 'ordering'),
+                  T(40, 'production'), T(8, 'checks'), T(16, 'fixed'), T(8, 'closeout')];
+    const r = S.schedule({ lanes: [lane], tail: null, installDate: '2027-05-21', nowMs: NOW }); // about 6 months
+    const t = r.lanes[0].tasks;
+    assert.equal(r.status, 'ok');
+    assert.equal(t[7].end, wall(2027, 5, 21, 16));             // a Friday
+    // Site measure grows by under 30% even with six times the planned time.
+    assert.ok(t[0].minutes < 480 * 1.3, 'site measure ' + t[0].minutes);
+    assert.ok(t[7].minutes < 960 * 1.3, 'install ' + t[7].minutes);
+    // Production gets more extra than the order, in proportion to its planned length.
+    assert.ok(t[5].delta > t[4].delta * 4);
+    assert.ok(t[5].delta > 50 * t[0].delta);
+    // The extra time is listed, biggest first.
+    assert.equal(lane[r.absorbed[0].index].cat, 'production');
+});
+
+test('less time than planned: scheduling is shortened first, then production and orders, site work last', () => {
+    const T = (hours, cat) => ({ hours, cat });
+    const lane = [T(8, 'fixed'), T(24, 'scheduling'), T(40, 'production'), T(8, 'checks'), T(16, 'fixed')];
+    // 96 h planned. 80 h: only scheduling gives up time.
+    let f = S.fit(lane.map(x => ({ p: x.hours * 60, cat: x.cat })), 80 * 60);
+    assert.equal(JSON.stringify(f.mins.map(m => m / 60)), '[8,8,40,8,16]');
+    // 60 h: scheduling to its floor (15%), production next; fixed untouched.
+    f = S.fit(lane.map(x => ({ p: x.hours * 60, cat: x.cat })), 60 * 60);
+    assert.equal(f.mins[0], 480); assert.equal(f.mins[4], 960);
+    assert.equal(f.mins[1], Math.ceil(24 * 60 * 0.15));
+    assert.ok(f.mins[2] < 2400 && f.mins[3] === 480);
+    assert.equal(f.mins.reduce((a, b) => a + b, 0), 3600);
+    // Under the floors but the fixed work still fits: only the elastic work goes lower.
+    f = S.fit(lane.map(x => ({ p: x.hours * 60, cat: x.cat })), 30 * 60);
+    assert.equal(f.squeezed, false); assert.equal(f.belowFloor, true);
+    assert.equal(f.mins[0], 480); assert.equal(f.mins[4], 960);
+    assert.equal(f.mins.reduce((a, b) => a + b, 0), 1800);
+    // The fixed work alone does not fit: all shrink alike and it is flagged.
+    f = S.fit(lane.map(x => ({ p: x.hours * 60, cat: x.cat })), 20 * 60);
+    assert.equal(f.squeezed, true);
+    assert.equal(f.mins.reduce((a, b) => a + b, 0), 1200);
+});
+
+test('every task the plan can create has a category', () => {
+    const arch = /const ARCHETYPES = \[[\s\S]*?\n        \];/.exec(html)[0];
+    const names = [...new Set([...arch.matchAll(/\{ name: '([^']+)'/g)].map(x => x[1]))];
+    assert.ok(names.length > 100);
+    const other = names.filter(n => S.categoryOf(n) === 'other');
+    assert.equal(JSON.stringify(other), '[]');
+    const expect = {
+        'Railing Site Measure': 'fixed', 'Railing Take Off Sheet': 'fixed', 'Stair Drawing': 'fixed',
+        'Approve Shop Drawing': 'fixed', 'Install Railing': 'fixed', 'QA - Install': 'checks', 'Railing Install Photos': 'checks',
+        'Review Drawing and Take Off': 'checks', 'Existing Railing Removal': 'fixed', 'Install Site Protection': 'fixed',
+        'Manufacture Railing Package': 'production', 'Assemble Finished Stair': 'production', 'Schedule Fabrication': 'production',
+        'Order Glass': 'ordering', 'Receive Coated Spindles': 'ordering', 'Spindle Coating Drop Off': 'ordering',
+        'Confirm Schedule Manufacture': 'ordering', 'Schedule Install': 'scheduling', 'Schedule Const. Stair Drop Off': 'scheduling',
+        'QA - Materials': 'checks', 'Dry Fit - Spindles': 'checks', 'Follow Up with Customer': 'closeout',
+        'Send Final Invoice': 'closeout', 'Google Review Request': 'closeout', 'Standoffs, Template, Order Glass': 'fixed'
+    };
+    Object.keys(expect).forEach(n => assert.equal(S.categoryOf(n), expect[n], n));
+    // Trade and ESA tags in front do not change it; custom tasks are other.
+    assert.equal(S.categoryOf('[Rails] [ESA] Install Railing'), 'fixed');
+    assert.equal(S.categoryOf('[Custom] Touch up paint'), 'other');
+});
+
+test('stat holidays: computed for any year, skipped like weekends', () => {
+    // Good Friday follows Easter.
+    assert.equal(S.holidayOfIso('2026-04-03'), 'Good Friday');
+    assert.equal(S.holidayOfIso('2027-03-26'), 'Good Friday');
+    assert.equal(S.holidayOfIso('2028-04-14'), 'Good Friday');
+    assert.equal(JSON.stringify(Object.keys(S.holidaysOfYear(2026)).sort()), JSON.stringify(['2026-01-01', '2026-02-16', '2026-04-03', '2026-05-18', '2026-07-01',
+        '2026-08-03', '2026-09-07', '2026-10-12', '2026-11-11', '2026-12-25', '2026-12-26']));
+    assert.equal(S.holidayOfIso('2027-05-24'), 'Victoria Day');   // May 24 itself is a Monday
+    assert.equal(S.holidayOfIso('2029-07-02'), 'Canada Day');     // Jul 1 2029 is a Sunday
+    assert.equal(S.holidayOfIso('2029-07-01'), '');
+    assert.equal(S.holidayOfIso('2026-12-24'), '');
+    // A schedule across Christmas and Boxing Day 2028 (Mon and Tue) skips both.
+    assert.equal(S.workBetween(wall(2028, 12, 22), wall(2028, 12, 28)), 480 + 540);
+    const r = S.schedule({ lanes: [[{ hours: 16, cat: 'fixed' }]], tail: null, installDate: '2028-12-27', nowMs: ab(2028, 12, 22, 8, 0) });
+    assert.equal(r.availableMinutes, 480 + 540);
+    assert.equal(r.lanes[0].tasks[0].end, wall(2028, 12, 27, 17));
+    // An install date on a holiday ends the working day before.
+    const h = S.schedule({ lanes: [[8]], tail: null, installDate: '2026-12-25', nowMs: NOW });
+    assert.equal(h.end, wall(2026, 12, 24, 17));
+    assert.equal(h.installDayNote, 'Christmas Day');
+    assert.equal(S.isWorkDayIso('2026-12-28'), true);
+    assert.equal(S.isWorkDayIso('2026-12-26'), false);
+});
+
+test('a holiday switched off is worked; closed dates are skipped', () => {
+    const src = m[0].replace('boxingDay: true', 'boxingDay: false').replace("closedDates: []", "closedDates: ['2028-12-28']");
+    const { HandoffScheduler: X } = vm.runInNewContext(src + '\n;({ HandoffScheduler })', {});
+    assert.equal(X.holidayOfIso('2028-12-26'), '');
+    assert.equal(X.holidayOfIso('2028-12-28'), 'Shop closed');
+    assert.equal(X.workBetween(wall(2028, 12, 25), wall(2028, 12, 30)), 540 + 540 + 480); // Tue, Wed, Fri
 });
 
 test('UTC-6 all year, whatever the computer clock zone says', () => {
@@ -163,4 +301,11 @@ test('labels read as dates and times people use', () => {
 
 test('the working week reads back from the config', () => {
     assert.equal(S.describeWeek(), 'Mon to Thu 8:00 AM to 5:00 PM, Fri 8:00 AM to 4:00 PM');
+});
+
+test('no tasks yet (an empty sub-project) does not break anything', () => {
+    const r = S.schedule({ lanes: [], tail: null, installDate: '2026-12-02', nowMs: NOW });
+    assert.equal(r.lanes.length, 0);
+    const r2 = S.schedule({ lanes: [], tail: 8, installDate: '2026-12-02', nowMs: NOW });
+    assert.equal(r2.lanes.length, 0);
 });
