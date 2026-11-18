@@ -243,7 +243,7 @@ test('less time than planned: scheduling squeezes hard, production keeps 75%, su
     // 175 h: scheduling to its floor (15%), then orders and checks to half, then production.
     f = F(175);
     assert.equal(f.mins[1], Math.ceil(27 * 60 * 0.15));
-    assert.equal(f.mins[2], 9 * 60); assert.equal(f.mins[4], Math.ceil(9 * 60 * 0.5));
+    assert.equal(f.mins[2], 9 * 60); assert.equal(f.mins[4], 60);   // a QA check keeps one hour
     assert.ok(f.mins[3] < 45 * 60 && f.mins[3] >= 45 * 60 * 0.75);
     assert.equal(f.mins[5], 90 * 60); assert.equal(f.mins[0], 540); assert.equal(f.mins[6], 18 * 60);
     assert.equal(f.belowFloor, false);
@@ -290,7 +290,7 @@ test('every task the plan can create has a category', () => {
         'Review Drawing and Take Off': 'checks', 'Existing Railing Removal': 'fixed', 'Install Site Protection': 'fixed',
         'Manufacture Railing Package': 'production', 'Assemble Finished Stair': 'production', 'Schedule Fabrication': 'production',
         'Receive Glass': 'supplierWait', 'Receive Coated Spindles': 'supplierWait', 'Confirm Schedule Manufacture': 'supplierWait',
-        'Order Glass': 'ordering', 'Order Standoffs / Base Shoe': 'ordering', 'Spindle Coating Drop Off': 'ordering',
+        'Order Glass': 'ordering', 'Order Standoffs / Base Shoe': 'supplierWait', 'Order Custom Metal / Steel': 'ordering', 'Spindle Coating Drop Off': 'ordering',
         'Schedule Install': 'scheduling', 'Schedule Const. Stair Drop Off': 'scheduling',
         'QA - Materials': 'checks', 'Dry Fit - Spindles': 'checks', 'Follow Up with Customer': 'closeout',
         'Send Final Invoice': 'closeout', 'Google Review Request': 'closeout', 'Standoffs, Template, Order Glass': 'fixed'
@@ -351,8 +351,40 @@ test('below the floors, scheduling goes first and production last', () => {
     const f = S.fit(lane, 50 * 60);
     assert.equal(f.belowFloor, true);
     assert.equal(f.mins[0], 1);                       // scheduling down to a minute
-    assert.equal(f.mins[1], 1);                       // checks next
+    assert.equal(f.mins[1], 60);                      // a QA check keeps its hour
     assert.equal(f.mins[3], 18 * 60);                 // fixed untouched
     assert.equal(f.mins.reduce((a, b) => a + b, 0), 3000);
-    assert.ok(f.mins[2] > 45 * 60 * 0.6);
+    assert.ok(f.mins[2] > 45 * 60 * 0.55);
+});
+
+test('close out: invoice right after the install, follow up a working day later, review after it', () => {
+    const T = (hours, cat) => ({ hours, cat });
+    const lane = [T(9, 'fixed'), T(45, 'production'), T(18, 'fixed'), T(2, 'checks'), T(2, 'closeout'), T(9, 'closeout'), T(1, 'closeout')];
+    const r = S.schedule({ lanes: [lane], tail: null, installDate: '2026-12-02', nowMs: NOW });
+    const t = r.lanes[0].tasks;
+    assert.equal(t[3].end, wall(2026, 12, 2, 17));                 // install work finished on the date
+    assert.equal(t[4].start, wall(2026, 12, 3, 8));                // invoice first thing next morning, 2 h
+    assert.equal(t[4].end, wall(2026, 12, 3, 10));
+    assert.equal(t[5].end, wall(2026, 12, 4, 10));                 // follow up a working day later (Fri closes at 4)
+    assert.equal(t[6].end, wall(2026, 12, 4, 11));                 // review an hour after
+    t.slice(4).forEach(x => assert.ok(x.start >= r.end, 'close out never before the install'));
+});
+
+test('QA checks shrink to an hour, never below', () => {
+    const f = S.fit([{ p: 180, cat: 'checks' }, { p: 120, cat: 'checks' }, { p: 60, cat: 'checks' }, { p: 540, cat: 'fixed' }], 540 + 180);
+    assert.equal(JSON.stringify(f.mins), '[60,60,60,540]');
+    assert.equal(f.belowFloor, false);
+});
+
+test('default durations in the plan', () => {
+    const arch = /const ARCHETYPES = \[[\s\S]*?\n        \];/.exec(html)[0];
+    const dur = (n) => { const m = new RegExp("\\{ name: '" + n.replace(/[.()]/g, '\\$&') + "', (days|hours): ([\\d.]+)").exec(arch); return m && m[1] + ' ' + m[2]; };
+    assert.equal(dur('Send Final Invoice'), 'hours 2');
+    assert.equal(dur('Follow Up with Customer'), 'days 1');
+    assert.equal(dur('Google Review Request'), 'hours 1');
+    assert.equal(dur('QA - Materials'), 'hours 2');
+    assert.equal(dur('QA - Install'), 'hours 2');
+    assert.equal(dur('Railing Take Off Sheet'), 'hours 2');
+    // The final invoice section now comes before the follow up.
+    assert.ok(arch.indexOf("key: 'accounting'") < arch.indexOf("key: 'sales-followup'"));
 });
