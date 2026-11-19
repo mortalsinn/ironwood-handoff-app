@@ -129,55 +129,9 @@ if(newProjectId == "")
 		return "Error creating project in Zoho: " + createResponse.toString();
 	}
 	newProjectId = createResponse.get("projects").get(0).get("id_string");
-	// =====================================
-	// LINK THE PROJECT BACK TO THE DEAL
-	// A project created through the REST API is never associated with the CRM
-	// Deal, so the Deal's "Zoho Projects" related list stays empty. Drop a note
-	// on the Deal carrying a direct link so the project is at least reachable.
-	// Sits inside the creation branch on purpose: a retried handoff re-uses the
-	// existing project and must not stack duplicate notes.
-	// Fail-open - a failed note must never turn a completed handoff into a
-	// Warning, so nothing here is added to failedItems.
-	// =====================================
-	// The URL needs the portal's default task-view id or it lands on the list of
-	// ALL projects instead of this one. That id is portal-level, not per-project:
-	// confirmed identical across two different projects on 2026-08-07
-	// (...7756008 and ...7787094 both carry ...3199003). Ending on /gantt so the link
-	// opens the schedule the handoff just built.
-	// Built by hand rather than read from the create response - that response
-	// carries no usable url field, confirmed on the first live run.
+	// The project is linked to the Deal's Zoho Projects list further down (PROJECT_ASSOCIATED);
+	// no link note on the Deal (Jeff, Nov 19 2026). The task view id is used by the kickoff email.
 	taskViewId = "1768463000003199003";
-	projectUrl = "https://projects.zoho.com/portal/" + portalId + "#zp/projects/" + newProjectId + "/tasks/custom-view/" + taskViewId + "/gantt?group_by=none";
-	linkNote = Map();
-	linkNote.put("Parent_Id",dealId);
-	linkNote.put("se_module","Deals");
-	linkNote.put("Note_Title","Zoho Project - " + projectName);
-	// Content is the bare URL and nothing else. Two reasons, both observed live
-	// on 2026-08-07: Deluge did not interpret the newline escape here, writing
-	// it into the note as two literal characters glued to the front of the URL,
-	// and CRM Note bodies are plain text so no markdown or link syntax renders -
-	// the widget's own user mentions come out raw in the same way. A clean
-	// unadorned URL is the only form with a chance of auto-linking, and the note
-	// title already says what it is.
-	linkNote.put("Note_Content",projectUrl);
-	// Attribute the note to the Deal owner. Without this the note shows whoever
-	// this standalone function executes as - a fixed CRM user unrelated to the
-	// job (it read "Mike Kent" on every note regardless of who ran the handoff).
-	// CONFIRMED WORKING 2026-08-07: setting Owner does change the byline in the
-	// Notes UI, so no need to move this into the widget. Guarded - a Deal with no
-	// Owner still gets its note, just attributed as before.
-	dealOwnerInfo = dealInfo.get("Owner");
-	if(dealOwnerInfo != null)
-	{
-		dealOwnerId = dealOwnerInfo.get("id");
-		if(dealOwnerId != null)
-		{
-			linkNote.put("Owner",dealOwnerId);
-			info "DEAL LINK NOTE OWNER: " + dealOwnerId;
-		}
-	}
-	linkNoteResponse = zoho.crm.createRecord("Notes",linkNote);
-	info "DEAL LINK NOTE RESULT: " + linkNoteResponse.toString();
 }
 if(newProjectId == null)
 {
@@ -720,11 +674,9 @@ progDone = 2;
 standalone.set_handoff_progress(dealId,"3",progDone.toString(),progTotal.toString(),"");
 // =====================================
 // POPULATE THE DEAL'S "ZOHO PROJECTS" RELATED LIST
-// Runs on EVERY handoff, not only when the project is created. The link
-// note stays inside the creation branch because repeat notes would stack,
-// but an association is a no-op the second time, and a re-run is exactly
-// how a project whose link is missing gets repaired.
-// The note is a fallback and stays. This is the real association, so
+// Runs on EVERY handoff, not only when the project is created. An association
+// is a no-op the second time, and a re-run is exactly how a project whose link
+// is missing gets repaired. This is the only link to the Deal (no link note), so
 // the project appears under the Deal's Zoho Projects sub-menu the way a
 // project created from inside CRM does.
 // FAIL-OPEN. A failure here must never turn a completed handoff into a
