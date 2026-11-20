@@ -28,10 +28,23 @@
     <style>
         .sortable-list li { cursor: grab; position: relative; padding-right: 20px; }
         .sortable-list li:active { cursor: grabbing; }
+        /* Phone width: header and footer wrap, nothing runs past the screen; the phase legend is
+           already in the summary key. */
+        @media (max-width: 640px) {
+            .app-hdr { flex-wrap: wrap; gap: 6px; padding-left: 10px; padding-right: 10px; }
+            .app-hdr-tools { flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+            .app-ftr { flex-wrap: wrap; gap: 8px; padding: 10px; }
+            .app-ftr > div { flex-wrap: wrap; gap: 6px; }
+            .app-ftr #saveBtn, .app-ftr #cancelBtn { padding-left: 12px; padding-right: 12px; }
+            .phase-legend { display: none !important; }
+        }
         .pref-dates { display: flex; flex-wrap: wrap; gap: 10px 16px; }
         .pref-date-col { flex: 1 1 180px; min-width: 0; max-width: 100%; }
-        .pref-date-col .pref-btn { min-width: 0; flex: 1 1 100%; width: 100%; max-width: 230px; }
-        .pref-date-col .pref-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .pref-date-col .pref-btn { min-width: 0; flex: 1 1 150px; max-width: 230px; }
+        .pref-date-col .pref-btn span { overflow: hidden; white-space: nowrap; }
+        .pref-btn.pref-btn-tight { padding: 8px 8px; gap: 0; }
+        .pref-btn.pref-btn-tight svg { display: none; }
+        .pref-btn.pref-btn-tiny { font-size: 12px; padding: 8px 6px; }
         .pref-btn { display: inline-flex; align-items: center; gap: 8px; min-width: 190px; padding: 8px 12px; border-radius: 10px;
             background: #0f172a; border: 1px solid #334155; color: #cbd5e1; font-size: 14px; font-weight: 500; transition: border-color .15s, background .15s; }
         .pref-btn:hover { border-color: #64748b; }
@@ -1450,7 +1463,7 @@
         .ms-line.ms-due span { background: #facc15; color: #1c1917; top: 18px; }
         /* A sub-project's install, drawn on its own rows only. */
         .ms-inst { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed #facc15; z-index: 3; }
-        .ms-inst span { position: absolute; top: 3px; left: 4px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        .ms-inst span { position: absolute; top: 3px; left: 4px; white-space: nowrap;
             font-size: 9.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px; background: #facc15; color: #1c1917; }
         .ms-inst.ms-inst-left span { left: auto; right: 4px; }
         .ms-tl-empty { font-size: 12px; color: #64748b; padding: 30px 0; text-align: center; }
@@ -1490,7 +1503,7 @@
          saw "Zoho CRM Simulator" on a live screen. Outside a Zoho host the app
          simply boots itself now. -->
     <div id="appContainer" class="flex flex-col h-full w-full hidden relative modal-enter">
-        <div class="bg-slate-950 px-5 py-2.5 flex justify-between items-center shrink-0 z-10 shadow-md border-b border-slate-800">
+        <div class="app-hdr bg-slate-950 px-5 py-2.5 flex justify-between items-center shrink-0 z-10 shadow-md border-b border-slate-800">
             <div class="flex items-center gap-3">
                 <span class="w-6 h-6 bg-gradient-to-br from-sky-400 to-blue-600 rounded flex items-center justify-center text-white font-black text-xs shadow-sm">IS</span>
                 <span class="text-xs font-bold text-slate-200 tracking-[0.2em] uppercase">Ironwood Stair & Rail</span>
@@ -1499,7 +1512,7 @@
                     <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg> Mark Closed Won
                 </button>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="app-hdr-tools flex items-center gap-4">
                 <div id="autoSaveIndicator" class="hidden flex items-center justify-center gap-1.5 opacity-0 transition-opacity duration-300 bg-slate-800 border border-slate-700 px-2 py-0.5 rounded-full shadow-lg">
                     <svg id="autoSaveSpinner" class="w-3 h-3 text-sky-400 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -2175,7 +2188,7 @@
                              front of all 22 task rows. -->
                         <span id="blueprintScopeChip" class="hidden mt-1 inline-block text-xs font-semibold normal-case tracking-normal text-sky-300 bg-sky-500/10 border border-sky-500/25 rounded px-2 py-0.5"></span>
                     </div>
-                    <div class="flex items-center gap-3 flex-wrap justify-end text-xs font-bold uppercase tracking-wider shrink" title="Task colors show the production phase">
+                    <div class="phase-legend flex items-center gap-3 flex-wrap justify-end text-xs font-bold uppercase tracking-wider shrink" title="Task colors show the production phase">
                         <span class="flex items-center gap-1 text-slate-400"><span class="w-1.5 h-1.5 rounded-full bg-violet-400 inline-block"></span>Setup</span>
                         <span class="flex items-center gap-1 text-slate-400"><span class="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block"></span>Fabrication</span>
                         <span class="flex items-center gap-1 text-slate-400"><span class="w-1.5 h-1.5 rounded-full bg-orange-400 inline-block"></span>QA</span>
@@ -2245,7 +2258,7 @@
             </div>
         </div>
 
-        <div class="px-6 py-4 bg-slate-900 border-t border-slate-800 flex justify-between items-center shrink-0 z-10">
+        <div class="app-ftr px-6 py-4 bg-slate-900 border-t border-slate-800 flex justify-between items-center shrink-0 z-10">
             <div class="flex items-center gap-4">
                 <div class="text-xs text-slate-400 flex items-center gap-2 font-medium">
                     <span class="relative flex h-2 w-2">
@@ -2368,7 +2381,7 @@
                             <li><strong class="text-slate-300">Start date and install date</strong> on the job and on each sub-project.</li>
                             <li>Sub-projects can overlap. Each fits its own dates.</li>
                             <li>Blank start: today. Blank install date: planned times.</li>
-                            <li>Sub-project cards show each window and how it fits.</li>
+                            <li>Sub-project cards show each window and its fit.</li>
                             <li>Google review after the last sub-project's close out.</li>
                         </ul>
                     </div>
@@ -9626,8 +9639,12 @@
                 ul.classList.toggle('hidden', !items.length);
                 const sq = o.querySelector('[data-sc="squeeze"]');
                 sq.classList.toggle('hidden', !squeeze);
-                if (squeeze) el('schedCheckSqueezeNote').textContent = (rv.fixedShort ? 'All tasks shortened' : 'Listed tasks shortened')
-                    + (window.isSupplyOnly() ? '. Pickup ready ' : '. Install finished ') + v.endLabel + '.';
+                // Each sub-project that is shortened, with its own install finish.
+                const sqLanes = js.subMode ? (js.failing || []).filter(x => x.status === 'confirm') : [v];
+                const word = window.isSupplyOnly() ? 'pickup ' : 'install ';
+                if (squeeze) el('schedCheckSqueezeNote').textContent = js.subMode
+                    ? 'Shortened: ' + sqLanes.map(x => x.name + ', ' + word + x.endLabel).join('; ') + '.'
+                    : (rv.fixedShort ? 'All tasks shortened' : 'Listed tasks shortened') + (window.isSupplyOnly() ? '. Pickup ready ' : '. Install finished ') + v.endLabel + '.';
                 const pLast = plannedLast();
                 el('schedCheckPlannedNote').textContent = pLast ? 'Planned times. Last task due ' + dayLabel(pLast) + '.' : 'Planned times.';
                 o.classList.remove('hidden');
@@ -9661,6 +9678,27 @@
                 if (e.key === 'Escape') { const o = el('schedCheckOverlay'); if (o && !o.classList.contains('hidden')) close(); }
             });
         })();
+        // A date button's label: "Mon, Nov 30, 2026"; on a narrow box "Nov 30, 2026", then without the
+        // icon and a little smaller, so the date is never cut off.
+        const fitDateLabel = (btn, span, d, empty) => {
+            if (!btn || !span) return;
+            btn.classList.remove('pref-btn-tight', 'pref-btn-tiny');
+            const over = () => span.scrollWidth > span.clientWidth + 1;
+            if (!d) {
+                span.textContent = empty;
+                if (!btn.offsetParent || !over()) return;
+                btn.classList.add('pref-btn-tight');
+                if (over()) span.textContent = empty === 'Choose a date' ? 'Choose' : empty;
+                return;
+            }
+            span.textContent = d.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+            if (!btn.offsetParent || !over()) return;
+            span.textContent = d.toLocaleDateString('en-CA', { month: 'short', day: 'numeric', year: 'numeric' });
+            if (!over()) return;
+            btn.classList.add('pref-btn-tight');
+            if (over()) btn.classList.add('pref-btn-tiny');
+        };
+        window.addEventListener('resize', () => { if (typeof syncPreferredInstall === 'function') syncPreferredInstall(); });
         const syncPreferredInstall = (jsIn) => {
             const inp = document.getElementById('preferredInstall');
             const clr = document.getElementById('preferredInstallClear');
@@ -9669,7 +9707,7 @@
             if (lbl && inp) {
                 const p = inp.value ? inp.value.split('-') : null;
                 const chosen = p ? new Date(+p[0], +p[1] - 1, +p[2]) : null;
-                lbl.textContent = chosen ? chosen.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Choose a date';
+                fitDateLabel(btn, lbl, chosen, 'Choose a date');
                 if (btn) btn.classList.toggle('has-date', !!chosen);
             }
             // The start date box.
@@ -9678,7 +9716,7 @@
             if (sIn && sLbl) {
                 const p = sIn.value ? sIn.value.split('-') : null;
                 const chosen = p ? new Date(+p[0], +p[1] - 1, +p[2]) : null;
-                sLbl.textContent = chosen ? chosen.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : 'Today';
+                fitDateLabel(sBtn, sLbl, chosen, 'Today');
                 if (sBtn) sBtn.classList.toggle('has-date', !!chosen);
                 if (sClr) sClr.classList.toggle('hidden', !chosen);
             }
@@ -9727,7 +9765,7 @@
             if (foot) {
                 foot.textContent = js && js.mode === 'install'
                     ? 'Working hours: ' + HandoffScheduler.describeWeek() + '. No weekends or stat holidays.'
-                    : 'Starts today. No weekends or stat holidays.';
+                    : (sIn && sIn.value && !(js && js.pastStart) ? 'Starts ' + isoLabel(sIn.value) : 'Starts today') + '. No weekends or stat holidays.';
             }
             return js;
         };
@@ -11570,7 +11608,7 @@
                     // This sub-project's install, on its own rows.
                     const ip = r.m.install ? endPct(r.m.install) : null;
                     const instTitle = r.m.install ? name + ': ' + what + ' ' + fmt(r.m.install) : '';
-                    const inst = (withLabel) => ip == null ? '' : '<div class="ms-inst' + (ip > 70 ? ' ms-inst-left' : '') + '" style="left:' + ip.toFixed(2) + '%" title="' + instTitle + '">'
+                    const inst = (withLabel) => ip == null ? '' : '<div class="ms-inst" style="left:' + ip.toFixed(2) + '%" title="' + instTitle + '">'
                         + (withLabel ? '<span>' + name + ' ' + what + '</span>' : '') + '</div>';
                     body += '<div class="ms-tl-row" data-ms="' + r.m.id + '" style="--ms-c:' + c + '">'
                         + '<div class="ms-tl-label"><b><i></i><em>' + name + '</em></b><small>' + label + ' &middot; ' + wd + (wd === 1 ? ' working day' : ' working days') + (r.m.flag === 'external' ? ' &middot; Client' : '') + '</small></div>'
@@ -11592,6 +11630,17 @@
                 el.style.setProperty('--ms-lw', el.clientWidth < 560 ? '130px' : '210px');
                 el.innerHTML = '<div class="ms-tl-head"><div class="ms-tl-months">' + months + '</div><div class="ms-tl-weeks">' + weeks + '</div></div>'
                     + '<div class="ms-tl-rows"><div class="ms-tl-grid">' + grid + lines + '</div>' + body + '</div>';
+                // An install label sits on the side with more room; a long one wraps to that room.
+                requestAnimationFrame(() => el.querySelectorAll('.ms-inst span').forEach(sp => {
+                    const inst = sp.parentElement, tr = inst.parentElement.getBoundingClientRect(), x = inst.getBoundingClientRect().left;
+                    const right = tr.right - x - 6, left = x - tr.left - 6;
+                    inst.classList.remove('ms-inst-left'); sp.style.whiteSpace = 'nowrap'; sp.style.maxWidth = '';
+                    const w = sp.scrollWidth + 2;
+                    if (w <= right) return;
+                    if (w <= left) { inst.classList.add('ms-inst-left'); return; }
+                    if (left > right) inst.classList.add('ms-inst-left');
+                    sp.style.whiteSpace = 'normal'; sp.style.maxWidth = Math.max(40, Math.max(left, right)) + 'px';
+                }));
                 // A label that does not fit inside its bar moves beside it, measured rather than guessed, so a long
                 // name is never cut off on a narrow screen.
                 requestAnimationFrame(() => el.querySelectorAll('.ms-bar').forEach(bar => {
