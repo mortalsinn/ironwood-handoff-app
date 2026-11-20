@@ -57,13 +57,19 @@ const run = async (name, dateOverride) => {
   });
   const g = await h.generate(page);
   let p = g.payload, note = '';
-  if (!p && g.checkOpen) { note = 'check: ' + g.checkMsg; await page.evaluate(() => { const q = document.querySelector('#schedCheckOverlay [data-sc="squeeze"]'); (q && !q.classList.contains('hidden') ? q : document.querySelector('#schedCheckOverlay [data-sc="planned"]')).click(); }); await sleep(2500); p = await page.evaluate(() => window.__LAST_PAYLOAD); }
+  let want = screen.rows;
+  if (!p && g.checkOpen) {
+    note = 'check: ' + g.checkMsg;
+    // Choose "Create with planned times" (PLANNED=1) or "Create with this schedule" when offered.
+    const mode = await page.evaluate((pl) => { const q = document.querySelector('#schedCheckOverlay [data-sc="squeeze"]'); const useQ = !pl && q && !q.classList.contains('hidden'); (useQ ? q : document.querySelector('#schedCheckOverlay [data-sc="planned"]')).click(); return useQ ? null : 'planned'; }, !!process.env.PLANNED);
+    want = await page.evaluate((mode) => { const js = window.computeJobSchedule({ mode }); const all = []; js.lanes.forEach(l => l.rows.forEach(r => all.push(r))); if (js.tail) all.push(js.tail); return all.map(r => r.name + '|' + r.startDate + ' ' + r.startTime + '|' + r.endDate + ' ' + r.endTime); }, mode);
+    await sleep(2500); p = await page.evaluate(() => window.__LAST_PAYLOAD);
+  }
   let mism = 'no payload';
   if (p) {
     const ts = p.ordered_tasks || [].concat(...Object.keys(p.task_lists).map(k => p.task_lists[k]));
     const sent = ts.map(t => t.name + '|' + t.start_date + ' ' + t.start_time + '|' + t.end_date + ' ' + t.end_time);
-    const want = note ? null : screen.rows;   // a squeezed or planned choice reschedules
-    mism = want ? sent.filter(x => want.indexOf(x) === -1).length + want.filter(x => sent.indexOf(x) === -1).length : 'n/a (' + note + ')';
+    mism = sent.filter(x => want.indexOf(x) === -1).length + want.filter(x => sent.indexOf(x) === -1).length + (note ? ' (' + note + ')' : '');
   }
   console.log('== ' + name + ' | ' + screen.status + ' | problems ' + screen.probs.length + ' | payload vs screen mismatches ' + mism);
   console.log('   lanes: ' + screen.lanes.join('; ') + (screen.legacy ? ' | OLDER DRAFT NOTE SHOWN' : ''));

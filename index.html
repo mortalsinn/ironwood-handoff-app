@@ -29,8 +29,8 @@
         .sortable-list li { cursor: grab; position: relative; padding-right: 20px; }
         .sortable-list li:active { cursor: grabbing; }
         .pref-dates { display: flex; flex-wrap: wrap; gap: 10px 16px; }
-        .pref-date-col { flex: 0 1 220px; min-width: 0; max-width: 100%; }
-        .pref-date-col .pref-btn { min-width: 150px; flex: 1 1 150px; max-width: 230px; }
+        .pref-date-col { flex: 1 1 180px; min-width: 0; max-width: 100%; }
+        .pref-date-col .pref-btn { min-width: 0; flex: 1 1 100%; width: 100%; max-width: 230px; }
         .pref-date-col .pref-btn span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .pref-btn { display: inline-flex; align-items: center; gap: 8px; min-width: 190px; padding: 8px 12px; border-radius: 10px;
             background: #0f172a; border: 1px solid #334155; color: #cbd5e1; font-size: 14px; font-weight: 500; transition: border-color .15s, background .15s; }
@@ -1448,6 +1448,11 @@
         .ms-line.ms-today span { background: #f43f5e; color: #fff; }
         .ms-line.ms-due { border-color: #facc15; border-left-style: dashed; }
         .ms-line.ms-due span { background: #facc15; color: #1c1917; top: 18px; }
+        /* A sub-project's install, drawn on its own rows only. */
+        .ms-inst { position: absolute; top: 0; bottom: 0; width: 0; border-left: 2px dashed #facc15; z-index: 3; }
+        .ms-inst span { position: absolute; top: 3px; left: 4px; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            font-size: 9.5px; font-weight: 800; padding: 1px 5px; border-radius: 4px; background: #facc15; color: #1c1917; }
+        .ms-inst.ms-inst-left span { left: auto; right: 4px; }
         .ms-tl-empty { font-size: 12px; color: #64748b; padding: 30px 0; text-align: center; }
 
         html.light .ms-panel { background: #ffffff; border-color: #e2e8f0; color: #0f172a; }
@@ -1558,10 +1563,10 @@
                             </button>
                         </div>
                     </div>
-                    <!-- Install date (Jeff, Nov 5 2026; made the FINISH with Jeffery, Nov 18 2026): optional, outside
-                         the question flow. When set, the last task is due on it and every task gets a share of the
-                         working hours from now until then (HandoffScheduler). Empty: tasks run their planned days
-                         from today, as before. The field keeps its old id so saved drafts restore. -->
+                    <!-- Start date and install date (Jeff, Nov 5, 18 and 20 2026): optional, outside the question
+                         flow, one pair per sub-project. The install date is the install finish; tasks share the
+                         working hours from the start (blank: now) until then (HandoffScheduler). Blank install date:
+                         planned times from the start. The install field keeps its old id so saved drafts restore. -->
                     <div id="preferredInstallWrap" class="mb-4 relative">
                         <p id="prefDatesFor" class="hidden text-[11px] uppercase tracking-wider font-bold text-sky-400 mb-1"></p>
                         <div class="pref-dates">
@@ -3066,11 +3071,12 @@
                     <h3 id="schedCheckTitle" class="text-xl font-black tracking-tight">Check the install date</h3>
                     <p id="schedCheckMsg" class="text-sm text-slate-300 mt-2 text-center leading-relaxed"></p>
                     <ul id="schedCheckList" class="hidden text-xs text-slate-300 mt-3 w-full list-disc pl-5 space-y-0.5"></ul>
+                    <p id="schedCheckAlso" class="hidden text-xs text-slate-400 mt-2 w-full"></p>
                 </div>
                 <div class="space-y-2">
                     <button type="button" data-sc="date" class="w-full px-4 py-3 bg-sky-600 hover:bg-sky-500 text-white rounded-lg font-bold transition-all">Choose another date</button>
                     <button type="button" data-sc="squeeze" class="w-full px-4 py-2.5 bg-slate-900 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-lg font-semibold text-sm transition-all text-left"><span class="block" id="schedCheckSqueeze">Create with this schedule</span><span class="block text-xs font-normal text-slate-400 mt-0.5" id="schedCheckSqueezeNote"></span></button>
-                    <button type="button" data-sc="planned" class="w-full px-4 py-2.5 bg-slate-900 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-lg font-semibold text-sm transition-all text-left"><span class="block">Create with planned days from today</span><span class="block text-xs font-normal text-slate-400 mt-0.5" id="schedCheckPlannedNote"></span></button>
+                    <button type="button" data-sc="planned" class="w-full px-4 py-2.5 bg-slate-900 hover:bg-slate-700 border border-slate-600 text-slate-200 rounded-lg font-semibold text-sm transition-all text-left"><span class="block">Create with planned times</span><span class="block text-xs font-normal text-slate-400 mt-0.5" id="schedCheckPlannedNote"></span></button>
                 </div>
             </div>
         </div>
@@ -4088,7 +4094,7 @@
             // with 'YYYY-MM-DD' or blank dates. Each lane is fitted between its own start (blank or past:
             // now) and its own install date (blank: planned times, no stretching or squeezing). Lanes may
             // overlap. tail (the Google review) follows the last lane's close out. mode 'planned' ignores
-            // every install date. A lane result is schedule()'s, plus status 'planned' (no install date)
+            // every install date; a lane with planned: true ignores its own. A lane result is schedule()'s, plus status 'planned' (no install date)
             // or 'order' (install date before the start date), startDate and pastStart.
             const scheduleWindows = (opts) => {
                 if (!anyWorkingDay()) throw new Error('No working days are set in SCHEDULE_CONFIG.');
@@ -4101,7 +4107,7 @@
                     const pastStart = sd != null && sd < today;
                     const startW = sd != null && sd > today ? nextWorkStart(sd * DAY) : nowStart;
                     let r;
-                    if (ed != null && opts.mode !== 'planned') {
+                    if (ed != null && opts.mode !== 'planned' && !L.planned) {
                         if (sd != null && ed < sd) { r = plannedLane(L.tasks || [], startW); r.status = 'order'; r.installDate = L.endDate; }
                         else {
                             r = schedule({ lanes: [L.tasks || []], tail: null, installDate: L.endDate, nowMs: opts.nowMs, startW: startW });
@@ -9236,14 +9242,6 @@
             const v = ((document.getElementById('preferredInstall') || {}).value || '').trim();
             return /^\d{4}-\d{2}-\d{2}$/.test(v) ? v : '';
         };
-        // ONE SCHEDULE for the whole widget: the summary, the due dates on the tasks, the
-        // timeline and the payload sent to Zoho all read this, so they always agree.
-        //   With an install date: every task gets its share of the working hours from now to
-        //   close of business on the install date (HandoffScheduler).
-        //   Without one, or when the date leaves no working time (or mode 'planned'): the
-        //   planned days from today, weekends skipped, as the widget has always done.
-        // Lanes: one per task list; on a sub-project job, one per sub-project, all starting
-        // together, with the Google review as the Job Wrap-Up after the last of them.
         // The start date box (blank: today).
         window.startDateIso = () => {
             const v = ((document.getElementById('prefStart') || {}).value || '').trim();
@@ -9287,16 +9285,23 @@
                 minutes: t.minutes, percent: t.percent, planned: t.planned, delta: t.delta, cat: t.cat, after: t.after, keptDays: t.keptDays || 0, workDays: t.workDays || 0
             });
             const task = (r) => ({ hours: S.plannedHours(r), days: r.unit === 'hrs' ? 0 : (parseFloat(r.amount) || 1), cat: S.categoryOf(r.name) });
-            const W = S.scheduleWindows({ lanes: lanes.map(l => ({ tasks: l.rows.map(task), startDate: l.startDate, endDate: l.endDate })),
-                                          tail: tailRow ? task(tailRow) : null, nowMs: nowMs, mode: planned ? 'planned' : null });
+            const FAIL = ['confirm', 'none', 'past', 'order'];
+            let W = S.scheduleWindows({ lanes: lanes.map(l => ({ tasks: l.rows.map(task), startDate: l.startDate, endDate: l.endDate })),
+                                        tail: tailRow ? task(tailRow) : null, nowMs: nowMs });
+            // "Create with planned times": only the sub-projects that do not fit switch to planned
+            // times; the others keep their dates.
+            const switched = planned ? W.lanes.map(r => FAIL.indexOf(r.status) !== -1) : lanes.map(() => false);
+            if (planned) W = S.scheduleWindows({ lanes: lanes.map((l, li) => ({ tasks: l.rows.map(task), startDate: l.startDate, endDate: l.endDate, planned: switched[li] })),
+                                                 tail: tailRow ? task(tailRow) : null, nowMs: nowMs });
             const RANK = { planned: 0, ok: 1, tight: 2, confirm: 3, none: 4, past: 4, order: 5 };
             lanes.forEach((l, li) => {
                 const res = W.lanes[li], ln = res.lanes[0];
                 l.rows = l.rows.map((r, i) => stamp(Object.assign({}, r), ln.tasks[i]));
-                const install = !planned && l.endDate ? l.endDate : '';
+                const install = !switched[li] && l.endDate ? l.endDate : '';
                 l.view = {
                     name: l.name, index: l.index, install: install, startDate: l.startDate, pastStart: !!res.pastStart, result: res, status: res.status,
-                    mode: res.status === 'planned' ? 'planned' : 'install', hasDates: !!(l.startDate || install),
+                    // A date that has passed, leaves no time or comes before the start: planned times.
+                    mode: ['planned', 'past', 'none', 'order'].indexOf(res.status) !== -1 ? 'planned' : 'install', hasDates: !!(l.startDate || install),
                     start: localDate(ln.tasks.filter(Boolean)[0] ? ln.tasks.filter(Boolean)[0].start : res.windowStart),
                     end: localDate(res.end), endLabel: S.fmt.dayTime(res.end),
                     finish: localDate(ln.end), finishLabel: S.fmt.dayTime(ln.end),
@@ -9312,7 +9317,11 @@
             const out = Object.assign({}, act || blank, {
                 lanes: lanes, tail: tail, subMode: !!subPlan, windows: W,
                 worst: lanes.reduce((w, l) => (RANK[l.view.status] > RANK[w] ? l.view.status : w), 'planned'),
-                failing: lanes.filter(l => ['confirm', 'none', 'past', 'order'].indexOf(l.view.status) !== -1).map(l => l.view),
+                failing: lanes.filter(l => FAIL.indexOf(l.view.status) !== -1).map(l => l.view).sort((a, b) => {
+                    const rk = (v) => ({ order: 3, past: 2, none: 2, confirm: 1 })[v.status] || 0;
+                    const gap = (v) => (v.result ? (v.result.floorMinutes || v.result.plannedMinutes || 0) - (v.result.availableMinutes || 0) : 0);
+                    return rk(b) - rk(a) || gap(b) - gap(a);
+                }),
                 anyInstall: lanes.some(l => l.view.mode === 'install'),
                 latestInstall: lanes.filter(l => l.view.mode === 'install').map(l => l.view).sort((a, b) => b.end - a.end)[0] || null
             });
@@ -9363,8 +9372,8 @@
             const pickup = window.isSupplyOnly(), ev = pickup ? 'pickup' : 'the install';
             const r = js.result;
             const when = isoLabel(js.install);
-            if (js.status === 'past') { const t = when + ' has passed. Planned days from today.'; return { tone: 'bad', head: t, body: t }; }
-            if (js.status === 'none') { const t = 'No working hours left before ' + when + '. Planned days from today.'; return { tone: 'bad', head: t, body: t }; }
+            if (js.status === 'past') { const t = when + ' has passed. Planned times.'; return { tone: 'bad', head: t, body: t }; }
+            if (js.status === 'none') { const t = 'No working hours left before ' + when + '. Planned times.'; return { tone: 'bad', head: t, body: t }; }
             if (js.status === 'order') { const t = 'Install date is before the start date.'; return { tone: 'bad', head: t, body: t }; }
             // Hours, or hours and minutes when rounding would show two equal numbers.
             const H = (min) => Math.round(min / 60).toLocaleString('en-CA') + ' h';
@@ -9574,6 +9583,7 @@
                     // A draft from before v15.70: confirm what the date means before anything else.
                     el('schedCheckMsg').textContent = 'Older draft: ' + when + ' was the project start.';
                     el('schedCheckList').classList.add('hidden');
+                    el('schedCheckAlso').classList.add('hidden');
                     o.querySelector('[data-sc="squeeze"]').classList.remove('hidden');
                     sqTitle.textContent = 'Use ' + when + (window.isSupplyOnly() ? ' as the pickup date' : ' as the install finish date');
                     el('schedCheckSqueezeNote').textContent = '';
@@ -9589,7 +9599,7 @@
                 checkLane = js.subMode ? v : null;
                 const rv = v.result, whenV = v.install ? isoLabel(v.install) : '';
                 const who = js.subMode && v.name ? v.name + ': ' : '';
-                const others = js.subMode && js.failing && js.failing.length > 1 ? ' Also: ' + js.failing.slice(1).map(x => x.name).join(', ') + '.' : '';
+                const others = js.subMode && js.failing && js.failing.length > 1 ? 'Also: ' + js.failing.slice(1).map(x => x.name).join(', ') + '.' : '';
                 const squeeze = (js.failing || []).some(x => x.status === 'confirm') && !(js.failing || []).some(x => x.status === 'order');
                 let msg;
                 if (v.status === 'past') msg = whenV + ' has passed.';
@@ -9605,7 +9615,9 @@
                     msg = H(r.availableMinutes) + ' available, ' + H(r.plannedMinutes) + ' planned' + (r.belowFloor
                         ? ', ' + H(r.floorMinutes) + ' needed. Short:' : '.');
                 }
-                el('schedCheckMsg').textContent = who + msg + others;
+                el('schedCheckMsg').textContent = who + msg;
+                el('schedCheckAlso').textContent = others;
+                el('schedCheckAlso').classList.toggle('hidden', !others);
                 const ul = el('schedCheckList');
                 const items = v.status === 'confirm' && rv.belowFloor ? shortTaskGroups(v) : [];
                 ul.innerHTML = '';
@@ -9865,11 +9877,8 @@
             // The finish: the job's last task (or, on a sub-project job without an install date,
             // the sub-project on screen, which runs its own timeline).
             const installMode = js.mode === 'install';
-            if (installMode) finish = js.end;
-            else if (js.subMode) {
-                const lane = js.lanes.find(l => l.name === (window.activeSubName ? window.activeSubName() : ''));
-                (lane ? lane.rows : []).forEach(r => { if (!finish || r._end > finish) finish = r._end; });
-            } else finish = js.end;
+            // Install finished by: the install finish. Projected finish: the last task, close out included.
+            finish = installMode ? js.end : (js.finish || null);
             const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
             const finLbl = document.getElementById('jsFinishLabel');
             if (finLbl) finLbl.textContent = installMode ? (window.isSupplyOnly() ? 'Pickup ready by' : 'Install finished by') : 'Projected finish';
@@ -10239,7 +10248,7 @@
 
             // DATES: the one shared schedule (computeJobSchedule). With an install date each
             // task carries its start and end time and the last one ends at close on that date;
-            // without one, tasks run their planned days from today. Tasks within a lane run
+            // without one, tasks run their planned times from the start date. Tasks within a lane run
             // back to back, which is why a strict task-to-task dependency chain matches these
             // dates exactly. chain_group is still sent but the backend ignores it; it is kept
             // so an older function keeps working.
@@ -10372,7 +10381,7 @@
                 install_date_label: js.latestInstall && js.latestInstall.end ? js.latestInstall.end.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' }) : "",
                 install_date_title: window.isSupplyOnly() ? "Pickup date" : "Install date",
                 // "install_date": tasks share the working hours back from the install date and
-                // carry start_time / end_time. "planned": planned days from today.
+                // carry start_time / end_time. "planned": planned times from each start date.
                 schedule_mode: js.anyInstall ? "install_date" : "planned",
                 // The project's own dates. Every task carries dates already; the
                 // project header showed nothing.
@@ -11113,7 +11122,7 @@
                 SHARED_ASSIGNEES.forEach(k => { if (cur.assignees && cur.assignees[k]) next.assignees[k] = cur.assignees[k]; });
                 next.travel = cur.travel;
                 next.schema = cur.schema;
-                // The install date is shared: the next sub-project keeps its schedule version.
+                // The draft's schedule version carries over to the sub-project that opens next.
                 next.scheduleVersion = cur.scheduleVersion;
                 next.timestamp = Date.now();
                 sub.active = j;
@@ -11509,9 +11518,13 @@
                 rows.forEach(r => { if (!min || r.sp.start < min) min = r.sp.start; if (!max || r.sp.end > max) max = r.sp.end; });
                 // The day the install (or pickup) really finishes: a weekend or holiday date moves back.
                 const jsT = window.computeJobSchedule ? window.computeJobSchedule() : null;
-                // One marker per install finish (each sub-project has its own).
-                const dues = jsT ? Array.from(new Set(jsT.lanes.filter(l => l.view && l.view.mode === 'install').map(l => +l.view.end))).map(t => new Date(t)) : [];
+                // Sub-projects mark their install on their own rows; a job without sub-projects
+                // has one install line across the chart.
+                const perRow = rows.some(r => r.m.install);
+                const dues = !perRow && jsT ? Array.from(new Set(jsT.lanes.filter(l => l.view && l.view.mode === 'install').map(l => +l.view.end))).map(t => new Date(t)) : [];
                 dues.forEach(d => { if (d > max) max = d; });
+                rows.forEach(r => { if (r.m.install && r.m.install > max) max = r.m.install; });
+                const what = window.isSupplyOnly && window.isSupplyOnly() ? 'pickup' : 'install';
                 // Room on both sides: the last milestone's diamond and label must never meet the edge.
                 const days = Math.max(14, (max - min) / 86400000);
                 const pad = Math.max(4, Math.round(days * 0.06));
@@ -11554,16 +11567,21 @@
                     const name = escapeHtml(r.m.name || 'Untitled');
                     // Short bars carry their label beside them: after the bar, or before it near the right edge.
                     const out = w < 16 ? ' ms-out' + (l + w > 72 ? ' ms-left' : '') : '';
+                    // This sub-project's install, on its own rows.
+                    const ip = r.m.install ? endPct(r.m.install) : null;
+                    const instTitle = r.m.install ? name + ': ' + what + ' ' + fmt(r.m.install) : '';
+                    const inst = (withLabel) => ip == null ? '' : '<div class="ms-inst' + (ip > 70 ? ' ms-inst-left' : '') + '" style="left:' + ip.toFixed(2) + '%" title="' + instTitle + '">'
+                        + (withLabel ? '<span>' + name + ' ' + what + '</span>' : '') + '</div>';
                     body += '<div class="ms-tl-row" data-ms="' + r.m.id + '" style="--ms-c:' + c + '">'
                         + '<div class="ms-tl-label"><b><i></i><em>' + name + '</em></b><small>' + label + ' &middot; ' + wd + (wd === 1 ? ' working day' : ' working days') + (r.m.flag === 'external' ? ' &middot; Client' : '') + '</small></div>'
                         + '<div class="ms-tl-track"><div class="ms-bar' + out + '" style="left:' + l.toFixed(2) + '%;width:' + w.toFixed(2) + '%" title="' + name + ': ' + label + '">'
-                        + '<div class="ms-bar-label">' + name + '<span>' + wd + 'd</span></div><div class="ms-dia"></div></div></div></div>';
-                    r.m.sections.forEach(id => {
+                        + '<div class="ms-bar-label">' + name + '<span>' + wd + 'd</span></div><div class="ms-dia"></div></div>' + inst(false) + '</div></div>';
+                    r.m.sections.forEach((id, k) => {
                         const s = sched[id]; if (!s) return;
                         const sl = pct(s.start), sw = Math.max(0.8, endPct(s.end) - sl);
                         body += '<div class="ms-tl-row ms-sub-row" style="--ms-c:' + c + '"><div class="ms-tl-label" title="' + escapeHtml(s.title) + '">' + escapeHtml(s.title) + '</div>'
                             + '<div class="ms-tl-track"><div class="ms-subbar" style="left:' + sl.toFixed(2) + '%;width:' + sw.toFixed(2) + '%" title="'
-                            + escapeHtml(s.title) + ': ' + fmt(s.start) + ' to ' + fmt(s.end) + '"></div></div></div>';
+                            + escapeHtml(s.title) + ': ' + fmt(s.start) + ' to ' + fmt(s.end) + '"></div>' + inst(k === 0) + '</div></div>';
                     });
                 });
 
@@ -11603,7 +11621,8 @@
                         if (!s.end || r._end > s.end) s.end = r._end;
                         s.days += taskHours(r.amount, r.unit) / HOURS_PER_DAY; s.tasks++;
                     });
-                    if (secs.length) items.push({ id: 'sp' + l.index, name: l.name, flag: 'internal', sections: secs });
+                    if (secs.length) items.push({ id: 'sp' + l.index, name: l.name, flag: 'internal', sections: secs,
+                                                  install: l.view && l.view.mode === 'install' ? l.view.end : null });
                 });
                 if (js.tail) {
                     sched.wrap = { id: 'wrap', title: 'Google Review Request', start: js.tail._start, end: js.tail._end, days: 1, tasks: 1 };
@@ -11637,7 +11656,7 @@
                         const chip = (b, t) => '<span class="ms-stat"><b>' + b + '</b> ' + t + '</span>';
                         document.getElementById('msSub').innerHTML = '<div class="ms-stats">' + chip(k, k === 1 ? 'sub-project' : 'sub-projects') + chip(tasks, 'tasks')
                             + (start && finish ? chip(fmt(start) + ' &rarr; ' + fmt(finish) + ', ' + finish.getFullYear(), '') + chip(workDays(start, finish), 'working days') : '') + '</div>';
-                        document.getElementById('msSum').textContent = 'Own start and install date per sub-project. Open one to change it.';
+                        document.getElementById('msSum').textContent = 'Start and install date per sub-project.';
                     }
                     updateButton();
                     return;

@@ -648,3 +648,16 @@ test('milestone dates: every task falls inside its milestone, close out included
     const wrap = JD.milestone([{ _start: local(r.tail.start), _end: local(r.tail.end) }]);
     check([r.tail], wrap, 'wrap-up');
 });
+
+test('planned times for one sub-project only: the others keep their install dates', () => {
+    const lanes = [{ tasks: railLane, startDate: '2026-11-23', endDate: '2027-01-29' }, { tasks: railLane, startDate: '2026-12-07', endDate: '2026-12-08' }];
+    const first = S.scheduleWindows({ nowMs: NOW, lanes, tail: 1 });
+    assert.equal(first.lanes[0].status, 'ok'); assert.equal(first.lanes[1].status, 'confirm');
+    // The failing one switches; the one that fits keeps its window and every due time.
+    const fail = first.lanes.map(r => ['confirm', 'none', 'past', 'order'].indexOf(r.status) !== -1);
+    const second = S.scheduleWindows({ nowMs: NOW, lanes: lanes.map((l, i) => Object.assign({}, l, { planned: fail[i] })), tail: 1 });
+    assert.equal(second.lanes[0].status, 'ok');
+    assert.equal(second.lanes[1].status, 'planned');
+    assert.equal(JSON.stringify(second.lanes[0].lanes[0].tasks.map(t => [t.start, t.end])), JSON.stringify(first.lanes[0].lanes[0].tasks.map(t => [t.start, t.end])));
+    assert.equal(second.lanes[1].lanes[0].tasks[0].start, wall(2026, 12, 7, 8));      // planned from its own start
+});
