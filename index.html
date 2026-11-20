@@ -757,7 +757,23 @@
         html.light .hp-step.done { color: #334155; }
         html.light .hp-step .hp-dot { border-color: #cbd5e1; }
         /* SUB-PROJECTS: cards | divider | one column of sections, top to bottom. */
-        #subCardsPane { width: var(--sub-pane-w, 260px); }
+        /* The cards column follows the plan's width (a dragged width is kept, within limits). */
+        #subCardsPane { width: var(--sub-pane-w, clamp(170px, 30%, 280px)); max-width: 45%; }
+        /* PHONE: the form on top, the plan under it, both full width; the page scrolls. */
+        @media (max-width: 767px) {
+            #mainSplit { flex-direction: column; overflow-y: auto; }
+            #leftPanel { width: 100% !important; height: auto !important; overflow: visible !important; border-right: 0 !important; padding: 16px !important; }
+            #resizer { display: none !important; }
+            #rightPanel { height: auto !important; min-height: 70vh; flex: 0 0 auto !important; }
+            #rightPanel .overflow-y-auto { overflow: visible !important; }
+            #planSplit { flex-direction: column; }
+            #subCardsPane { width: 100% !important; max-width: none !important; border-right: 0 !important; border-bottom: 1px solid #1e293b; }
+            #subDivider { display: none !important; }
+            #summaryDock:not(.hidden) { position: static; }
+            .sub-row { flex-wrap: wrap; }
+            .sub-row input { flex: 1 0 100% !important; }
+            .sub-row select.sub-owner { flex: 1 1 auto !important; width: auto !important; }
+        }
         #subDivider { width: 6px; cursor: col-resize; background: #1e293b; flex: 0 0 6px; }
         #subDivider:hover, #subDivider.dragging { background: #0ea5e9; }
         /* The plan is one column, top to bottom, on every screen and in every mode. */
@@ -1538,7 +1554,7 @@
             <button type="button" onclick="this.parentElement.classList.add('hidden')" class="ml-auto text-sky-400 hover:text-white font-bold px-1">&times;</button>
         </div>
 
-        <div class="flex flex-row flex-grow w-full overflow-hidden min-h-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 to-slate-900">
+        <div id="mainSplit" class="flex flex-row flex-grow w-full overflow-hidden min-h-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-slate-800 to-slate-900">
             
             <!-- LEFT COLUMN: FORM INPUTS -->
             <div id="leftPanel" class="h-full overflow-y-auto px-6 py-6 border-r border-slate-700/50" style="width: 40%; flex: 0 0 auto;">
@@ -11259,6 +11275,8 @@
                 try { jsC = window.computeJobSchedule ? window.computeJobSchedule() : null; } catch (e) { jsC = null; }
                 const STATUS = { planned: ['Planned times', ''], ok: ['Fits', 'sched-ok'], tight: ['Shortened', 'sched-warn'], confirm: ['Not enough time', 'sched-bad'],
                                  past: ['Date passed', 'sched-bad'], none: ['No time left', 'sched-bad'], order: ['Install before start', 'sched-bad'] };
+                // A sub-project's start date, before it has any tasks.
+                const subStart = (i) => (i === sub.active ? (window.startDateIso ? window.startDateIso() : '') : snapDate(i, 'prefStart'));
                 names.forEach((nm, i) => {
                     const rows = i === sub.active ? liveRows() : ((sub.snaps[i] && sub.snaps[i].rows) || []);
                     const sm = summarise(rows);
@@ -11269,7 +11287,7 @@
                     b.type = 'button';
                     b.className = 'sub-card' + (i === sub.active ? ' active' : '');
                     b.innerHTML = '<div class="sub-name">' + esc((i + 1) + '. ' + nm) + '</div>'
-                        + '<div class="sub-meta">' + (sm.tasks ? sm.tasks + (sm.tasks === 1 ? ' task' : ' tasks') + ' · ' + durText(sm.hours) + ' planned' : 'Not started') + '</div>'
+                        + '<div class="sub-meta">' + (sm.tasks ? sm.tasks + (sm.tasks === 1 ? ' task' : ' tasks') + ' · ' + durText(sm.hours) + ' planned' : (subStart(i) ? 'Starts ' + dayLabel(new Date(subStart(i) + 'T12:00:00')) : 'Not started')) + '</div>'
                         + windowLine
                         + (i === sub.active ? '<div class="sub-meta" style="color:#38bdf8">On screen</div>' : '');
                     b.addEventListener('click', () => window.openSubProject(i));
@@ -11630,6 +11648,8 @@
                 el.style.setProperty('--ms-lw', el.clientWidth < 560 ? '130px' : '210px');
                 el.innerHTML = '<div class="ms-tl-head"><div class="ms-tl-months">' + months + '</div><div class="ms-tl-weeks">' + weeks + '</div></div>'
                     + '<div class="ms-tl-rows"><div class="ms-tl-grid">' + grid + lines + '</div>' + body + '</div>';
+                // A month name that does not fit its slice at the edge is left off rather than cut.
+                requestAnimationFrame(() => el.querySelectorAll('.ms-mon').forEach(m => { if (m.scrollWidth > m.clientWidth + 1) m.textContent = ''; }));
                 // An install label sits on the side with more room; a long one wraps to that room.
                 requestAnimationFrame(() => el.querySelectorAll('.ms-inst span').forEach(sp => {
                     const inst = sp.parentElement, tr = inst.parentElement.getBoundingClientRect(), x = inst.getBoundingClientRect().left;
