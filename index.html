@@ -4171,12 +4171,16 @@
                 }
                 return draft;
             },
-            // A sub-project's milestone: its first task's start to its install finish (MM-DD-YYYY).
-            milestone: (rows, installEnd) => {
+            // A sub-project's milestone covers every task in it: first task's start to last task's
+            // end, close out included (MM-DD-YYYY).
+            milestone: (rows) => {
                 const z = (d) => String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0') + '-' + d.getFullYear();
-                let st = null;
-                (rows || []).forEach(r => { if (r._start && (!st || r._start < st)) st = r._start; });
-                return { start_date: st ? z(st) : '', end_date: installEnd ? z(installEnd) : '' };
+                let st = null, en = null;
+                (rows || []).forEach(r => {
+                    if (r._start && (!st || r._start < st)) st = r._start;
+                    if (r._end && (!en || r._end > en)) en = r._end;
+                });
+                return { start_date: st ? z(st) : '', end_date: en ? z(en) : '' };
             }
         };
         /* ==== JOB DATES: END ==== */
@@ -10283,8 +10287,8 @@
             } else {
                 // SUB-PROJECTS. Each is its own task list and milestone, in its own window (its
                 // start date to its install date; windows may overlap), with its own close out
-                // so it can be billed when it is done. Milestone: first task start to install
-                // finish. The Google review is asked once, in the Job Wrap-Up, after the last
+                // so it can be billed when it is done. Milestone: first task start to last task
+                // end, close out included. The Google review is asked once, in the Job Wrap-Up, after the last
                 // sub-project's close out.
                 delete task_lists["Production & Install"];
                 const owner = (document.getElementById('projectOwnerAssigneeInput') || {}).value || '';
@@ -10301,8 +10305,8 @@
                         if (!en || r._end > en) en = r._end;
                     });
                     milestones.push({ name: sp.name, list: sp.name, owner: sp.owner || (owner === 'UNASSIGNED' ? '' : owner), flag: 'internal',
-                                      start_date: HandoffJobDates.milestone(l.rows, l.view && l.view.end ? l.view.end : en).start_date,
-                                      end_date: HandoffJobDates.milestone(l.rows, l.view && l.view.end ? l.view.end : en).end_date,
+                                      start_date: HandoffJobDates.milestone(l.rows).start_date,
+                                      end_date: HandoffJobDates.milestone(l.rows).end_date,
                                       tags: (sp.tags || []).map(t => t.name).filter(n => !/^(client|site):\s/i.test(n)) });
                 });
                 if (js.tail) {

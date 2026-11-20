@@ -629,9 +629,22 @@ test('draft migration: an older sub-project draft gives every sub-project the jo
     assert.equal(e.subProjects.snaps[0].draft.form.preferredInstall, undefined);
 });
 
-test('milestone dates: first task start to install finish', () => {
-    const rows = [{ _start: new Date(2026, 11, 7) }, { _start: new Date(2026, 11, 9) }, { _start: new Date(2026, 11, 21) }];
-    const m = JD.milestone(rows, new Date(2026, 11, 18));
-    assert.equal(m.start_date, '12-07-2026');
-    assert.equal(m.end_date, '12-18-2026');
+test('milestone dates: every task falls inside its milestone, close out included', () => {
+    // A real job: three sub-projects with their own windows plus the Job Wrap-Up review.
+    const lanes = [{ tasks: railLane, endDate: '2027-01-29' }, { tasks: railLane, startDate: '2026-12-07', endDate: '2026-12-31' }, { tasks: railLane, startDate: '2027-01-04' }];
+    const r = S.scheduleWindows({ nowMs: NOW, lanes, tail: 1 });
+    const local = (m) => { const q = S.fmt.parts(m); return new Date(q[0], q[1] - 1, q[2]); };
+    const key = (z) => z.slice(6) + z.slice(0, 2) + z.slice(3, 5);                  // MM-DD-YYYY to sortable
+    const check = (tasks, ms, label) => tasks.forEach((t, i) => {
+        const s0 = key(S.fmt.zohoDate(t.start)), e0 = key(S.fmt.zohoDate(t.end));
+        assert.ok(s0 >= key(ms.start_date) && e0 <= key(ms.end_date), label + ' task ' + i + ' ' + s0 + '-' + e0 + ' outside ' + ms.start_date + ' to ' + ms.end_date);
+    });
+    r.lanes.forEach((x, li) => {
+        const tasks = x.lanes[0].tasks;
+        const ms = JD.milestone(tasks.map(t => ({ _start: local(t.start), _end: local(t.end) })));
+        check(tasks, ms, 'lane ' + li);
+        assert.equal(ms.end_date, S.fmt.zohoDate(tasks[tasks.length - 1].end));     // ends with the close out
+    });
+    const wrap = JD.milestone([{ _start: local(r.tail.start), _end: local(r.tail.end) }]);
+    check([r.tail], wrap, 'wrap-up');
 });
