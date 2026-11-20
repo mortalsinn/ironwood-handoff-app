@@ -556,3 +556,82 @@ test('sub-projects that fit: every check keeps its time in every lane; close out
         });
     });
 });
+
+// ---- v15.79: every sub-project has its own start and install date ----
+const W = (o) => S.scheduleWindows(Object.assign({ nowMs: NOW }, o));
+const railLane = [{ days: 1, cat: 'fixed' }, { hours: 2, cat: 'fixed' }, { days: 3, cat: 'scheduling' }, { days: 5, cat: 'production' }, { hours: 3, cat: 'checks' },
+                  { days: 2, cat: 'fixed' }, { hours: 2, cat: 'checks' }, { days: 1, cat: 'closeout' }, { hours: 2, cat: 'closeout' }];
+
+test('windows: two sub-projects with their own dates overlap, each grown or shrunk on its own', () => {
+    const r = W({ lanes: [{ tasks: railLane, startDate: '2026-11-23', endDate: '2027-01-29' },      // long window: grows
+                          { tasks: railLane, startDate: '2026-12-07', endDate: '2026-12-14' }],     // short window: shrinks
+                  tail: 1 });
+    const [a, b] = r.lanes;
+    assert.equal(a.status, 'ok'); assert.ok(b.status === 'tight' || b.status === 'confirm', b.status);
+    assert.equal(a.lanes[0].tasks[0].start, wall(2026, 11, 23, 8));
+    assert.equal(b.lanes[0].tasks[0].start, wall(2026, 12, 7, 8));
+    assert.equal(a.end, wall(2027, 1, 29, 16)); assert.equal(b.end, wall(2026, 12, 14, 17));
+    assert.ok(b.lanes[0].tasks[0].start < a.end && b.end > a.lanes[0].tasks[0].start, 'windows overlap');
+    // Production stretched in the long window, shortened in the short one; checks keep their time in the long one.
+    assert.ok(a.lanes[0].tasks[3].minutes > 5 * 540); assert.ok(b.lanes[0].tasks[3].minutes < 5 * 540);
+    assert.equal(a.lanes[0].tasks[4].minutes, 180);
+    [a, b].forEach(x => x.lanes[0].tasks.forEach(t => assert.equal(t.end % 15, 0)));
+});
+
+test('windows: the Google review follows the latest lane, wherever it is', () => {
+    const r = W({ lanes: [{ tasks: railLane, endDate: '2027-02-26' }, { tasks: railLane, endDate: '2026-12-18' }], tail: 1 });
+    const lastClose = Math.max(r.lanes[0].lanes[0].end, r.lanes[1].lanes[0].end);
+    assert.equal(lastClose, r.lanes[0].lanes[0].end);                  // the first lane runs later
+    assert.equal(r.tail.start, S.nextWorkStart(lastClose));
+    assert.equal(r.finish, r.tail.end);
+});
+
+test('windows: a blank install date runs planned times from the start, no stretching', () => {
+    const r = W({ lanes: [{ tasks: railLane, startDate: '2026-11-30' }] });
+    const x = r.lanes[0];
+    assert.equal(x.status, 'planned');
+    const t = x.lanes[0].tasks;
+    assert.equal(t[0].start, wall(2026, 11, 30, 8));
+    assert.equal(t[0].end, wall(2026, 11, 30, 17));                    // 1 day: Monday 8 to 5
+    assert.equal(t[1].minutes, 120);                                    // 2 h stays 2 h
+    assert.equal(t[3].workDays, 5);
+    t.forEach(z => assert.equal(z.end % 15, 0));
+    // Blank start too: from now.
+    const n = W({ lanes: [{ tasks: railLane }] }).lanes[0];
+    assert.equal(n.lanes[0].tasks[0].start, wall(2026, 11, 18, 10));
+});
+
+test('windows: a start in the past schedules from now and says so; an install date before the start is flagged', () => {
+    const p = W({ lanes: [{ tasks: railLane, startDate: '2026-11-10', endDate: '2027-01-15' }] }).lanes[0];
+    assert.equal(p.pastStart, true);
+    assert.equal(p.lanes[0].tasks[0].start, wall(2026, 11, 18, 10));
+    const o = W({ lanes: [{ tasks: railLane, startDate: '2026-12-15', endDate: '2026-12-01' }] }).lanes[0];
+    assert.equal(o.status, 'order');
+    assert.equal(o.lanes[0].tasks[0].start, wall(2026, 12, 15, 8));    // planned from its start
+    // mode 'planned' ignores every install date.
+    const q = W({ mode: 'planned', lanes: [{ tasks: railLane, endDate: '2026-11-20' }] }).lanes[0];
+    assert.equal(q.status, 'planned');
+});
+
+const jd = /\/\* ==== JOB DATES: BEGIN[\s\S]*?\/\* ==== JOB DATES: END ==== \*\//.exec(html);
+const { HandoffJobDates: JD } = vm.runInNewContext(jd[0] + '\n;({ HandoffJobDates })', { Date });
+
+test('draft migration: an older sub-project draft gives every sub-project the job install date', () => {
+    const d = { scheduleVersion: 2, form: { preferredInstall: '2027-01-15' },
+                subProjects: { snaps: { 0: { draft: { form: {} } }, 1: { draft: { form: { preferredInstall: '2027-03-01' } } } } } };
+    JD.migrate(d);
+    assert.equal(d.subProjects.snaps[0].draft.form.preferredInstall, '2027-01-15');
+    assert.equal(d.subProjects.snaps[1].draft.form.preferredInstall, '2027-03-01');   // its own date stays
+    assert.equal(d.subProjects.snaps[0].draft.form.prefStart, undefined);              // start stays blank
+    // A v15.79 draft is left alone.
+    const e = { scheduleVersion: 3, form: { preferredInstall: '2027-01-15' }, subProjects: { snaps: { 0: { draft: { form: {} } } } } };
+    JD.migrate(e);
+    assert.equal(e.subProjects.snaps[0].draft.form.preferredInstall, undefined);
+});
+
+test('milestone dates: first task start to install finish', () => {
+    const rows = [{ _start: new Date(2026, 11, 7) }, { _start: new Date(2026, 11, 9) }, { _start: new Date(2026, 11, 21) }];
+    const m = JD.milestone(rows, new Date(2026, 11, 18));
+    assert.equal(m.start_date, '12-07-2026');
+    assert.equal(m.end_date, '12-18-2026');
+});

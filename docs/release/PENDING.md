@@ -7,6 +7,7 @@ each time it goes live. Plain wording, for review with management.
 
 | # | Date | Area | Type | Change | Commit |
 |---|------|------|------|--------|--------|
+| 57 | 2026-11-20 | Start and install date per sub-project (widget) | New | v15.79: the job and each sub-project get two date boxes, Start date (blank: today) and Install date (blank: planned times from the start). Each sub-project is scheduled in its own window with the same grow, shrink and minimum rules; sub-projects can overlap. Follow up and invoice follow each sub-project's own install; the Google review follows the last sub-project's close out. An install date before the start date shows "Before the start date." beside the box; a start date that has passed schedules from now and says so. Status per sub-project: card, Check date badge and the Generate check window name the sub-project that does not fit; each sub-project card shows its dates and status. Timeline shows each sub-project's window on one date axis. Zoho: each sub-project milestone runs from its first task to its install finish; the project runs from the earliest start to the Google review. Older drafts: the job install date becomes every sub-project's install date. Without an install date, tasks now get exact planned times (2 h is 2 h, not a whole day). No Deluge change. 42 tests. | |
 
 ## Workflow (no change to the live product)
 
@@ -19,6 +20,7 @@ Checks, automation and tooling. They change nothing customers see.
 | 3 | 2026-11-18 | Development workflow | Improvement | First automated tests: the install date scheduler (tests/scheduler.test.js, 12 checks) runs before every upload. | d8fe673e |
 | 4 | 2026-11-18 | Development workflow | Improvement | The test run before every upload is node --test tests/*.test.js (works on Node 24). Rows 24, 43 and 44 (already live) moved to Released. | 1a1f114a |
 | 5 | 2026-11-18 | Test copy | New | A test copy for coworkers on the office network at http://192.168.1.195:5050 (Jeff's desktop): the current dev form with sample deals and people, a banner reading "Test copy: sample data, nothing is sent to Zoho", and Generate showing what would have been sent. Runs as a user service that starts at boot (dev-harness/serve.js, handoff-testcopy.service, README). The local puppeteer harness and scenario scripts are in dev-harness. Needs the firewall opened for port 5050 on 192.168.1.0/24 (sudo, Jeff). | 04b1a6f4 |
+| 6 | 2026-11-20 | Test harness | Improvement | dev-harness jobs.js walks 9 jobs (single, 1, 3 and 4 sub-projects) and checks every due time against working hours, holidays, the quarter hour and the Zoho payload; windows.js and migrate.js cover per sub-project dates and draft migration. | |
 
 ## Released
 
