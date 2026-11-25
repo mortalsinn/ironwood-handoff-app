@@ -985,6 +985,15 @@
                    background: rgba(30,41,59,.55); border: 1px solid rgba(51,65,85,.9);
                    border-radius: 8px; padding: 5px 9px; outline: none; }
         .dp-sort:focus { border-color: #0ea5e9; }
+        /* Full deal name for a card whose name or account is cut off: above the card, wrapped,
+           kept inside the window. */
+        #dpTip { position: fixed; z-index: 260; max-width: 420px; padding: 8px 11px; border-radius: 8px;
+                 font-size: 12.5px; font-weight: 600; line-height: 1.35; color: #e2e8f0;
+                 background: #1e293b; border: 1px solid rgba(100,116,139,.7);
+                 box-shadow: 0 8px 24px rgba(0,0,0,.45); pointer-events: none; white-space: normal;
+                 overflow-wrap: anywhere; opacity: 0; transition: opacity .12s ease; }
+        #dpTip.show { opacity: 1; }
+        #dpTip .dp-tip-acct { display: block; margin-top: 2px; font-size: 11.5px; font-weight: 500; color: #94a3b8; }
         .dp-won   { color: #34d399; border-color: rgba(52,211,153,.4);  background: rgba(52,211,153,.12); }
         .dp-quote { color: #fbbf24; border-color: rgba(251,191,36,.4);  background: rgba(251,191,36,.12); }
         .dp-neg   { color: #60a5fa; border-color: rgba(96,165,250,.4);  background: rgba(96,165,250,.12); }
@@ -1061,6 +1070,8 @@
         html.light .dp-neg   { color: #0369a1; background: rgba(2,132,199,.1);  border-color: rgba(2,132,199,.3); }
         html.light .dp-other { color: #475569; background: rgba(100,116,139,.1); border-color: rgba(100,116,139,.3); }
         html.light #dealPickerOverlay h3 { color: #0f172a; }
+        html.light #dpTip { background: #ffffff; color: #0f172a; border-color: #cbd5e1; box-shadow: 0 8px 24px rgba(15,23,42,.14); }
+        html.light #dpTip .dp-tip-acct { color: #475569; }
         html.light #dealPickerOverlay #dealSearchInput { background: #ffffff; border-color: #cbd5e1; color: #0f172a; }
         /* Alignment done purely in CSS. Wrapping these in a container would be
            tidier markup but breaks deletion: the delete button calls
@@ -2434,6 +2445,7 @@
                             <li>None sold or Continue confirms the demolition answer.</li>
                             <li>Project description in Zoho Projects: Site, install date, then the production notes, each on its own line.</li>
                             <li>Each CRM note is its own post in the project Feed: title, author and date, then the note. CRM Notes.txt stays in Documents as a backup.</li>
+                            <li>Which job?: the full deal name shows on hover (long press on touch) when a card cuts it off.</li>
                             <li>Changing new build or renovation asks site protection and demolition again. Answered questions fold back into one line.</li>
                             <li>Older drafts with demolition sold: Rails demolition and disposal ticked.</li>
                         </ul>
@@ -4469,7 +4481,12 @@
                           +   '</div>'
                           +   (stage ? '<span class="dp-stage dp-' + key + '">' + escapeHtml(stage) + '</span>' : '')
                           + '</div>';
-                        b.addEventListener('click', () => {
+                        // The full name (and account) for screen readers and the browser's own hint.
+                        b.title = (d.Deal_Name || '') + (d.Account_Name && d.Account_Name.name ? '\n' + d.Account_Name.name : '');
+                        b.addEventListener('click', (ev) => {
+                            // A long press showed the full name; that touch does not open the job.
+                            if (window.__dpTipHeld) { window.__dpTipHeld = false; ev.preventDefault(); return; }
+                            if (window.dpTipHide) window.dpTipHide();
                             currentDealId = d.id;
                             const chip = document.getElementById('webTabDeal');
                             if (chip) { chip.textContent = d.Deal_Name || ''; chip.classList.remove('hidden'); }
@@ -4480,6 +4497,61 @@
                         results.appendChild(b);
                     });
                 };
+                // FULL NAME ON HOVER (or a long press on touch) for a card whose name or account
+                // is cut off. One tooltip element, shown after 300 ms, above the card.
+                if (!results.dataset.tipWired) {
+                    results.dataset.tipWired = '1';
+                    const tip = document.createElement('div');
+                    tip.id = 'dpTip';
+                    tip.setAttribute('role', 'tooltip');
+                    document.body.appendChild(tip);
+                    let tipTimer = null, tipCard = null;
+                    const cut = (el) => !!el && el.scrollWidth > el.clientWidth + 1;
+                    const hide = () => {
+                        clearTimeout(tipTimer); tipTimer = null;
+                        tip.classList.remove('show');
+                        if (tipCard && tipCard.dataset.title != null) { tipCard.title = tipCard.dataset.title; delete tipCard.dataset.title; }
+                        tipCard = null;
+                    };
+                    window.dpTipHide = hide;
+                    const show = (card) => {
+                        const nameEl = card.querySelector('.dp-name'), acctEl = card.querySelector('.dp-acct');
+                        if (!cut(nameEl) && !cut(acctEl)) return false;
+                        tip.innerHTML = escapeHtml(nameEl ? nameEl.textContent : '')
+                            + (acctEl && cut(acctEl) ? '<span class="dp-tip-acct">' + escapeHtml(acctEl.textContent) + '</span>' : '');
+                        // The browser's own hint would show on top of this one.
+                        card.dataset.title = card.title; card.title = '';
+                        tipCard = card;
+                        const r = card.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+                        tip.style.maxWidth = Math.min(420, vw - 16) + 'px';
+                        tip.style.left = '0px'; tip.style.top = '0px';
+                        const tw = tip.offsetWidth, th = tip.offsetHeight;
+                        const left = Math.max(8, Math.min(r.left, vw - tw - 8));
+                        // Above the card; below it when there is no room above.
+                        const top = r.top - th - 6 >= 8 ? r.top - th - 6 : r.bottom + 6;
+                        tip.style.left = left + 'px'; tip.style.top = top + 'px';
+                        tip.classList.add('show');
+                        return true;
+                    };
+                    results.addEventListener('mouseover', (e) => {
+                        const card = e.target.closest ? e.target.closest('.dp-card') : null;
+                        if (!card || card === tipCard) return;
+                        hide();
+                        tipTimer = setTimeout(() => show(card), 300);
+                    });
+                    results.addEventListener('mouseleave', hide);
+                    results.addEventListener('scroll', hide, { passive: true });
+                    results.addEventListener('pointerdown', (e) => {
+                        if (e.pointerType !== 'touch') return;
+                        hide();
+                        const card = e.target.closest ? e.target.closest('.dp-card') : null;
+                        if (!card) return;
+                        tipTimer = setTimeout(() => { if (show(card)) window.__dpTipHeld = true; }, 500);
+                    });
+                    results.addEventListener('pointerup', (e) => { if (e.pointerType === 'touch' && !tip.classList.contains('show')) { clearTimeout(tipTimer); } });
+                    results.addEventListener('contextmenu', (e) => { if (window.__dpTipHeld) e.preventDefault(); });
+                }
+
                 // FIRST PAGE FAST, THE REST AS HE SCROLLS.
                 // Fetching all ~2000 deals up front cost 4-5 seconds of staring at
                 // nothing before a single card appeared. 200 is the per-page ceiling
