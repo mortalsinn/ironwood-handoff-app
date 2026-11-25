@@ -738,3 +738,22 @@ test('switching to renovation asks site protection and demolition open, then fol
     assert.ok(/window\.foldAnswers = \(\) => \{ answersExpanded = false; \}/.test(html));
     assert.ok(/\.q-answered > \.sub-count-row \{ display: none !important; \}|\.q-answered > \.sub-count-row/.test(html));
 });
+
+test('project description: built in the widget with real line breaks; Deluge uses it', () => {
+    const notes = 'Demolition - Rails\nIncludes\n- Demolition of existing railing\n\n---\n\nCustomer wants oak';
+    const d = JD.projectDescription({ address: '12 Elm St, Calgary', dateTitle: 'Install date', dateLabel: 'Wed, Dec 23, 2026', notes });
+    assert.equal(d, 'Site: 12 Elm St, Calgary\nInstall date: Wed, Dec 23, 2026\nProduction notes:\n' + notes);
+    assert.equal(d.indexOf('\\n'), -1);                                   // no backslash-n characters
+    assert.equal(/Auto-generated/.test(d), false);
+    // Lines only when set: no address, no date, no notes.
+    assert.equal(JD.projectDescription({ dateTitle: 'Pickup date', dateLabel: 'Fri, Dec 18, 2026', notes: '' }), 'Pickup date: Fri, Dec 18, 2026');
+    assert.equal(JD.projectDescription({ notes: 'Only a note' }), 'Production notes:\nOnly a note');
+    assert.equal(JD.projectDescription({}), '');
+    assert.ok(/capturedData\.project_description = HandoffJobDates\.projectDescription\(/.test(html));
+    // The function: a real line break from urlDecode, the widget's text first, no backslash-n left in any text it writes.
+    const dg = fs.readFileSync(path.join(__dirname, '..', 'deluge_handoff_function.dg'), 'utf8');
+    assert.ok(/NL = zoho\.encryption\.urlDecode\("%0A"\);/.test(dg));
+    assert.ok(/projDesc = ifnull\(payloadData\.get\("project_description"\),""\);/.test(dg));
+    const code = dg.split('\n').filter(l => !/^\s*\/\//.test(l)).join('\n');
+    assert.equal(code.indexOf('\\n'), -1);
+});

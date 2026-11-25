@@ -82,6 +82,10 @@ const run = async (name, dateOverride) => {
     const onDeal = crm.filter(c => /^(Demolition|Disposal) - /.test(c)).length;
     console.log('   demolition notes: ' + (heads.join(', ') || 'none') + ' | duplicates ' + dup + ' | project_only_notes ' + (p.project_only_notes || []).length + ' | on the Deal ' + onDeal + ' | demolition tasks: ' + demoTasks);
   }
+  if (p) {
+    const d = String(p.project_description || '');
+    console.log('   description: real line breaks ' + (d.split('\n').length - 1) + ', backslash-n ' + (d.split('\\n').length - 1) + (process.env.SHOWDESC ? '\n' + d.replace(/^/gm, '     | ') : ''));
+  }
   console.log('== ' + name + ' | ' + screen.status + ' | problems ' + screen.probs.length + ' | payload vs screen mismatches ' + mism);
   console.log('   lanes: ' + screen.lanes.join('; ') + (screen.legacy ? ' | OLDER DRAFT NOTE SHOWN' : ''));
   console.log('   hint: ' + screen.hint + (screen.card ? ' | card: ' + screen.card : ''));

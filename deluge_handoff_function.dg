@@ -1,6 +1,9 @@
 string standalone.create_handoff_tasks(String dealId,String payload)
 {
 payloadData = payload.toMap();
+// A real line break. A "\n" inside a Deluge string literal is stored as the two characters
+// backslash and n, which Zoho Projects showed as text in the description (v15.80).
+NL = zoho.encryption.urlDecode("%0A");
 info "Handoff Triggered for Deal ID: " + dealId;
 info "Payload: " + payloadData;
 dealInfo = zoho.crm.getRecordById("Deals",dealId.toLong());
@@ -90,30 +93,34 @@ if(newProjectId == "")
 	projectData = Map();
 	projectData.put("name",projectName);
 	projectData.put("template_id","1768463000007543025");
-	// The description is the first thing anyone reads on the project, so the
-	// address and the promised date go at the top of it. Both were previously
-	// nowhere in Zoho - the address lived only in the widget's travel modal.
-	projDesc = "";
-	if(payloadData.get("job_address") != null && payloadData.get("job_address") != "")
+	// The description is the first thing anyone reads on the project. Since v15.80 the widget
+	// sends it ready to use, with real line breaks: Site, the install date, then the notes.
+	projDesc = ifnull(payloadData.get("project_description"),"");
+	if(projDesc == "")
 	{
-		projDesc = projDesc + "Site: " + payloadData.get("job_address") + "\n";
-	}
-	// v15.70: the install date (the day the last task is due). needed_by is the
-	// same date from an older widget.
-	if(payloadData.get("install_date_label") != null && payloadData.get("install_date_label") != "")
-	{
-		dateTitle = "Install date";
-		if(payloadData.get("install_date_title") != null && payloadData.get("install_date_title") != "")
+		// An older widget: the same lines, built here.
+		if(payloadData.get("job_address") != null && payloadData.get("job_address") != "")
 		{
-			dateTitle = payloadData.get("install_date_title");
+			projDesc = projDesc + "Site: " + payloadData.get("job_address") + NL;
 		}
-		projDesc = projDesc + dateTitle + ": " + payloadData.get("install_date_label") + "\n";
+		if(payloadData.get("install_date_label") != null && payloadData.get("install_date_label") != "")
+		{
+			dateTitle = "Install date";
+			if(payloadData.get("install_date_title") != null && payloadData.get("install_date_title") != "")
+			{
+				dateTitle = payloadData.get("install_date_title");
+			}
+			projDesc = projDesc + dateTitle + ": " + payloadData.get("install_date_label") + NL;
+		}
+		else if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
+		{
+			projDesc = projDesc + "Needed by: " + payloadData.get("needed_by") + NL;
+		}
+		if(payloadData.get("notes") != null && payloadData.get("notes") != "")
+		{
+			projDesc = projDesc + "Production notes:" + NL + payloadData.get("notes");
+		}
 	}
-	else if(payloadData.get("needed_by") != null && payloadData.get("needed_by") != "")
-	{
-		projDesc = projDesc + "Needed by: " + payloadData.get("needed_by") + "\n";
-	}
-	projDesc = projDesc + "Auto-generated from Ironwood Handoff Widget. Notes: " + payloadData.get("notes");
 	projectData.put("description",projDesc);
 	projectData.put("public","yes");
 	// =====================================
@@ -1764,16 +1771,16 @@ try
 		// ---- Notes, as one text file ----
 		progDone = 5 + progTaskCount + progAttCount;
 		standalone.set_handoff_progress(dealId,"7",progDone.toString(),progTotal.toString(),(progAttCount + 1).toString() + " of " + (progAttCount + 1).toString());
-		notesText = "CRM NOTES - " + dealName + "\nCopied from the CRM at handoff.\n";
+		notesText = "CRM NOTES - " + dealName + NL + "Copied from the CRM at handoff." + NL;
 		dealDesc = dealInfo.get("Description");
 		if(dealDesc != null && dealDesc != "")
 		{
-			notesText = notesText + "\n============================================================\nDEAL DESCRIPTION\n\n" + dealDesc + "\n";
+			notesText = notesText + NL + "============================================================" + NL + "DEAL DESCRIPTION" + NL + NL + dealDesc + NL;
 		}
 		handoffNotes = payloadData.get("notes");
 		if(handoffNotes != null && handoffNotes != "")
 		{
-			notesText = notesText + "\n============================================================\nPRODUCTION NOTES FROM THE HANDOFF\n\n" + handoffNotes + "\n";
+			notesText = notesText + NL + "============================================================" + NL + "PRODUCTION NOTES FROM THE HANDOFF" + NL + NL + handoffNotes + NL;
 		}
 		noteCount = 0;
 		// @mentions are stored as crm[user#<id>#<zuid>]crm; show them as @Name.
@@ -1805,7 +1812,7 @@ try
 				if(!cnTitle.startsWith("IRONWOOD_DRAFT") && !cnTitle.startsWith("Zoho Project - "))
 				{
 					cnBody = ifnull(cn.get("Note_Content"),"");
-					cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>","\n");
+					cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>",NL);
 					cnBody = cnBody.replaceAll("<[^>]*>","");
 					for each  mu in mentionUsers
 					{
@@ -1827,7 +1834,7 @@ try
 					{
 						cnTitle = "Note";
 					}
-					notesText = notesText + "\n------------------------------------------------------------\n" + cnTitle + "\n" + cnWho + " - " + cnWhen + "\n\n" + cnBody.trim() + "\n";
+					notesText = notesText + NL + "------------------------------------------------------------" + NL + cnTitle + NL + cnWho + " - " + cnWhen + NL + NL + cnBody.trim() + NL;
 					noteCount = noteCount + 1;
 				}
 			}
@@ -1922,7 +1929,7 @@ if(depFail > 0)
 	diagNote.put("Parent_Id",dealId);
 	diagNote.put("se_module","Deals");
 	diagNote.put("Note_Title","Handoff diagnostics - " + depFail + " dependency call(s) failed");
-	diagNote.put("Note_Content","Project: " + projectName + " (" + newProjectId + ")\nLinked: " + depOk + "\nFailed: " + depFail + "\nFirst error: " + depFirstError);
+	diagNote.put("Note_Content","Project: " + projectName + " (" + newProjectId + ")" + NL + "Linked: " + depOk + NL + "Failed: " + depFail + NL + "First error: " + depFirstError);
 	diagNoteResponse = zoho.crm.createRecord("Notes",diagNote);
 	info "DIAGNOSTIC NOTE RESULT: " + diagNoteResponse.toString();
 }

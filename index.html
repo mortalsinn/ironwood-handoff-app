@@ -2432,6 +2432,7 @@
                             <li>Each ticked box adds a Project note to Production Notes. The text can be edited.</li>
                             <li>Project notes go to the project only, not the Deal's Notes.</li>
                             <li>None sold or Continue confirms the demolition answer.</li>
+                            <li>Project description in Zoho Projects: Site, install date, then the production notes, each on its own line.</li>
                             <li>Changing new build or renovation asks site protection and demolition again. Answered questions fold back into one line.</li>
                             <li>Older drafts with demolition sold: Rails demolition and disposal ticked.</li>
                         </ul>
@@ -4250,6 +4251,15 @@
                   demo: ['Demolition - Stub Walls', 'Includes', '- Demolition of existing stub walls', '- Electrical work by others', '- Drywall work by others'],
                   disp: ['Disposal - Stub Walls', 'Includes', '- Removal of demolition waste materials', '- Disposal of demolition waste materials'] }
             ],
+            // The Zoho Projects description, built here with real line breaks (Deluge string literals
+            // store "\n" as two characters). Site and date lines only when set; notes as sent.
+            projectDescription: (o) => {
+                const lines = [];
+                if (o.address && String(o.address).trim()) lines.push('Site: ' + String(o.address).trim());
+                if (o.dateLabel) lines.push((o.dateTitle || 'Install date') + ': ' + o.dateLabel);
+                if (o.notes && String(o.notes).trim()) lines.push('Production notes:', o.notes);
+                return lines.join('\n');
+            },
             // The note text for one box, e.g. demoStairsDemo.
             demoNoteText: (key) => {
                 const it = HandoffJobDates.DEMO_ITEMS.find(d => key.indexOf(d.input) === 0);
@@ -10669,6 +10679,13 @@
                 project_start: projectStart ? fmtProjectsDate(projectStart) : "",
                 project_end: projectEnd ? fmtProjectsDate(projectEnd) : ""
             };
+            // The project description, ready to use: Site, the install (or pickup) date, then the notes.
+            capturedData.project_description = HandoffJobDates.projectDescription({
+                address: (document.getElementById('travelAddress') || {}).value || '',
+                dateTitle: capturedData.install_date_title,
+                dateLabel: capturedData.install_date_label,
+                notes: joinedNotes
+            });
             // Milestones on: one task list per milestone, plus the milestones themselves.
             const milestonePayload = subPayload
                 || (window.buildMilestonePayload ? window.buildMilestonePayload(orderedTasks) : null);
