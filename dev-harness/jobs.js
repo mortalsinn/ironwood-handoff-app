@@ -76,7 +76,11 @@ const run = async (name, dateOverride) => {
     const ts2 = p.ordered_tasks || [].concat(...Object.keys(p.task_lists).map(k => p.task_lists[k]));
     const demoTasks = ts2.filter(t => /Removal|Disposal|Remove Existing/.test(t.name)).length;
     const heads = String(p.notes || '').split('\n\n---\n\n').map(x => x.split('\n')[0]).filter(x => /^(Demolition|Disposal) - /.test(x));
-    console.log('   demolition notes: ' + (heads.join(', ') || 'none') + ' | demolition tasks: ' + demoTasks);
+    const dup = heads.filter((x, i) => heads.indexOf(x) !== i).length;
+    await sleep(1500);
+    const crm = (await page.evaluate(() => (window.__ZLOG || []).filter(x => x[0] === 'insert').map(x => x[1].APIData.Note_Content))) || [];
+    const onDeal = crm.filter(c => /^(Demolition|Disposal) - /.test(c)).length;
+    console.log('   demolition notes: ' + (heads.join(', ') || 'none') + ' | duplicates ' + dup + ' | project_only_notes ' + (p.project_only_notes || []).length + ' | on the Deal ' + onDeal + ' | demolition tasks: ' + demoTasks);
   }
   console.log('== ' + name + ' | ' + screen.status + ' | problems ' + screen.probs.length + ' | payload vs screen mismatches ' + mism);
   console.log('   lanes: ' + screen.lanes.join('; ') + (screen.legacy ? ' | OLDER DRAFT NOTE SHOWN' : ''));

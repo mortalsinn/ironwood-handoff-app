@@ -253,6 +253,9 @@
         .q-done { display: none; margin-top: 10px; font-size: 12px; font-weight: 600; color: #38bdf8;
                   background: none; border: 1px solid rgba(56,189,248,.45); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
         .q[data-editing] > .q-done { display: inline-flex; }
+        .note-proj-tag { display: inline-block; margin-bottom: 4px; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+                         text-transform: uppercase; color: #38bdf8; }
+        html.light .note-proj-tag { color: #0369a1; }
         .q-answered > .q-done { display: none !important; }
         /* An answered question collapses to a single line so the panel only ever
            shows decisions already made plus the one thing it is asking next. */
@@ -1675,7 +1678,7 @@
                     <div id="qDemoDisposal" data-chip="demolition" class="q hidden" data-q-demo="1" data-label="Demolition and disposal sold"
                          data-q-until="input[name=&quot;jobHasTravel&quot;]:checked">
                         <p class="q-title text-sm font-medium text-slate-300 mb-1">Demolition and disposal sold</p>
-                        <p class="q-hint text-xs text-slate-500 mb-2">Each tick adds a note. Nothing ticked: none sold.</p>
+                        <p class="q-hint text-xs text-slate-500 mb-2">Each tick adds a production note. Nothing ticked: none sold.</p>
                         <div class="flex flex-col demo-rows">
                             <div class="demo-row" data-demo-row="stairs">
                                 <span class="demo-row-name text-sm font-medium text-slate-300">Stairs</span>
@@ -2153,7 +2156,7 @@
                     </div>
                     <div id="secNotes" class="pb-4 pt-2 hidden sec-collapsed">
                         <label class="block text-xs font-bold text-slate-400 mb-2 uppercase tracking-widest">5. Production Notes</label>
-                        <p class="text-xs text-slate-500 mb-2 -mt-1 leading-relaxed">Saved to this Deal's <span class="text-slate-400 font-semibold">Notes in CRM</span> after the handoff. Use @ to tag a teammate.</p>
+                        <p class="text-xs text-slate-500 mb-2 -mt-1 leading-relaxed">Saved to this Deal's <span class="text-slate-400 font-semibold">Notes in CRM</span> after the handoff. Project notes go to the project only. Use @ to tag a teammate.</p>
                         <div id="notesContainer" class="space-y-3">
                             <div class="relative w-full note-block group">
                                 <textarea name="notes[]" rows="2" class="w-full p-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none text-slate-200 placeholder-slate-500 italic text-sm transition-all note-textarea pr-10" placeholder="Type production notes here... (Use @ to tag a team member)"></textarea>
@@ -2426,7 +2429,8 @@
                         <ul class="list-disc ml-5 space-y-1 text-slate-400 text-xs mb-6">
                             <li><strong class="text-slate-300">Demolition and disposal are notes, not tasks.</strong></li>
                             <li>Stairs, rails and stub walls each have a Demolition box and a Disposal box.</li>
-                            <li>Each ticked box adds a note to the Deal and the project description.</li>
+                            <li>Each ticked box adds a Project note to Production Notes. The text can be edited.</li>
+                            <li>Project notes go to the project only, not the Deal's Notes.</li>
                             <li>Older drafts with demolition sold: Rails demolition and disposal ticked.</li>
                         </ul>
                     </div>
@@ -4244,6 +4248,22 @@
                   demo: ['Demolition - Stub Walls', 'Includes', '- Demolition of existing stub walls', '- Electrical work by others', '- Drywall work by others'],
                   disp: ['Disposal - Stub Walls', 'Includes', '- Removal of demolition waste materials', '- Disposal of demolition waste materials'] }
             ],
+            // The note text for one box, e.g. demoStairsDemo.
+            demoNoteText: (key) => {
+                const it = HandoffJobDates.DEMO_ITEMS.find(d => key.indexOf(d.input) === 0);
+                if (!it) return '';
+                return (/Disp$/.test(key) ? it.disp : it.demo).join('\n');
+            },
+            // The box a saved note belongs to, read from its first line ("Demolition - Rails").
+            demoKeyOf: (text) => {
+                const head = String(text || '').split('\n')[0].trim();
+                let key = '';
+                HandoffJobDates.DEMO_ITEMS.forEach(it => {
+                    if (head === it.demo[0]) key = it.input + 'Demo';
+                    if (head === it.disp[0]) key = it.input + 'Disp';
+                });
+                return key;
+            },
             // ticks: { demoStairsDemo: true, ... }. shown: { stairs: true, rails: false, stub: true }.
             // Returns the note texts in order: stairs, rails, stub walls; demolition before disposal.
             demoNotes: (ticks, shown) => {
@@ -5167,22 +5187,72 @@
             // Dynamic Note Logic
             const addNoteBtn = document.getElementById('addNoteBtn');
 
-            addNoteBtn.addEventListener('click', () => {
+            const makeNoteBlock = () => {
                 const newBlock = document.createElement('div');
                 newBlock.className = 'relative w-full note-block group';
                 newBlock.innerHTML = `
                     <textarea name="notes[]" rows="2" class="w-full p-3 bg-slate-800/50 border border-slate-700 rounded-xl focus:ring-2 focus:ring-brand-accent focus:border-brand-accent outline-none text-slate-200 placeholder-slate-500 italic text-sm transition-all note-textarea pr-10" placeholder="Type additional production notes... (Use @ to tag a team member)"></textarea>
                     <button type="button" class="delete-note-btn absolute right-3 top-3 text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 transition-opacity"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 `;
-                notesContainer.appendChild(newBlock);
                 newBlock.querySelector('.delete-note-btn').addEventListener('click', () => {
+                    // Deleting a demolition or disposal note unticks its box.
+                    const key = newBlock.querySelector('textarea').getAttribute('data-demo-key');
+                    const box = key && document.querySelector('#handoffForm input[name="' + key + '"]');
+                    if (box) box.checked = false;
                     newBlock.remove();
+                    if (!notesContainer.children.length) notesContainer.appendChild(makeNoteBlock());
                     // trigger autosave
                     form.dispatchEvent(new Event('change', { bubbles: true }));
+                    if (box && window.scheduleFlow) window.scheduleFlow();
                 });
+                return newBlock;
+            };
+            addNoteBtn.addEventListener('click', () => {
+                const newBlock = makeNoteBlock();
+                notesContainer.appendChild(newBlock);
                 newBlock.querySelector('textarea').focus();
                 form.dispatchEvent(new Event('change', { bubbles: true }));
             });
+
+            // Demolition and disposal (v15.80): each ticked box keeps one Production Notes entry,
+            // prefilled with its text and editable. Unticking removes it. Order: stairs, rails, stub
+            // walls, demolition before disposal, ahead of the person's own notes.
+            // A demolition or disposal box: tagged, sized to its text and labelled "Project note".
+            const markDemoNote = (t, key) => {
+                t.setAttribute('data-demo-key', key);
+                t.rows = Math.max(2, String(t.value).split('\n').length);
+                const block = t.closest('.note-block');
+                if (block && !block.querySelector('.note-proj-tag')) {
+                    const tag = document.createElement('span');
+                    tag.className = 'note-proj-tag';
+                    tag.textContent = 'Project note';
+                    block.insertBefore(tag, t);
+                }
+            };
+            window.markDemoNote = markDemoNote;
+            window.syncDemoNotes = () => {
+                const want = window.demoWantedKeys ? window.demoWantedKeys() : [];
+                let changed = false;
+                notesContainer.querySelectorAll('textarea[data-demo-key]').forEach(t => {
+                    if (want.indexOf(t.getAttribute('data-demo-key')) === -1) { t.closest('.note-block').remove(); changed = true; }
+                });
+                let prev = null;
+                want.forEach(key => {
+                    let t = notesContainer.querySelector('textarea[data-demo-key="' + key + '"]');
+                    if (!t) {
+                        const block = makeNoteBlock();
+                        t = block.querySelector('textarea');
+                        t.value = HandoffJobDates.demoNoteText(key);
+                        if (prev) prev.closest('.note-block').after(block);
+                        else notesContainer.insertBefore(block, notesContainer.firstChild);
+                        changed = true;
+                    }
+                    markDemoNote(t, key);
+                    prev = t;
+                });
+                if (!notesContainer.children.length) { notesContainer.appendChild(makeNoteBlock()); changed = true; }
+                if (changed) form.dispatchEvent(new Event('change', { bubbles: true }));
+            };
 
             document.querySelectorAll('.delete-note-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -5231,6 +5301,9 @@
                     };
                 });
 
+                // Which notes belong to a demolition or disposal box, by position.
+                formState.demoNoteKeys = Array.from(document.querySelectorAll('#notesContainer textarea[name="notes[]"]'))
+                    .map(t => t.getAttribute('data-demo-key') || '');
                 const draft = {
                     schema: 25,
                     // 2: the install date means the install is FINISHED (v15.70). A draft from
@@ -5485,8 +5558,19 @@
                                     document.getElementById('addNoteBtn').click();
                                 }
                                 const noteBoxes = container.querySelectorAll('textarea');
+                                // Demolition and disposal notes keep their box, so a reload never adds a second copy.
+                                const keys = Array.isArray(formState.demoNoteKeys) ? formState.demoNoteKeys
+                                           : (formState.demoNoteKeys ? [formState.demoNoteKeys] : null);
                                 valArray.forEach((val, index) => {
-                                    if (noteBoxes[index]) noteBoxes[index].value = val;
+                                    if (!noteBoxes[index]) return;
+                                    noteBoxes[index].value = val;
+                                    const k = keys ? keys[index] : HandoffJobDates.demoKeyOf(val);
+                                    if (k && window.markDemoNote) window.markDemoNote(noteBoxes[index], k);
+                                    else {
+                                        noteBoxes[index].removeAttribute('data-demo-key');
+                                        const tag = noteBoxes[index].closest('.note-block').querySelector('.note-proj-tag');
+                                        if (tag) tag.remove();
+                                    }
                                 });
                                 continue;
                             }
@@ -8431,13 +8515,14 @@
                 .map(it => ({ item: it, demo: on(it.input + 'Demo'), disp: on(it.input + 'Disp') }))
                 .filter(x => x.demo || x.disp);
         };
-        window.demoNotes = () => {
-            const ticks = {};
+        // The ticked boxes that keep a Production Notes entry, in note order.
+        window.demoWantedKeys = () => {
+            const keys = [];
             window.demoSoldItems().forEach(x => {
-                if (x.demo) ticks[x.item.input + 'Demo'] = true;
-                if (x.disp) ticks[x.item.input + 'Disp'] = true;
+                if (x.demo) keys.push(x.item.input + 'Demo');
+                if (x.disp) keys.push(x.item.input + 'Disp');
             });
-            return HandoffJobDates.demoNotes(ticks);
+            return keys;
         };
         // Short facts: "Demolition: stairs, rails" and "Disposal: rails".
         window.demoFacts = () => {
@@ -8524,6 +8609,7 @@
                     const it = DEMO_ITEMS.find(d => d.row === r.getAttribute('data-demo-row'));
                     r.classList.toggle('hidden', !!it && !window.demoRowShown(it));
                 });
+                if (window.syncDemoNotes) window.syncDemoNotes();
                 const sum = ensureQSummary(q);
                 const until = q.getAttribute('data-q-until');
                 const movedOn = !until || !!document.querySelector(until);
@@ -10525,12 +10611,18 @@
                     }
                 });
             });
-            // Demolition and disposal sold: one note per ticked box (v15.80).
-            const allNotes = treadNotes.concat(window.demoNotes ? window.demoNotes() : [], formData.getAll('notes[]'));
+            // Demolition and disposal boxes are Production Notes too, flagged as project notes:
+            // they go to the project (description and notes file), never to the Deal's Notes.
+            const noteAreas = Array.from(document.querySelectorAll('#notesContainer textarea[name="notes[]"]'));
+            const demoNoteTexts = noteAreas.filter(t => t.hasAttribute('data-demo-key')).map(t => t.value).filter(n => n.trim() !== '');
+            const allNotes = treadNotes.concat(formData.getAll('notes[]'));
+            const dealNotes = treadNotes.concat(noteAreas.filter(t => !t.hasAttribute('data-demo-key')).map(t => t.value));
             const joinedNotes = allNotes.filter(n => n.trim() !== '').join('\n\n---\n\n');
 
             const capturedData = {
                 notes: joinedNotes,
+                // The demolition and disposal blocks inside notes, listed on their own: project only.
+                project_only_notes: demoNoteTexts,
                 task_lists: task_lists,
                 // Applied to the PROJECT, not the tasks - one association call each,
                 // not one per task.
@@ -10722,7 +10814,8 @@
 
                     // Push Production Notes to the Deal only AFTER the handoff succeeded,
                     // so a failed attempt + retry can never duplicate notes in CRM.
-                    const notesToPush = allNotes.filter(n => n.trim() !== '');
+                    // Demolition and disposal blocks are project notes and are left off the Deal.
+                    const notesToPush = dealNotes.filter(n => n.trim() !== '');
                     if (notesToPush.length > 0) {
                         // Notes go across as typed. This used to rewrite "@Name" into
                         // [@Name](zohocrm://user/<id>) markdown, on the assumption CRM
@@ -11216,7 +11309,7 @@
         // =====================================
         (() => {
             const SHARED_FORM = ['projectOwnerAssignee', 'projectType', 'scopeOfWork', 'siteProtection', 'demoDisposal',
-                                 'demoStairsDemo', 'demoStairsDisp', 'demoRailsDemo', 'demoRailsDisp', 'demoStubDemo', 'demoStubDisp',
+                                 'demoStairsDemo', 'demoStairsDisp', 'demoRailsDemo', 'demoRailsDisp', 'demoStubDemo', 'demoStubDisp', 'demoNoteKeys',
                                  'jobHasTravel', 'subCount', 'notes[]', 'neededBy'];
             const SHARED_ASSIGNEES = ['projectOwnerAssigneeInput'];
             let sub = { names: [], active: 0, snaps: {}, owners: {} };

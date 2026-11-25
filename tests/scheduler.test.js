@@ -706,3 +706,20 @@ test('draft migration: demolition and disposal Yes ticks Rails demolition and di
         assert.ok(new RegExp("SHARED_FORM = \\[[^\\]]*'" + nm + "'").test(html), nm + ' shared');
     });
 });
+
+test('demolition and disposal boxes: Production Notes entries, project only, sent once', () => {
+    assert.equal(JD.demoNoteText('demoRailsDisp'), 'Disposal - Rails\nIncludes\n- Removal of demolition waste materials\n- Disposal of demolition waste materials');
+    assert.equal(JD.demoNoteText('demoStubDemo').split('\n')[0], 'Demolition - Stub Walls');
+    assert.equal(JD.demoKeyOf('Demolition - Stairs\nIncludes\n- edited text'), 'demoStairsDemo');
+    assert.equal(JD.demoKeyOf('Disposal - Stub Walls'), 'demoStubDisp');
+    assert.equal(JD.demoKeyOf('Customer wants oak'), '');
+    // No hidden add at Generate: notes come from notes[] only, and the Deal gets the typed notes only.
+    assert.equal(/allNotes = treadNotes\.concat\(formData\.getAll\('notes\[\]'\)\);/.test(html), true);
+    assert.equal(html.indexOf('window.demoNotes'), -1);
+    assert.ok(/const notesToPush = dealNotes\.filter/.test(html));
+    assert.ok(/dealNotes = treadNotes\.concat\(noteAreas\.filter\(t => !t\.hasAttribute\('data-demo-key'\)\)/.test(html));
+    assert.ok(/project_only_notes: demoNoteTexts/.test(html));
+    // Drafts keep which notes are demolition boxes, and sub-projects share them like every note.
+    assert.ok(/formState\.demoNoteKeys = /.test(html));
+    assert.ok(/SHARED_FORM = \[[^\]]*'demoNoteKeys'[^\]]*'notes\[\]'/.test(html));
+});
