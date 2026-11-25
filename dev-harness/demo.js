@@ -4,7 +4,7 @@ const h = require('./harness');
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const out = process.argv[2] || '/tmp';
 const clickAll = (page, pairs) => page.evaluate(async (pairs) => {
-  for (const [n, v] of pairs) { const i = document.querySelector(`#handoffForm input[name="${n}"][value="${v}"]`); if (i) i.click(); await new Promise(r => setTimeout(r, 500)); }
+  for (const [n, v] of pairs) { const i = n === '@' ? document.querySelector(v) : document.querySelector(`#handoffForm input[name="${n}"][value="${v}"]`); if (i) i.click(); await new Promise(r => setTimeout(r, 500)); }
 }, pairs);
 const state = (page) => page.evaluate(() => {
   const q = document.getElementById('qDemoDisposal');
@@ -24,15 +24,15 @@ const state = (page) => page.evaluate(() => {
     const errs = logs.filter(l => /PAGEERROR/.test(l));
     if (w === 1440 && theme === 'dark') {
       console.log('open:', JSON.stringify(await state(page)));
-      await clickAll(page, [['jobHasTravel', 'No']]); await sleep(500);
+      await clickAll(page, [['@', '#demoContinue'], ['jobHasTravel', 'No']]); await sleep(500);
       console.log('after travel:', JSON.stringify(await state(page)));
       await page.evaluate(() => document.querySelector('#qDemoDisposal .q-sum-change').click()); await sleep(400);
       await clickAll(page, [['demoStubDisp', 'Yes']]); await sleep(400);
       console.log('change + tick:', JSON.stringify(await state(page)));
-      await page.evaluate(() => document.querySelector('#qDemoDisposal .q-done').click()); await sleep(400);
+      await page.evaluate(() => document.querySelector('#demoContinue').click()); await sleep(400);
       console.log('done:', JSON.stringify(await state(page)));
       await clickAll(page, [['jobHasStairs', 'No']]); await sleep(500);
-      console.log('stairs No:', JSON.stringify(await state(page)), 'notes', JSON.stringify(await page.evaluate(() => window.demoNotes().map(n => n.split('\n')[0]))));
+      console.log('stairs No:', JSON.stringify(await state(page)), 'notes', JSON.stringify(await page.evaluate(() => window.demoWantedKeys())));
       const draft = await page.evaluate(() => JSON.stringify(window.buildDraftObject()));
       await browser.close();
       // Reload the draft: the ticks come back.

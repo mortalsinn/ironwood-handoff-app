@@ -4,11 +4,11 @@
 const h = require('./harness');
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const pick = (page, pairs) => page.evaluate(async (pairs) => {
-  for (const [n, v] of pairs) { const i = document.querySelector(`#handoffForm input[name="${n}"][value="${v}"]`); if (i) i.click(); await new Promise(r => setTimeout(r, 600)); }
+  for (const [n, v] of pairs) { const i = n === '@' ? document.querySelector(v) : document.querySelector(`#handoffForm input[name="${n}"][value="${v}"]`); if (i) i.click(); await new Promise(r => setTimeout(r, 600)); }
 }, pairs);
 const setDate = (page, id, iso) => page.evaluate((id, v) => { const i = document.getElementById(id); i.value = v; i.dispatchEvent(new Event('change', { bubbles: true })); }, id, iso);
 const NB = [['projectType', 'NewBuild'], ['scopeOfWork', 'Supply & Install'], ['jobHasTravel', 'No']];
-const RENO = [['projectType', 'Renovation'], ['scopeOfWork', 'Supply & Install'], ['siteProtection', 'No'], ['demoRailsDemo', 'Yes'], ['demoRailsDisp', 'Yes'], ['demoStubDemo', 'Yes'], ['jobHasTravel', 'No']];
+const RENO = [['projectType', 'Renovation'], ['scopeOfWork', 'Supply & Install'], ['siteProtection', 'No'], ['demoRailsDemo', 'Yes'], ['demoRailsDisp', 'Yes'], ['demoStubDemo', 'Yes'], ['@', '#demoContinue'], ['jobHasTravel', 'No']];
 const RAIL = [['jobHasStairs', 'No'], ['jobHasRailing', 'Yes'], ['railSystem', 'Wood'], ['railingShape', 'Straight'], ['spindleType', 'Wood'], ['jobHasCustomMetal', 'No'], ['jobHasInteriorGlass', 'No']];
 const METAL = [['jobHasStairs', 'No'], ['jobHasRailing', 'Yes'], ['railSystem', 'Metal'], ['railingType', 'FullMetal'], ['railingShape', 'Straight'], ['jobHasCustomMetal', 'No'], ['jobHasInteriorGlass', 'No']];
 const CONSTR = [['jobHasStairs', 'Yes'], ['stairGrade', 'Construction'], ['constStairType_1', 'Western'], ['constStairShape_1', 'Straight'], ['jobHasRailing', 'No'], ['jobHasCustomMetal', 'No'], ['jobHasInteriorGlass', 'No']];

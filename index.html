@@ -250,13 +250,13 @@
         .demo-rows { gap: 8px; }
         .demo-row { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: center; gap: 10px; }
         .demo-row .opt-choice { min-width: 0; padding: 10px 12px; }
-        .q-done { display: none; margin-top: 10px; font-size: 12px; font-weight: 600; color: #38bdf8;
-                  background: none; border: 1px solid rgba(56,189,248,.45); border-radius: 6px; padding: 5px 12px; cursor: pointer; }
-        .q[data-editing] > .q-done { display: inline-flex; }
+        /* Confirms the demolition answer, the same button as the sub-project count's Continue. */
+        .q-continue { margin-top: 10px; font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 10px; background: #0284c7; color: #fff; }
+        .q-continue:hover { background: #0ea5e9; }
+        .q-answered > .q-continue, .q-answered > .sub-count-row { display: none !important; }
         .note-proj-tag { display: inline-block; margin-bottom: 4px; font-size: 10px; font-weight: 700; letter-spacing: .06em;
                          text-transform: uppercase; color: #38bdf8; }
         html.light .note-proj-tag { color: #0369a1; }
-        .q-answered > .q-done { display: none !important; }
         /* An answered question collapses to a single line so the panel only ever
            shows decisions already made plus the one thing it is asking next. */
         .q-summary { display: none; align-items: center; gap: 8px; padding: 8px 10px;
@@ -1675,10 +1675,9 @@
                          adds a note to the Deal and the project description, never a task. Stairs and
                          Rails hide once the job answers No to stairs or railing; Stub walls is always
                          asked on a renovation. Nothing ticked means none sold. -->
-                    <div id="qDemoDisposal" data-chip="demolition" class="q hidden" data-q-demo="1" data-label="Demolition and disposal sold"
-                         data-q-until="input[name=&quot;jobHasTravel&quot;]:checked">
+                    <div id="qDemoDisposal" data-chip="demolition" class="q hidden" data-q-demo="1" data-label="Demolition and disposal sold">
                         <p class="q-title text-sm font-medium text-slate-300 mb-1">Demolition and disposal sold</p>
-                        <p class="q-hint text-xs text-slate-500 mb-2">Each tick adds a production note. Nothing ticked: none sold.</p>
+                        <p class="q-hint text-xs text-slate-500 mb-2">Each tick adds a production note.</p>
                         <div class="flex flex-col demo-rows">
                             <div class="demo-row" data-demo-row="stairs">
                                 <span class="demo-row-name text-sm font-medium text-slate-300">Stairs</span>
@@ -1702,7 +1701,9 @@
                                 </div>
                             </div>
                         </div>
-                        <button type="button" class="q-done">Done</button>
+                        <!-- Answered only once confirmed: "None sold" with nothing ticked, else Continue. -->
+                        <button type="button" class="q-continue" id="demoContinue">None sold</button>
+                        <input type="hidden" name="demoConfirmed" value="">
                     </div>
 
                     <!-- Gate question. Deliberately NOT a collapsible section: its first child is a
@@ -2431,6 +2432,8 @@
                             <li>Stairs, rails and stub walls each have a Demolition box and a Disposal box.</li>
                             <li>Each ticked box adds a Project note to Production Notes. The text can be edited.</li>
                             <li>Project notes go to the project only, not the Deal's Notes.</li>
+                            <li>None sold or Continue confirms the demolition answer.</li>
+                            <li>Changing new build or renovation asks site protection and demolition again. Answered questions fold back into one line.</li>
                             <li>Older drafts with demolition sold: Rails demolition and disposal ticked.</li>
                         </ul>
                     </div>
@@ -4279,6 +4282,7 @@
             // Rails demolition and Rails disposal. Changes the form state in place.
             migrateDemo: (f) => {
                 if (!f || !('demoDisposal' in f)) return f;
+                f.demoConfirmed = 'Yes';
                 if (f.demoDisposal === 'Yes' && !f.demoRailsDemo && !f.demoRailsDisp) {
                     f.demoRailsDemo = 'Yes';
                     f.demoRailsDisp = 'Yes';
@@ -8611,9 +8615,10 @@
                 });
                 if (window.syncDemoNotes) window.syncDemoNotes();
                 const sum = ensureQSummary(q);
-                const until = q.getAttribute('data-q-until');
-                const movedOn = !until || !!document.querySelector(until);
-                if (movedOn && !q.hasAttribute('data-editing')) {
+                const confirmed = (q.querySelector('input[name="demoConfirmed"]') || {}).value === 'Yes';
+                const cont = q.querySelector('.q-continue');
+                if (cont) cont.textContent = window.demoWantedKeys().length ? 'Continue' : 'None sold';
+                if (confirmed && !q.hasAttribute('data-editing')) {
                     const facts = window.demoFacts();
                     sum.querySelector('.q-sum-label').textContent = q.getAttribute('data-label') || '';
                     sum.querySelector('.q-sum-value').textContent = facts.length ? facts.join('  \u00b7  ') : 'None';
@@ -8658,6 +8663,8 @@
         // line. Only TOP-LEVEL questions stow; the steps inside an open section
         // belong to the section and are left alone.
         let answersExpanded = false;
+        // Answering a question folds the answered ones back into the bar.
+        window.foldAnswers = () => { answersExpanded = false; };
         const STOW_AFTER = 3;
         const ensureAnsweredBar = () => {
             let bar = document.getElementById('answeredBar');
@@ -8934,7 +8941,8 @@
                 // asked with the rest of them rather than halfway down. Skipped entirely
                 // on Supply Only: we never attend site, so there is nothing to travel to.
                 qTravel:        scopeAnswered && !noSiteWork
-                                && (!isReno || !!gateVal('siteProtection')),
+                                && (!isReno || (!!gateVal('siteProtection')
+                                    && (document.querySelector('input[name="demoConfirmed"]') || {}).value === 'Yes')),
                 // Railing is asked LAST: it is the deepest section, so everything
                 // shorter is out of the way before the user reaches it.
                 // Railing first: most jobs have one, and the two item questions
@@ -10277,16 +10285,21 @@
         });
 
         form.addEventListener('click', (e) => {
-            const done = e.target && e.target.closest ? e.target.closest('.q-done') : null;
-            if (done) {
-                const dq = done.closest('.q');
-                if (dq) dq.removeAttribute('data-editing');
+            const cont = e.target && e.target.closest ? e.target.closest('#demoContinue') : null;
+            if (cont) {
+                const dq = cont.closest('.q');
+                dq.querySelector('input[name="demoConfirmed"]').value = 'Yes';
+                dq.removeAttribute('data-editing');
+                if (window.foldAnswers) window.foldAnswers();
+                form.dispatchEvent(new Event('change', { bubbles: true }));
                 scheduleFlow();
                 return;
             }
             if (e.target && e.target.matches && e.target.matches('input[type="radio"]')) {
                 const q = e.target.closest('.q[data-q], .q[data-q-multi], .q[data-q-owner]');
                 if (q) q.removeAttribute('data-editing');
+                // An answer folds the answered questions back into the one bar.
+                if (q && window.foldAnswers) window.foldAnswers();
                 // Clicking Yes when Yes is already selected fires no 'change', so the
                 // travel details would be unreachable after closing the modal without
                 // saving. Handle it here: clicking Yes always reopens the modal.
@@ -10305,9 +10318,14 @@
                 // data-editing set for good and the card never collapsed again.
                 const q = e.target.closest ? e.target.closest('.q[data-q], .q[data-q-multi], .q[data-q-owner]') : null;
                 if (q) q.removeAttribute('data-editing');
-                // The demolition card stays open while its boxes are ticked; any other answer closes it.
-                const demoQ = document.getElementById('qDemoDisposal');
-                if (demoQ && !demoQ.contains(e.target)) demoQ.removeAttribute('data-editing');
+                // A new answer to new build or renovation asks site protection and demolition again.
+                if (e.target.name === 'projectType') {
+                    document.querySelectorAll('#handoffForm input[name="siteProtection"]').forEach(i => { i.checked = false; });
+                    document.querySelectorAll('#qDemoDisposal input[type="checkbox"]').forEach(i => { i.checked = false; });
+                    const dc = document.querySelector('#handoffForm input[name="demoConfirmed"]');
+                    if (dc) dc.value = '';
+                    ['qSiteProtection', 'qDemoDisposal'].forEach(id => { const el = document.getElementById(id); if (el) el.removeAttribute('data-editing'); });
+                }
                 if (e.target.name === 'jobHasTravel') window.handleTravelAnswer(e.target.value);
                 window.syncRailingTypes(e.target);
                 scheduleFlow();
@@ -11309,7 +11327,7 @@
         // =====================================
         (() => {
             const SHARED_FORM = ['projectOwnerAssignee', 'projectType', 'scopeOfWork', 'siteProtection', 'demoDisposal',
-                                 'demoStairsDemo', 'demoStairsDisp', 'demoRailsDemo', 'demoRailsDisp', 'demoStubDemo', 'demoStubDisp', 'demoNoteKeys',
+                                 'demoStairsDemo', 'demoStairsDisp', 'demoRailsDemo', 'demoRailsDisp', 'demoStubDemo', 'demoStubDisp', 'demoConfirmed', 'demoNoteKeys',
                                  'jobHasTravel', 'subCount', 'notes[]', 'neededBy'];
             const SHARED_ASSIGNEES = ['projectOwnerAssigneeInput'];
             let sub = { names: [], active: 0, snaps: {}, owners: {} };

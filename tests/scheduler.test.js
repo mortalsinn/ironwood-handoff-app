@@ -689,14 +689,14 @@ test('demolition and disposal: notes only, never a task', () => {
 test('draft migration: demolition and disposal Yes ticks Rails demolition and disposal', () => {
     const a = { demoDisposal: 'Yes' };
     JD.migrateDemo(a);
-    assert.deepEqual(a, { demoRailsDemo: 'Yes', demoRailsDisp: 'Yes' });
+    assert.deepEqual(a, { demoConfirmed: 'Yes', demoRailsDemo: 'Yes', demoRailsDisp: 'Yes' });
     const b = { demoDisposal: 'No' };
     JD.migrateDemo(b);
-    assert.deepEqual(b, {});
+    assert.deepEqual(b, { demoConfirmed: 'Yes' });
     // Already on the new boxes: left as they are.
     const c = { demoDisposal: 'Yes', demoStubDemo: 'Yes', demoRailsDisp: 'Yes' };
     JD.migrateDemo(c);
-    assert.deepEqual(c, { demoStubDemo: 'Yes', demoRailsDisp: 'Yes' });
+    assert.deepEqual(c, { demoStubDemo: 'Yes', demoRailsDisp: 'Yes', demoConfirmed: 'Yes' });
     const d = { projectType: 'Renovation' };
     JD.migrateDemo(d);
     assert.deepEqual(d, { projectType: 'Renovation' });
@@ -722,4 +722,15 @@ test('demolition and disposal boxes: Production Notes entries, project only, sen
     // Drafts keep which notes are demolition boxes, and sub-projects share them like every note.
     assert.ok(/formState\.demoNoteKeys = /.test(html));
     assert.ok(/SHARED_FORM = \[[^\]]*'demoNoteKeys'[^\]]*'notes\[\]'/.test(html));
+});
+
+test('switching to renovation asks site protection and demolition open, then folds back', () => {
+    // Demolition is answered only once confirmed (None sold / Continue); travel waits for it.
+    assert.ok(/name="demoConfirmed"/.test(html) && /id="demoContinue"/.test(html));
+    assert.ok(/qTravel:[\s\S]{0,200}demoConfirmed/.test(html));
+    assert.equal(/data-q-until="input\[name=&quot;jobHasTravel/.test(html), false);
+    // A new project type clears both renovation answers; an answer folds the bar; the count box hides once answered.
+    assert.ok(/e\.target\.name === 'projectType'\) \{[\s\S]{0,300}siteProtection[\s\S]{0,300}demoConfirmed/.test(html));
+    assert.ok(/window\.foldAnswers = \(\) => \{ answersExpanded = false; \}/.test(html));
+    assert.ok(/\.q-answered > \.sub-count-row \{ display: none !important; \}|\.q-answered > \.sub-count-row/.test(html));
 });
