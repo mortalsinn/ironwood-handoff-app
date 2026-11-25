@@ -785,10 +785,16 @@ test('CRM note body cleaning: the function lines turn note HTML into plain text'
     // NL a real line break; replaceAll is a Java regex (the patterns here read the same in JS).
     const lit = (s) => s.replace(/\\(["\\])/g, '$1');
     const arg = (a) => a.trim() === 'NL' ? '\n' : a.trim() === 'NL + NL' ? '\n\n' : lit(a.trim().slice(1, -1));
+    // The users map the function builds once per handoff (CRM user id to full name).
+    const users = { '4797857000019976001': 'Joel Nalder', '4797857000029998001': 'Thomas Macleod' };
     const clean = (body) => {
         let v = body;
         block.split('\n').filter(l => /^\s*cnBody = cnBody\./.test(l)).forEach(l => {
             if (/\.trim\(\);/.test(l)) { v = v.trim(); return; }
+            if (/mentionMap\.get\(mid\)/.test(l)) {
+                Object.keys(users).forEach(id => { v = v.replace(new RegExp('crm\\[user#' + id + '#[^\\]]*\\]crm', 'g'), '@' + users[id]); });
+                return;
+            }
             for (const m of l.matchAll(/replaceAll\(("(?:\\.|[^"\\])*"),\s*(NL \+ NL|NL|"(?:\\.|[^"\\])*")\)/g)) {
                 let pat = lit(m[1].slice(1, -1)), flags = 'g';
                 if (pat.startsWith('(?i)')) { pat = pat.slice(4); flags = 'gi'; }
@@ -803,7 +809,13 @@ test('CRM note body cleaning: the function lines turn note HTML into plain text'
     assert.equal(clean('A<br><br><br><br><br>B'), 'A\n\nB');
     assert.equal(clean('Tom &amp; Joel&nbsp;on site &lt;Tue&gt; &quot;oak&quot;'), 'Tom & Joel on site <Tue> "oak"');
     assert.equal(clean('Use &amp;lt;br&amp;gt; literally'), 'Use &lt;br&gt; literally');
-    assert.equal(clean('Ask crm[user#123#456]crm today'), 'Ask @ today');
+    // Mentions: @Full Name, @user for an unknown id, @kind for any other crm[...]crm code.
+    assert.equal(clean('crm[user#4797857000019976001#841874405]crm crm[user#4797857000029998001#850840464]crm'), '@Joel Nalder @Thomas Macleod');
+    assert.equal(clean('crm[user#4797857000000303001#743362248]crm <br>Elayne is calling for schedule.'), '@user \nElayne is calling for schedule.'.replace(' \n', '\n'));
+    assert.equal(clean('See crm[group#12#34]crm'), 'See @group');
+    assert.equal(/crm\[/.test(clean('Email sent.<br><span><br></span>crm[user#4797857000019976001#841874405]crm this might be a sub job')), false);
+    assert.ok(/for each  mid in mentionMap\.keys\(\)/.test(block));
+    assert.equal((dg.match(/crm\/v7\/users\?type=AllUsers/g) || []).length, 1);          // one users call per handoff
     assert.equal(clean('a  <br>\r\n b'), 'a\n\n b');
     // The post goes to the restapi statuses endpoint as a form "content" parameter (stored as HTML).
     assert.ok(/\/restapi\/portal\/" \+ tagPortalId \+ "\/projects\/" \+ newProjectId \+ "\/statuses\/"/.test(dg));

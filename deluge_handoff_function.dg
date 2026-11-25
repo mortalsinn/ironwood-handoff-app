@@ -1835,8 +1835,9 @@ try
 		{
 			info "EXISTING STATUS POSTS FAILED: " + eEx.toString();
 		}
-		// @mentions are stored as crm[user#<id>#<zuid>]crm; show them as @Name.
-		mentionUsers = List();
+		// @mentions are stored as crm[user#<crm user id>#<zuid>]crm; they read as @Full Name.
+		// One users call per handoff, as a map of CRM user id to name.
+		mentionMap = Map();
 		try
 		{
 			usersResp = invokeurl
@@ -1847,7 +1848,18 @@ try
 			];
 			if(usersResp.get("users") != null)
 			{
-				mentionUsers = usersResp.get("users");
+				for each  mu in usersResp.get("users")
+				{
+					muName = ifnull(mu.get("full_name"),"");
+					if(muName == "")
+					{
+						muName = (ifnull(mu.get("first_name"),"") + " " + ifnull(mu.get("last_name"),"")).trim();
+					}
+					if(muName != "" && mu.get("id") != null)
+					{
+						mentionMap.put(mu.get("id").toString(),muName.replaceAll("[\\\\$]",""));
+					}
+				}
 			}
 		}
 		catch (e)
@@ -1904,14 +1916,16 @@ try
 			if(!cnTitle.startsWith("IRONWOOD_DRAFT") && !cnTitle.startsWith("Zoho Project - "))
 			{
 				cnBody = ifnull(cn.get("Note_Content"),"");
-				for each  mu in mentionUsers
+				// CLEAN BODY: BEGIN (tests/scheduler.test.js runs these lines). Mentions to @Full Name
+				// (@user when the id is unknown; any other crm[kind#...]crm to @kind). A note body is
+				// HTML ("...10mm)<br><span><br></span>"): line breaks from <br> and block ends, other
+				// tags dropped, entities unescaped, three or more line breaks down to one blank line.
+				for each  mid in mentionMap.keys()
 				{
-					cnBody = cnBody.replaceAll("crm\\[user#" + mu.get("id") + "#[0-9]+\\]crm","@" + ifnull(mu.get("full_name"),""));
+					cnBody = cnBody.replaceAll("crm\\[user#" + mid + "#[^\\]]*\\]crm","@" + mentionMap.get(mid));
 				}
-				// CLEAN BODY: BEGIN (tests/scheduler.test.js runs these lines). A note body is HTML
-				// ("...10mm)<br><span><br></span>"): line breaks from <br> and block ends, other tags
-				// dropped, entities unescaped, three or more line breaks down to one blank line, trimmed.
-				cnBody = cnBody.replaceAll("crm\\[user#[0-9]+#[0-9]+\\]crm","@");
+				cnBody = cnBody.replaceAll("crm\\[user#[^\\]]*\\]crm","@user");
+				cnBody = cnBody.replaceAll("crm\\[([A-Za-z_]+)#[^\\]]*\\]crm","@$1");
 				cnBody = cnBody.replaceAll("\\r","");
 				cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>",NL);
 				cnBody = cnBody.replaceAll("<[^>]*>","");
