@@ -1808,22 +1808,23 @@ try
 {
 	if(tagPortalId != "")
 	{
-		statusUrl = "https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/status";
-		statusHeaders = Map();
-		statusHeaders.put("Content-Type","application/json");
+		// The restapi statuses endpoint with a form "content" parameter stores the HTML as HTML.
+		// The v3 /status endpoint with a JSON body stored it escaped, so the post showed raw tags
+		// (live test, Nov 25 2026).
+		statusUrl = "https://projectsapi.zoho.com/restapi/portal/" + tagPortalId + "/projects/" + newProjectId + "/statuses/";
 		// The posts already on the project, as one text to search.
 		existingPosts = "";
 		try
 		{
 			exResp = invokeurl
 			[
-				url :statusUrl + "?per_page=100"
+				url :statusUrl + "?range=200"
 				type :GET
 				connection:"zoho_projects_connection"
 			];
-			if(exResp.get("status") != null)
+			if(exResp != null && exResp.get("statuses") != null)
 			{
-				for each  ex in exResp.get("status")
+				for each  ex in exResp.get("statuses")
 				{
 					existingPosts = existingPosts + ifnull(ex.get("content"),"") + " ";
 				}
@@ -1895,14 +1896,22 @@ try
 			if(!cnTitle.startsWith("IRONWOOD_DRAFT") && !cnTitle.startsWith("Zoho Project - ") && !cnTitle.startsWith("Handoff diagnostics") && !cnTitle.startsWith("[Handoff Feedback]") && !cnTitle.startsWith("Production Handoff Note"))
 			{
 				cnBody = ifnull(cn.get("Note_Content"),"");
-				cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>",NL);
-				cnBody = cnBody.replaceAll("<[^>]*>","");
 				for each  mu in mentionUsers
 				{
 					cnBody = cnBody.replaceAll("crm\\[user#" + mu.get("id") + "#[0-9]+\\]crm","@" + ifnull(mu.get("full_name"),""));
 				}
+				// CLEAN BODY: BEGIN (tests/scheduler.test.js runs these lines). A note body is HTML
+				// ("...10mm)<br><span><br></span>"): line breaks from <br> and block ends, other tags
+				// dropped, entities unescaped, three or more line breaks down to one blank line, trimmed.
 				cnBody = cnBody.replaceAll("crm\\[user#[0-9]+#[0-9]+\\]crm","@");
-				cnBody = cnBody.replaceAll("&nbsp;"," ").replaceAll("&amp;","&").replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&quot;","\"").replaceAll("&#39;","'");
+				cnBody = cnBody.replaceAll("\\r","");
+				cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>",NL);
+				cnBody = cnBody.replaceAll("<[^>]*>","");
+				cnBody = cnBody.replaceAll("&nbsp;"," ").replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&quot;","\"").replaceAll("&#39;","'").replaceAll("&amp;","&");
+				cnBody = cnBody.replaceAll("[ \\t]+\\n",NL);
+				cnBody = cnBody.replaceAll("\\n{3,}",NL + NL);
+				cnBody = cnBody.trim();
+				// CLEAN BODY: END
 				cnWho = "";
 				if(cn.get("Created_By") != null)
 				{
@@ -1927,8 +1936,7 @@ try
 		}
 		for each  pst in posts
 		{
-			// HTML-escaped, so the post holds no quote or backslash and the JSON can be built by hand
-			// (see the tags above); line breaks become <br>.
+			// HTML-escaped (the post is HTML); line breaks become <br>.
 			escList = List();
 			parts = List();
 			parts.add(pst.get("title"));
@@ -1961,12 +1969,13 @@ try
 				}
 				try
 				{
+					stParams = Map();
+					stParams.put("content",html);
 					stResp = invokeurl
 					[
 						url :statusUrl
 						type :POST
-						parameters:"{\"content\":\"" + html + "\"}"
-						headers:statusHeaders
+						parameters:stParams
 						connection:"zoho_projects_connection"
 					];
 					if(stResp.toString().contains("\"id\""))

@@ -763,7 +763,7 @@ test('CRM notes: one Status post per note on the project, no CRM Notes.txt', () 
     // CRM Notes.txt only holds notes that could not be posted.
     assert.equal((dg.match(/"CRM Notes\.txt"/g) || []).length, 2);
     assert.ok(/if\(notPosted != "" && docFolder != ""\)/.test(dg));
-    assert.ok(/"\/projects\/" \+ newProjectId \+ "\/status"/.test(dg));               // v3 project Status
+    assert.ok(/"\/projects\/" \+ newProjectId \+ "\/statuses\/"/.test(dg));           // project Status (restapi)
     assert.ok(/noteKeys = noteKeys\.sort\(true\);/.test(dg));                            // oldest first (the API ignores sort_by)
     ['IRONWOOD_DRAFT', 'Zoho Project - ', 'Handoff diagnostics', '[Handoff Feedback]', 'Production Handoff Note']
         .forEach(t => assert.ok(dg.indexOf('!cnTitle.startsWith("' + t + '")') !== -1, t));
@@ -774,4 +774,37 @@ test('CRM notes: one Status post per note on the project, no CRM Notes.txt', () 
     // No break or continue (Deluge has neither).
     const code = dg.split('\n').filter(l => !/^\s*\/\//.test(l)).join('\n');
     assert.equal(/\bcontinue;|\bbreak;/.test(code), false);
+});
+
+test('CRM note body cleaning: the function lines turn note HTML into plain text', () => {
+    const dg = fs.readFileSync(path.join(__dirname, '..', 'deluge_handoff_function.dg'), 'utf8');
+    const block = /CLEAN BODY: BEGIN[\s\S]*?CLEAN BODY: END/.exec(dg)[0];
+    // Run each cnBody line as Deluge would: a "\\" in a literal is one backslash, "\"" a quote,
+    // NL a real line break; replaceAll is a Java regex (the patterns here read the same in JS).
+    const lit = (s) => s.replace(/\\(["\\])/g, '$1');
+    const arg = (a) => a.trim() === 'NL' ? '\n' : a.trim() === 'NL + NL' ? '\n\n' : lit(a.trim().slice(1, -1));
+    const clean = (body) => {
+        let v = body;
+        block.split('\n').filter(l => /^\s*cnBody = cnBody\./.test(l)).forEach(l => {
+            if (/\.trim\(\);/.test(l)) { v = v.trim(); return; }
+            for (const m of l.matchAll(/replaceAll\(("(?:\\.|[^"\\])*"),\s*(NL \+ NL|NL|"(?:\\.|[^"\\])*")\)/g)) {
+                let pat = lit(m[1].slice(1, -1)), flags = 'g';
+                if (pat.startsWith('(?i)')) { pat = pat.slice(4); flags = 'gi'; }
+                v = v.replace(new RegExp(pat, flags), arg(m[2]));
+            }
+        });
+        return v;
+    };
+    assert.equal(clean('For long Run on the upper stair, we need a center post. (anything over 6ft with 10mm)<br><span><br></span><span><br></span>'),
+        'For long Run on the upper stair, we need a center post. (anything over 6ft with 10mm)');
+    assert.equal(clean('<div>Line one</div><div>Line two</div>'), 'Line one\nLine two');
+    assert.equal(clean('A<br><br><br><br><br>B'), 'A\n\nB');
+    assert.equal(clean('Tom &amp; Joel&nbsp;on site &lt;Tue&gt; &quot;oak&quot;'), 'Tom & Joel on site <Tue> "oak"');
+    assert.equal(clean('Use &amp;lt;br&amp;gt; literally'), 'Use &lt;br&gt; literally');
+    assert.equal(clean('Ask crm[user#123#456]crm today'), 'Ask @ today');
+    assert.equal(clean('a  <br>\r\n b'), 'a\n\n b');
+    // The post goes to the restapi statuses endpoint as a form "content" parameter (stored as HTML).
+    assert.ok(/\/restapi\/portal\/" \+ tagPortalId \+ "\/projects\/" \+ newProjectId \+ "\/statuses\/"/.test(dg));
+    assert.ok(/stParams\.put\("content",html\);/.test(dg));
+    assert.ok(/exResp\.get\("statuses"\)/.test(dg));
 });
