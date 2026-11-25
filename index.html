@@ -2433,6 +2433,7 @@
                             <li>Project notes go to the project only, not the Deal's Notes.</li>
                             <li>None sold or Continue confirms the demolition answer.</li>
                             <li>Project description in Zoho Projects: Site, install date, then the production notes, each on its own line.</li>
+                            <li>Each CRM note is its own Status post on the project: title, author and date, then the note. CRM Notes.txt is no longer added.</li>
                             <li>Changing new build or renovation asks site protection and demolition again. Answered questions fold back into one line.</li>
                             <li>Older drafts with demolition sold: Rails demolition and disposal ticked.</li>
                         </ul>
@@ -11244,7 +11245,7 @@
             const STEPS = [
                 [1, 'Creating the project'], [2, 'Tagging the project'], [3, 'Linking the deal'],
                 [4, 'Milestones and task lists'], [5, 'Creating tasks'], [6, 'Kick-off email'],
-                [7, 'Copying CRM files and notes']
+                [7, 'Copying CRM files and posting notes']
             ];
             let timer = null, creepTimer = null, startAt = 0, deal = '', last = null, shown = 0, samples = [];
             const el = (id) => document.getElementById(id);

@@ -1671,18 +1671,18 @@ if(kickoffNote == "" && isReusedProject == "no")
 	kickoffNote = " Kick-off mail not sent (no e-mail on the first task's owner).";
 }
 // =====================================
-// CRM FILES AND NOTES INTO DOCUMENTS (widget v15.54)
+// CRM FILES INTO DOCUMENTS (widget v15.54)
 // Every attachment on the Deal is copied into the project's Documents tab (its
-// WorkDrive folder), plus one "CRM Notes.txt" with the deal description, the
-// production notes from the handoff and every CRM note, so the job can be run
-// from Projects without going back to the CRM. Needs WorkDrive.files.ALL and
-// ZohoProjects.documents.ALL on zoho_projects_connection. Fail-open and
-// counted; a re-run overwrites files of the same name instead of duplicating.
+// WorkDrive folder). Needs WorkDrive.files.ALL and ZohoProjects.documents.ALL on
+// zoho_projects_connection. Fail-open and counted; a re-run overwrites files of
+// the same name instead of duplicating. The CRM notes are no longer a text file:
+// since v15.80 each one is a Status post on the project (below).
 // =====================================
 docNote = "";
 docOk = 0;
 docFail = 0;
 docFirstError = "";
+docFolder = "";
 try
 {
 	docFolder = "";
@@ -1768,21 +1768,71 @@ try
 				}
 			}
 		}
-		// ---- Notes, as one text file ----
-		progDone = 5 + progTaskCount + progAttCount;
-		standalone.set_handoff_progress(dealId,"7",progDone.toString(),progTotal.toString(),(progAttCount + 1).toString() + " of " + (progAttCount + 1).toString());
-		notesText = "CRM NOTES - " + dealName + NL + "Copied from the CRM at handoff." + NL;
-		dealDesc = dealInfo.get("Description");
-		if(dealDesc != null && dealDesc != "")
+		docNote = " Documents: " + docOk + " copied, " + docFail + " failed.";
+		if(docFirstError != "")
 		{
-			notesText = notesText + NL + "============================================================" + NL + "DEAL DESCRIPTION" + NL + NL + dealDesc + NL;
+			if(docFirstError.length() > 200)
+			{
+				docFirstError = docFirstError.subString(0,200);
+			}
+			docNote = docNote + " First document error: " + docFirstError;
 		}
-		handoffNotes = payloadData.get("notes");
-		if(handoffNotes != null && handoffNotes != "")
+	}
+}
+catch (e)
+{
+	docNote = " Documents: FAILED " + e.toString();
+}
+progDone = 5 + progTaskCount + progAttCount;
+standalone.set_handoff_progress(dealId,"7",progDone.toString(),progTotal.toString(),(progAttCount + 1).toString() + " of " + (progAttCount + 1).toString());
+// =====================================
+// CRM NOTES AS STATUS POSTS (widget v15.80)
+// Each note on the Deal becomes its own Status post on the project, oldest first,
+// so the team reads them on the project's Status feed without opening a file: the
+// note title (or "Note"), the author and date, then the note with its line breaks.
+// The Deal description goes first as its own post. The app's own notes are skipped
+// (drafts, project links, diagnostics, feedback, and the Production Handoff Notes,
+// which are already in the project description). Forums are not on this plan.
+// One GET for the notes, one for the mention names, one for the posts already on the
+// project (a re-run never posts the same note twice), then one POST per note.
+// Fail-open and counted in the result line.
+// =====================================
+noteOk = 0;
+noteFail = 0;
+noteSkip = 0;
+noteFirstError = "";
+// Notes that could not be posted (for example, the connection lacks the Status scope) are
+// kept in a CRM Notes.txt in Documents, so nothing is lost.
+notPosted = "";
+try
+{
+	if(tagPortalId != "")
+	{
+		statusUrl = "https://projectsapi.zoho.com/api/v3/portal/" + tagPortalId + "/projects/" + newProjectId + "/status";
+		statusHeaders = Map();
+		statusHeaders.put("Content-Type","application/json");
+		// The posts already on the project, as one text to search.
+		existingPosts = "";
+		try
 		{
-			notesText = notesText + NL + "============================================================" + NL + "PRODUCTION NOTES FROM THE HANDOFF" + NL + NL + handoffNotes + NL;
+			exResp = invokeurl
+			[
+				url :statusUrl + "?per_page=100"
+				type :GET
+				connection:"zoho_projects_connection"
+			];
+			if(exResp.get("status") != null)
+			{
+				for each  ex in exResp.get("status")
+				{
+					existingPosts = existingPosts + ifnull(ex.get("content"),"") + " ";
+				}
+			}
 		}
-		noteCount = 0;
+		catch (eEx)
+		{
+			info "EXISTING STATUS POSTS FAILED: " + eEx.toString();
+		}
 		// @mentions are stored as crm[user#<id>#<zuid>]crm; show them as @Name.
 		mentionUsers = List();
 		try
@@ -1802,93 +1852,186 @@ try
 		{
 			info "USERS FOR MENTIONS FAILED: " + e.toString();
 		}
-		crmNotes = zoho.crm.getRelatedRecords("Notes","Deals",dealId.toLong(),1,200);
-		if(crmNotes != null)
-		{
-			for each  cn in crmNotes
-			{
-				cnTitle = ifnull(cn.get("Note_Title"),"");
-				// The app's own draft data and the automatic project links are not notes.
-				if(!cnTitle.startsWith("IRONWOOD_DRAFT") && !cnTitle.startsWith("Zoho Project - "))
-				{
-					cnBody = ifnull(cn.get("Note_Content"),"");
-					cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>",NL);
-					cnBody = cnBody.replaceAll("<[^>]*>","");
-					for each  mu in mentionUsers
-					{
-						cnBody = cnBody.replaceAll("crm\\[user#" + mu.get("id") + "#[0-9]+\\]crm","@" + ifnull(mu.get("full_name"),""));
-					}
-					cnBody = cnBody.replaceAll("crm\\[user#[0-9]+#[0-9]+\\]crm","@");
-					cnBody = cnBody.replaceAll("&nbsp;"," ").replaceAll("&amp;","&").replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&quot;","\"").replaceAll("&#39;","'");
-					cnWho = "";
-					if(cn.get("Created_By") != null)
-					{
-						cnWho = ifnull(cn.get("Created_By").get("name"),"");
-					}
-					cnWhen = ifnull(cn.get("Created_Time"),"");
-					if(cnWhen.length() >= 16)
-					{
-						cnWhen = cnWhen.subString(0,10) + " " + cnWhen.subString(11,16);
-					}
-					if(cnTitle == "")
-					{
-						cnTitle = "Note";
-					}
-					notesText = notesText + NL + "------------------------------------------------------------" + NL + cnTitle + NL + cnWho + " - " + cnWhen + NL + NL + cnBody.trim() + NL;
-					noteCount = noteCount + 1;
-				}
-			}
-		}
+		// The related list comes newest first and ignores sort_by, so it is sorted here, oldest first.
+		crmNotes = List();
 		try
 		{
-			notesFile = notesText.toFile("CRM Notes.txt");
-			nParts = List();
-			nParts.add({"paramName":"content","content":notesFile,"stringPart":"false"});
-			nParts.add({"paramName":"parent_id","content":docFolder,"stringPart":"true"});
-			nParts.add({"paramName":"filename","content":"CRM Notes.txt","stringPart":"true"});
-			nParts.add({"paramName":"override-name-exist","content":"true","stringPart":"true"});
-			nResp = invokeurl
+			notesResp = invokeurl
 			[
-				url :"https://www.zohoapis.com/workdrive/api/v1/upload"
-				type :POST
-				files:nParts
-				connection:"zoho_projects_connection"
+				url :"https://www.zohoapis.com/crm/v7/Deals/" + dealId + "/Notes?fields=Note_Title,Note_Content,Created_By,Created_Time&per_page=200"
+				type :GET
+				connection:"zcrm"
 			];
-			if(nResp.toString().contains("Permalink"))
+			if(notesResp.get("data") != null)
 			{
-				docOk = docOk + 1;
+				crmNotes = notesResp.get("data");
+			}
+		}
+		catch (eNotes)
+		{
+			crmNotes = ifnull(zoho.crm.getRelatedRecords("Notes","Deals",dealId.toLong(),1,200),List());
+		}
+		// The posts to make: [title, author and date, plain text body].
+		posts = List();
+		dealDesc = ifnull(dealInfo.get("Description"),"");
+		if(dealDesc.trim() != "")
+		{
+			posts.add({"title":"Deal description","meta":"","body":dealDesc});
+		}
+		noteKeys = List();
+		noteByKey = Map();
+		for each  cn0 in crmNotes
+		{
+			nk = ifnull(cn0.get("Created_Time"),"") + "|" + ifnull(cn0.get("id"),"");
+			noteKeys.add(nk);
+			noteByKey.put(nk,cn0);
+		}
+		noteKeys = noteKeys.sort(true);
+		for each  nk in noteKeys
+		{
+			cn = noteByKey.get(nk);
+			cnTitle = ifnull(cn.get("Note_Title"),"");
+			// (Deluge has no break or continue: the app's own notes are left out by this if.)
+			if(!cnTitle.startsWith("IRONWOOD_DRAFT") && !cnTitle.startsWith("Zoho Project - ") && !cnTitle.startsWith("Handoff diagnostics") && !cnTitle.startsWith("[Handoff Feedback]") && !cnTitle.startsWith("Production Handoff Note"))
+			{
+				cnBody = ifnull(cn.get("Note_Content"),"");
+				cnBody = cnBody.replaceAll("(?i)<br\\s*/?>|</p>|</div>|</li>",NL);
+				cnBody = cnBody.replaceAll("<[^>]*>","");
+				for each  mu in mentionUsers
+				{
+					cnBody = cnBody.replaceAll("crm\\[user#" + mu.get("id") + "#[0-9]+\\]crm","@" + ifnull(mu.get("full_name"),""));
+				}
+				cnBody = cnBody.replaceAll("crm\\[user#[0-9]+#[0-9]+\\]crm","@");
+				cnBody = cnBody.replaceAll("&nbsp;"," ").replaceAll("&amp;","&").replaceAll("&lt;","<").replaceAll("&gt;",">").replaceAll("&quot;","\"").replaceAll("&#39;","'");
+				cnWho = "";
+				if(cn.get("Created_By") != null)
+				{
+					cnWho = ifnull(cn.get("Created_By").get("name"),"");
+				}
+				cnWhen = ifnull(cn.get("Created_Time"),"");
+				if(cnWhen.length() >= 16)
+				{
+					cnWhen = cnWhen.subString(0,10) + " " + cnWhen.subString(11,16);
+				}
+				if(cnTitle.trim() == "")
+				{
+					cnTitle = "Note";
+				}
+				cnMeta = cnWho;
+				if(cnWhen != "")
+				{
+					cnMeta = if(cnMeta == "",cnWhen,cnMeta + ", " + cnWhen);
+				}
+				posts.add({"title":cnTitle,"meta":cnMeta,"body":cnBody.trim()});
+			}
+		}
+		for each  pst in posts
+		{
+			// HTML-escaped, so the post holds no quote or backslash and the JSON can be built by hand
+			// (see the tags above); line breaks become <br>.
+			escList = List();
+			parts = List();
+			parts.add(pst.get("title"));
+			parts.add(pst.get("meta"));
+			parts.add(pst.get("body"));
+			for each  part in parts
+			{
+				esc = ifnull(part,"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll("\"","&quot;").replaceAll("\\\\","&#92;");
+				esc = esc.replaceAll("\\r","").replaceAll("\\n","<br>").replaceAll("[\\x00-\\x1F]"," ");
+				escList.add(esc);
+			}
+			titleEsc = escList.get(0);
+			metaEsc = escList.get(1);
+			bodyEsc = escList.get(2);
+			// Already posted by an earlier run of this handoff.
+			if(existingPosts.contains("<b>" + titleEsc + "</b>") && (metaEsc == "" || existingPosts.contains(metaEsc)))
+			{
+				noteSkip = noteSkip + 1;
 			}
 			else
 			{
-				docFail = docFail + 1;
-				if(docFirstError == "")
+				html = "<div><b>" + titleEsc + "</b></div>";
+				if(metaEsc != "")
 				{
-					docFirstError = "CRM Notes.txt: " + nResp.toString();
+					html = html + "<div>" + metaEsc + "</div>";
+				}
+				if(bodyEsc != "")
+				{
+					html = html + "<div><br></div><div>" + bodyEsc + "</div>";
+				}
+				try
+				{
+					stResp = invokeurl
+					[
+						url :statusUrl
+						type :POST
+						parameters:"{\"content\":\"" + html + "\"}"
+						headers:statusHeaders
+						connection:"zoho_projects_connection"
+					];
+					if(stResp.toString().contains("\"id\""))
+					{
+						noteOk = noteOk + 1;
+					}
+					else
+					{
+						noteFail = noteFail + 1;
+						notPosted = notPosted + NL + "------------------------------------------------------------" + NL + pst.get("title") + NL + pst.get("meta") + NL + NL + pst.get("body") + NL;
+						if(noteFirstError == "")
+						{
+							noteFirstError = pst.get("title") + ": " + stResp.toString();
+						}
+					}
+				}
+				catch (eSt)
+				{
+					noteFail = noteFail + 1;
+					notPosted = notPosted + NL + "------------------------------------------------------------" + NL + pst.get("title") + NL + pst.get("meta") + NL + NL + pst.get("body") + NL;
+					if(noteFirstError == "")
+					{
+						noteFirstError = pst.get("title") + ": " + eSt.toString();
+					}
 				}
 			}
 		}
-		catch (e)
+	}
+	if(notPosted != "" && docFolder != "")
+	{
+		try
 		{
-			docFail = docFail + 1;
-			if(docFirstError == "")
-			{
-				docFirstError = "CRM Notes.txt: " + e.toString();
-			}
+			npFile = ("CRM NOTES - " + dealName + NL + "Not posted to the project Status at handoff." + NL + notPosted).toFile("CRM Notes.txt");
+			npParts = List();
+			npParts.add({"paramName":"content","content":npFile,"stringPart":"false"});
+			npParts.add({"paramName":"parent_id","content":docFolder,"stringPart":"true"});
+			npParts.add({"paramName":"filename","content":"CRM Notes.txt","stringPart":"true"});
+			npParts.add({"paramName":"override-name-exist","content":"true","stringPart":"true"});
+			npResp = invokeurl
+			[
+				url :"https://www.zohoapis.com/workdrive/api/v1/upload"
+				type :POST
+				files:npParts
+				connection:"zoho_projects_connection"
+			];
+			noteFirstError = noteFirstError + if(npResp.toString().contains("Permalink")," (saved to CRM Notes.txt)"," (CRM Notes.txt also failed)");
 		}
-		docNote = " Documents: " + docOk + " copied (" + noteCount + " notes in CRM Notes.txt), " + docFail + " failed.";
-		if(docFirstError != "")
+		catch (eNp)
 		{
-			if(docFirstError.length() > 200)
-			{
-				docFirstError = docFirstError.subString(0,200);
-			}
-			docNote = docNote + " First document error: " + docFirstError;
+			noteFirstError = noteFirstError + " (CRM Notes.txt also failed)";
 		}
+	}
+	docNote = docNote + " Notes: " + noteOk + " posted, " + noteFail + " failed" + if(noteSkip > 0," (" + noteSkip + " already on the project)","") + ".";
+	if(noteFirstError != "")
+	{
+		if(noteFirstError.length() > 200)
+		{
+			noteFirstError = noteFirstError.subString(0,200);
+		}
+		docNote = docNote + " First note error: " + noteFirstError;
 	}
 }
 catch (e)
 {
-	docNote = " Documents: FAILED " + e.toString();
+	docNote = docNote + " Notes: FAILED " + e.toString();
 }
 msNote = msNote + docNote;
 standalone.set_handoff_progress(dealId,"8",progTotal.toString(),progTotal.toString(),"");

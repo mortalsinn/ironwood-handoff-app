@@ -755,5 +755,23 @@ test('project description: built in the widget with real line breaks; Deluge use
     assert.ok(/NL = zoho\.encryption\.urlDecode\("%0A"\);/.test(dg));
     assert.ok(/projDesc = ifnull\(payloadData\.get\("project_description"\),""\);/.test(dg));
     const code = dg.split('\n').filter(l => !/^\s*\/\//.test(l)).join('\n');
-    assert.equal(code.indexOf('\\n'), -1);
+    assert.equal(/(^|[^\\])\\n/.test(code), false);       // a "\n" literal; "\\n" (a regex) is fine
+});
+
+test('CRM notes: one Status post per note on the project, no CRM Notes.txt', () => {
+    const dg = fs.readFileSync(path.join(__dirname, '..', 'deluge_handoff_function.dg'), 'utf8');
+    // CRM Notes.txt only holds notes that could not be posted.
+    assert.equal((dg.match(/"CRM Notes\.txt"/g) || []).length, 2);
+    assert.ok(/if\(notPosted != "" && docFolder != ""\)/.test(dg));
+    assert.ok(/"\/projects\/" \+ newProjectId \+ "\/status"/.test(dg));               // v3 project Status
+    assert.ok(/noteKeys = noteKeys\.sort\(true\);/.test(dg));                            // oldest first (the API ignores sort_by)
+    ['IRONWOOD_DRAFT', 'Zoho Project - ', 'Handoff diagnostics', '[Handoff Feedback]', 'Production Handoff Note']
+        .forEach(t => assert.ok(dg.indexOf('!cnTitle.startsWith("' + t + '")') !== -1, t));
+    assert.ok(/cnTitle = "Note";/.test(dg));
+    // Counted in the result line, never failing the handoff; a re-run skips posts already there.
+    assert.ok(/" Notes: " \+ noteOk \+ " posted, " \+ noteFail \+ " failed"/.test(dg));
+    assert.ok(/existingPosts\.contains\("<b>" \+ titleEsc \+ "<\/b>"\)/.test(dg));
+    // No break or continue (Deluge has neither).
+    const code = dg.split('\n').filter(l => !/^\s*\/\//.test(l)).join('\n');
+    assert.equal(/\bcontinue;|\bbreak;/.test(code), false);
 });
