@@ -1672,9 +1672,8 @@
                     </div>
 
                     <!-- Demolition and disposal are recorded answers only (v15.80): each ticked box
-                         adds a note to the Deal and the project description, never a task. Stairs and
-                         Rails hide once the job answers No to stairs or railing; Stub walls is always
-                         asked on a renovation. Nothing ticked means none sold. -->
+                         adds a Project note, never a task. All three rows show on every renovation
+                         (stair demolition can be sold on a railing-only job). -->
                     <div id="qDemoDisposal" data-chip="demolition" class="q hidden" data-q-demo="1" data-label="Demolition and disposal sold">
                         <p class="q-title text-sm font-medium text-slate-300 mb-1">Demolition and disposal sold</p>
                         <p class="q-hint text-xs text-slate-500 mb-2">Each tick adds a production note.</p>
@@ -4241,13 +4240,13 @@
         const HandoffJobDates = {
             // Demolition and disposal sold (v15.80): one note per ticked box, never a task.
             DEMO_ITEMS: [
-                { row: 'stairs', label: 'Stairs', input: 'demoStairs', gate: 'jobHasStairs',
+                { row: 'stairs', label: 'Stairs', input: 'demoStairs',
                   demo: ['Demolition - Stairs', 'Includes', '- Demolition of existing stairs', '- Drywall work by others', '- Rough framing additional cost'],
                   disp: ['Disposal - Stairs', 'Includes', '- Removal of demolition waste materials', '- Disposal of demolition waste materials'] },
-                { row: 'rails', label: 'Rails', input: 'demoRails', gate: 'jobHasRailing',
+                { row: 'rails', label: 'Rails', input: 'demoRails',
                   demo: ['Demolition - Rails', 'Includes', '- Demolition of existing railing', '- Electrical work by others', '- Drywall work by others'],
                   disp: ['Disposal - Rails', 'Includes', '- Removal of demolition waste materials', '- Disposal of demolition waste materials'] },
-                { row: 'stub', label: 'Stub walls', input: 'demoStub', gate: null,
+                { row: 'stub', label: 'Stub walls', input: 'demoStub',
                   demo: ['Demolition - Stub Walls', 'Includes', '- Demolition of existing stub walls', '- Electrical work by others', '- Drywall work by others'],
                   disp: ['Disposal - Stub Walls', 'Includes', '- Removal of demolition waste materials', '- Disposal of demolition waste materials'] }
             ],
@@ -4267,12 +4266,11 @@
                 });
                 return key;
             },
-            // ticks: { demoStairsDemo: true, ... }. shown: { stairs: true, rails: false, stub: true }.
-            // Returns the note texts in order: stairs, rails, stub walls; demolition before disposal.
-            demoNotes: (ticks, shown) => {
+            // ticks: { demoStairsDemo: true, ... }. Every tick gives its note, in order: stairs, rails,
+            // stub walls; demolition before disposal.
+            demoNotes: (ticks) => {
                 const out = [];
                 HandoffJobDates.DEMO_ITEMS.forEach(it => {
-                    if (shown && shown[it.row] === false) return;
                     if (ticks[it.input + 'Demo']) out.push(it.demo.join('\n'));
                     if (ticks[it.input + 'Disp']) out.push(it.disp.join('\n'));
                 });
@@ -8500,22 +8498,16 @@
             return el ? el.value : '';
         };
         // ---- Demolition and disposal (v15.80): recorded answers, never tasks ----
-        // Each ticked box adds one note to the Deal and the project description.
+        // Each ticked box adds one Project note, whatever the stairs and railing answers.
         const DEMO_ITEMS = HandoffJobDates.DEMO_ITEMS;
         window.DEMO_ITEMS = DEMO_ITEMS;
-        // A row is offered unless every sub-project has answered No to its stairs or railing.
-        window.demoRowShown = (item) => {
-            if (!item.gate) return true;
-            const answers = window.jobGateAnswers ? window.jobGateAnswers(item.gate) : [gateVal(item.gate)];
-            return !(answers.length && answers.every(v => v === 'No'));
-        };
-        // What was sold: renovation with site work only, rows on offer only.
+        // What was sold: renovation with site work only.
         window.demoSoldItems = () => {
             const reno = !!document.querySelector('input[name="projectType"][value="Renovation"]:checked');
             const supplyOnly = (document.querySelector('input[name="scopeOfWork"]:checked') || {}).value === 'Supply Only';
             if (!reno || supplyOnly) return [];
             const on = (n) => !!document.querySelector('input[name="' + n + '"]:checked');
-            return DEMO_ITEMS.filter(window.demoRowShown)
+            return DEMO_ITEMS
                 .map(it => ({ item: it, demo: on(it.input + 'Demo'), disp: on(it.input + 'Disp') }))
                 .filter(x => x.demo || x.disp);
         };
@@ -8606,13 +8598,9 @@
                 }
             });
 
-            // Demolition and disposal: answered once the next question is answered.
+            // Demolition and disposal: answered once confirmed (None sold / Continue).
             // Nothing ticked reads "None".
             document.querySelectorAll('#handoffForm .q[data-q-demo]').forEach(q => {
-                q.querySelectorAll('[data-demo-row]').forEach(r => {
-                    const it = DEMO_ITEMS.find(d => d.row === r.getAttribute('data-demo-row'));
-                    r.classList.toggle('hidden', !!it && !window.demoRowShown(it));
-                });
                 if (window.syncDemoNotes) window.syncDemoNotes();
                 const sum = ensureQSummary(q);
                 const confirmed = (q.querySelector('input[name="demoConfirmed"]') || {}).value === 'Yes';
@@ -9219,7 +9207,12 @@
                 // The number was REQUIRED by this pattern, so a section that had never been
                 // numbered kept its chevron inside baseTitle and got a second one
                 // prepended - the bar rendered as "2. Custom Metal Work" with two chevrons.
-                if (h && h.dataset.baseTitle === undefined) h.dataset.baseTitle = h.textContent.replace(/^[\s\u25be]*(?:\d+\.\s*)?/, '').trim();
+                // Read without the chevron and the summary pill: their text ("2 notes") ran into the title.
+                if (h && h.dataset.baseTitle === undefined) {
+                    const bare = h.cloneNode(true);
+                    bare.querySelectorAll('.sec-chev, .sec-badge').forEach(x => x.remove());
+                    h.dataset.baseTitle = bare.textContent.replace(/^[\s\u25be]*(?:\d+\.\s*)?/, '').trim();
+                }
                 if (h) {
                     const chev = h.querySelector('.sec-chev'), badge = h.querySelector('.sec-badge');
                     h.textContent = n + '. ' + h.dataset.baseTitle;
@@ -11363,16 +11356,6 @@
                 return { tasks: rows.length, hours: hours };
             };
             window.getSubState = () => (count() > 1 ? sub : null);
-            // A gate's answer in every sub-project: the one on screen plus every saved one.
-            window.jobGateAnswers = (name) => {
-                const live = (document.querySelector('input[name="' + name + '"]:checked') || {}).value || '';
-                if (!multi()) return [live];
-                return Array.from({ length: count() }, (_, i) => {
-                    if (i === sub.active) return live;
-                    const f = sub.snaps[i] && sub.snaps[i].draft && sub.snaps[i].draft.form;
-                    return (f && f[name]) || '';
-                });
-            };
             window.setSubState = (st) => {
                 sub = (st && typeof st === 'object')
                     ? { names: Array.isArray(st.names) ? st.names : [], active: st.active || 0, snaps: st.snaps || {},

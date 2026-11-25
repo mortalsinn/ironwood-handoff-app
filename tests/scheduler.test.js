@@ -677,11 +677,15 @@ test('demolition and disposal: notes only, never a task', () => {
     assert.equal(n[4], 'Demolition - Stub Walls\nIncludes\n- Demolition of existing stub walls\n- Electrical work by others\n- Drywall work by others');
     assert.equal(n[5], 'Disposal - Stub Walls\nIncludes\n- Removal of demolition waste materials\n- Disposal of demolition waste materials');
     assert.equal(n[0].split('\n').length, 5);
-    // Nothing ticked: no notes. A row the job has no use for (no stairs) adds nothing.
+    // Nothing ticked: no notes. Every tick gives its note, one for one (Jeff's three ticks, three notes).
     assert.equal(JD.demoNotes({}).length, 0);
-    const heads = (t, sh) => JSON.stringify(JD.demoNotes(t, sh).map(x => x.split('\n')[0]));
-    assert.equal(heads(all, { stairs: false }), JSON.stringify(['Demolition - Rails', 'Disposal - Rails', 'Demolition - Stub Walls', 'Disposal - Stub Walls']));
+    const heads = (t) => JSON.stringify(JD.demoNotes(t).map(x => x.split('\n')[0]));
+    assert.equal(heads({ demoStairsDemo: 1, demoRailsDemo: 1, demoStubDisp: 1 }), JSON.stringify(['Demolition - Stairs', 'Demolition - Rails', 'Disposal - Stub Walls']));
     assert.equal(heads({ demoStubDisp: 1 }), JSON.stringify(['Disposal - Stub Walls']));
+    // No rule leaves a note out by job type: no row is hidden by the stairs or railing answers.
+    assert.equal(/demoRowShown|jobGateAnswers/.test(html), false);
+    // Section titles are read without the summary pill, so "2 notes" never joins the title.
+    assert.ok(/bare\.querySelectorAll\('\.sec-chev, \.sec-badge'\)\.forEach\(x => x\.remove\(\)\)/.test(html));
     // No em dashes in the note text.
     assert.equal(/\u2014/.test(n.join('')), false);
 });
