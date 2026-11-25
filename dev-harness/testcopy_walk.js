@@ -14,7 +14,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await page.waitForSelector('#handoffForm'); await sleep(2500);
   console.log('BANNER', await page.evaluate(() => document.getElementById('tcBanner').textContent), '| title', await page.title());
   await page.evaluate(async () => {
-    for (const [n, v] of [['projectType', 'Renovation'], ['scopeOfWork', 'Supply & Install'], ['siteProtection', 'No'], ['demoDisposal', 'Yes'], ['jobHasTravel', 'No'], ['jobHasStairs', 'No'], ['jobHasRailing', 'Yes'], ['railSystem', 'Wood'], ['railingShape', 'Straight'], ['spindleType', 'Wood'], ['jobHasCustomMetal', 'No'], ['jobHasInteriorGlass', 'No']]) {
+    for (const [n, v] of [['projectType', 'Renovation'], ['scopeOfWork', 'Supply & Install'], ['siteProtection', 'No'], ['demoRailsDemo', 'Yes'], ['demoRailsDisp', 'Yes'], ['jobHasTravel', 'No'], ['jobHasStairs', 'No'], ['jobHasRailing', 'Yes'], ['railSystem', 'Wood'], ['railingShape', 'Straight'], ['spindleType', 'Wood'], ['jobHasCustomMetal', 'No'], ['jobHasInteriorGlass', 'No']]) {
       const i = document.querySelector(`#handoffForm input[name="${n}"][value="${v}"]`); if (i) i.click(); await new Promise(r => setTimeout(r, 600));
     }
     const d = document.getElementById('preferredInstall'); d.value = '2027-01-29'; d.dispatchEvent(new Event('change', { bubbles: true }));

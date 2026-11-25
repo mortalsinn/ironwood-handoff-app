@@ -289,7 +289,7 @@ test('every task the plan can create has a category', () => {
     const expect = {
         'Railing Site Measure': 'fixed', 'Railing Take Off Sheet': 'fixed', 'Stair Drawing': 'fixed',
         'Approve Shop Drawing': 'fixed', 'Install Railing': 'fixed', 'QA - Install': 'checks', 'Railing Install Photos': 'checks',
-        'Review Drawing and Take Off': 'checks', 'Existing Railing Removal': 'fixed', 'Install Site Protection': 'fixed',
+        'Review Drawing and Take Off': 'checks', 'Install Site Protection': 'fixed',
         'Manufacture Railing Package': 'production', 'Assemble Finished Stair': 'production', 'Schedule Fabrication': 'production',
         'Receive Glass': 'supplierWait', 'Receive Coated Spindles': 'supplierWait', 'Confirm Schedule Manufacture': 'supplierWait',
         'Order Glass': 'ordering', 'Order Standoffs / Base Shoe': 'supplierWait', 'Order Custom Metal / Steel': 'ordering', 'Spindle Coating Drop Off': 'ordering',
@@ -660,4 +660,49 @@ test('planned times for one sub-project only: the others keep their install date
     assert.equal(second.lanes[1].status, 'planned');
     assert.equal(JSON.stringify(second.lanes[0].lanes[0].tasks.map(t => [t.start, t.end])), JSON.stringify(first.lanes[0].lanes[0].tasks.map(t => [t.start, t.end])));
     assert.equal(second.lanes[1].lanes[0].tasks[0].start, wall(2026, 12, 7, 8));      // planned from its own start
+});
+
+test('demolition and disposal: notes only, never a task', () => {
+    const arch = /const ARCHETYPES = \[[\s\S]*?\n        \];/.exec(html)[0];
+    assert.equal(/Removal|Disposal|Remove Existing|demoSold/.test(arch), false);
+    assert.ok(arch.indexOf("name: 'Install Site Protection'") !== -1);                 // site protection stays a task
+    // Every box ticked: six notes, stairs, rails, stub walls, demolition before disposal, real line breaks.
+    const all = { demoStairsDemo: 1, demoStairsDisp: 1, demoRailsDemo: 1, demoRailsDisp: 1, demoStubDemo: 1, demoStubDisp: 1 };
+    const n = JD.demoNotes(all);
+    assert.equal(n.length, 6);
+    assert.equal(n[0], 'Demolition - Stairs\nIncludes\n- Demolition of existing stairs\n- Drywall work by others\n- Rough framing additional cost');
+    assert.equal(n[1], 'Disposal - Stairs\nIncludes\n- Removal of demolition waste materials\n- Disposal of demolition waste materials');
+    assert.equal(n[2], 'Demolition - Rails\nIncludes\n- Demolition of existing railing\n- Electrical work by others\n- Drywall work by others');
+    assert.equal(n[3], 'Disposal - Rails\nIncludes\n- Removal of demolition waste materials\n- Disposal of demolition waste materials');
+    assert.equal(n[4], 'Demolition - Stub Walls\nIncludes\n- Demolition of existing stub walls\n- Electrical work by others\n- Drywall work by others');
+    assert.equal(n[5], 'Disposal - Stub Walls\nIncludes\n- Removal of demolition waste materials\n- Disposal of demolition waste materials');
+    assert.equal(n[0].split('\n').length, 5);
+    // Nothing ticked: no notes. A row the job has no use for (no stairs) adds nothing.
+    assert.equal(JD.demoNotes({}).length, 0);
+    const heads = (t, sh) => JSON.stringify(JD.demoNotes(t, sh).map(x => x.split('\n')[0]));
+    assert.equal(heads(all, { stairs: false }), JSON.stringify(['Demolition - Rails', 'Disposal - Rails', 'Demolition - Stub Walls', 'Disposal - Stub Walls']));
+    assert.equal(heads({ demoStubDisp: 1 }), JSON.stringify(['Disposal - Stub Walls']));
+    // No em dashes in the note text.
+    assert.equal(/\u2014/.test(n.join('')), false);
+});
+
+test('draft migration: demolition and disposal Yes ticks Rails demolition and disposal', () => {
+    const a = { demoDisposal: 'Yes' };
+    JD.migrateDemo(a);
+    assert.deepEqual(a, { demoRailsDemo: 'Yes', demoRailsDisp: 'Yes' });
+    const b = { demoDisposal: 'No' };
+    JD.migrateDemo(b);
+    assert.deepEqual(b, {});
+    // Already on the new boxes: left as they are.
+    const c = { demoDisposal: 'Yes', demoStubDemo: 'Yes', demoRailsDisp: 'Yes' };
+    JD.migrateDemo(c);
+    assert.deepEqual(c, { demoStubDemo: 'Yes', demoRailsDisp: 'Yes' });
+    const d = { projectType: 'Renovation' };
+    JD.migrateDemo(d);
+    assert.deepEqual(d, { projectType: 'Renovation' });
+    // The question asks for exactly these six boxes, and sub-projects share them.
+    ['demoStairsDemo', 'demoStairsDisp', 'demoRailsDemo', 'demoRailsDisp', 'demoStubDemo', 'demoStubDisp'].forEach(nm => {
+        assert.ok(html.indexOf('name="' + nm + '"') !== -1, nm);
+        assert.ok(new RegExp("SHARED_FORM = \\[[^\\]]*'" + nm + "'").test(html), nm + ' shared');
+    });
 });

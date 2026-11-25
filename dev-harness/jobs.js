@@ -8,7 +8,7 @@ const pick = (page, pairs) => page.evaluate(async (pairs) => {
 }, pairs);
 const setDate = (page, id, iso) => page.evaluate((id, v) => { const i = document.getElementById(id); i.value = v; i.dispatchEvent(new Event('change', { bubbles: true })); }, id, iso);
 const NB = [['projectType', 'NewBuild'], ['scopeOfWork', 'Supply & Install'], ['jobHasTravel', 'No']];
-const RENO = [['projectType', 'Renovation'], ['scopeOfWork', 'Supply & Install'], ['siteProtection', 'No'], ['demoDisposal', 'Yes'], ['jobHasTravel', 'No']];
+const RENO = [['projectType', 'Renovation'], ['scopeOfWork', 'Supply & Install'], ['siteProtection', 'No'], ['demoRailsDemo', 'Yes'], ['demoRailsDisp', 'Yes'], ['demoStubDemo', 'Yes'], ['jobHasTravel', 'No']];
 const RAIL = [['jobHasStairs', 'No'], ['jobHasRailing', 'Yes'], ['railSystem', 'Wood'], ['railingShape', 'Straight'], ['spindleType', 'Wood'], ['jobHasCustomMetal', 'No'], ['jobHasInteriorGlass', 'No']];
 const METAL = [['jobHasStairs', 'No'], ['jobHasRailing', 'Yes'], ['railSystem', 'Metal'], ['railingType', 'FullMetal'], ['railingShape', 'Straight'], ['jobHasCustomMetal', 'No'], ['jobHasInteriorGlass', 'No']];
 const CONSTR = [['jobHasStairs', 'Yes'], ['stairGrade', 'Construction'], ['constStairType_1', 'Western'], ['constStairShape_1', 'Straight'], ['jobHasRailing', 'No'], ['jobHasCustomMetal', 'No'], ['jobHasInteriorGlass', 'No']];
@@ -70,6 +70,13 @@ const run = async (name, dateOverride) => {
     const ts = p.ordered_tasks || [].concat(...Object.keys(p.task_lists).map(k => p.task_lists[k]));
     const sent = ts.map(t => t.name + '|' + t.start_date + ' ' + t.start_time + '|' + t.end_date + ' ' + t.end_time);
     mism = sent.filter(x => want.indexOf(x) === -1).length + want.filter(x => sent.indexOf(x) === -1).length + (note ? ' (' + note + ')' : '');
+  }
+  if (p) {
+    // Demolition and disposal: notes only, never a task.
+    const ts2 = p.ordered_tasks || [].concat(...Object.keys(p.task_lists).map(k => p.task_lists[k]));
+    const demoTasks = ts2.filter(t => /Removal|Disposal|Remove Existing/.test(t.name)).length;
+    const heads = String(p.notes || '').split('\n\n---\n\n').map(x => x.split('\n')[0]).filter(x => /^(Demolition|Disposal) - /.test(x));
+    console.log('   demolition notes: ' + (heads.join(', ') || 'none') + ' | demolition tasks: ' + demoTasks);
   }
   console.log('== ' + name + ' | ' + screen.status + ' | problems ' + screen.probs.length + ' | payload vs screen mismatches ' + mism);
   console.log('   lanes: ' + screen.lanes.join('; ') + (screen.legacy ? ' | OLDER DRAFT NOTE SHOWN' : ''));

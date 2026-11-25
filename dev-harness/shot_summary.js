@@ -2,7 +2,7 @@
 const h = require('./harness');
 const W = require(process.env.WALK || '/tmp/claude-1000/-home-devserver-Projects-RibitOS/d30c0804-b057-4327-bef6-c8d6d388d878/scratchpad/walk.js');
 (async () => {
-  const prefs = { projectType: 'NewBuild', scopeOfWork: 'Supply & Install', siteProtection: 'No', demoDisposal: 'No', jobHasTravel: 'No', jobHasStairs: 'Yes', stairGrade: 'Construction', constStairType: 'Western', constStairShape: 'Straight', jobHasRailing: 'No', jobHasCustomMetal: 'No', jobHasInteriorGlass: 'No' };
+  const prefs = { projectType: 'NewBuild', scopeOfWork: 'Supply & Install', siteProtection: 'No', jobHasTravel: 'No', jobHasStairs: 'Yes', stairGrade: 'Construction', constStairType: 'Western', constStairShape: 'Straight', jobHasRailing: 'No', jobHasCustomMetal: 'No', jobHasInteriorGlass: 'No' };
   const { browser, page } = await h.open({ nowMs: Date.UTC(2026, 10, 18, 16, 0), width: +(process.env.W || 1440), height: 900 });
   await W.fill(page, prefs, ['Curved']);
   await page.evaluate(() => { const b = document.getElementById('subCountSet'); if (b) b.click(); }); await W.sleep(800);
