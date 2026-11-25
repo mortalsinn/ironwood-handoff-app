@@ -760,9 +760,11 @@ test('project description: built in the widget with real line breaks; Deluge use
 
 test('CRM notes: one Status post per note on the project, no CRM Notes.txt', () => {
     const dg = fs.readFileSync(path.join(__dirname, '..', 'deluge_handoff_function.dg'), 'utf8');
-    // CRM Notes.txt only holds notes that could not be posted.
-    assert.equal((dg.match(/"CRM Notes\.txt"/g) || []).length, 2);
-    assert.ok(/if\(notPosted != "" && docFolder != ""\)/.test(dg));
+    // The full CRM Notes.txt is always saved as a backup: description, production notes, every note.
+    assert.equal(/notPosted/.test(dg), false);
+    assert.ok(/notesFile = notesText\.toFile\("CRM Notes\.txt"\);/.test(dg));
+    assert.ok(/"DEAL DESCRIPTION"/.test(dg) && /"PRODUCTION NOTES FROM THE HANDOFF"/.test(dg));
+    assert.ok(/if\(!cnTitle\.startsWith\("IRONWOOD_DRAFT"\) && !cnTitle\.startsWith\("Zoho Project - "\)\)/.test(dg));
     assert.ok(/"\/projects\/" \+ newProjectId \+ "\/statuses\/"/.test(dg));           // project Status (restapi)
     assert.ok(/noteKeys = noteKeys\.sort\(true\);/.test(dg));                            // oldest first (the API ignores sort_by)
     ['IRONWOOD_DRAFT', 'Zoho Project - ', 'Handoff diagnostics', '[Handoff Feedback]', 'Production Handoff Note']

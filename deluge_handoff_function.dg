@@ -1675,8 +1675,8 @@ if(kickoffNote == "" && isReusedProject == "no")
 // Every attachment on the Deal is copied into the project's Documents tab (its
 // WorkDrive folder). Needs WorkDrive.files.ALL and ZohoProjects.documents.ALL on
 // zoho_projects_connection. Fail-open and counted; a re-run overwrites files of
-// the same name instead of duplicating. The CRM notes are no longer a text file:
-// since v15.80 each one is a Status post on the project (below).
+// the same name instead of duplicating. The CRM notes follow below: one Feed (Status)
+// post each since v15.80, plus the full CRM Notes.txt as a backup.
 // =====================================
 docNote = "";
 docOk = 0;
@@ -1795,15 +1795,16 @@ standalone.set_handoff_progress(dealId,"7",progDone.toString(),progTotal.toStrin
 // which are already in the project description). Forums are not on this plan.
 // One GET for the notes, one for the mention names, one for the posts already on the
 // project (a re-run never posts the same note twice), then one POST per note.
-// Fail-open and counted in the result line.
+// Fail-open and counted in the result line. The full CRM Notes.txt is saved too.
 // =====================================
 noteOk = 0;
 noteFail = 0;
 noteSkip = 0;
 noteFirstError = "";
-// Notes that could not be posted (for example, the connection lacks the Status scope) are
-// kept in a CRM Notes.txt in Documents, so nothing is lost.
-notPosted = "";
+// The full CRM Notes.txt is always saved to Documents as well, as a backup: the deal
+// description, the production notes from the handoff and every CRM note (Jeff, Nov 25 2026).
+notesText = "CRM NOTES - " + dealName + NL + "Copied from the CRM at handoff." + NL;
+notesFileNote = "";
 try
 {
 	if(tagPortalId != "")
@@ -1878,6 +1879,12 @@ try
 		if(dealDesc.trim() != "")
 		{
 			posts.add({"title":"Deal description","meta":"","body":dealDesc});
+			notesText = notesText + NL + "============================================================" + NL + "DEAL DESCRIPTION" + NL + NL + dealDesc + NL;
+		}
+		handoffNotes = ifnull(payloadData.get("notes"),"");
+		if(handoffNotes != "")
+		{
+			notesText = notesText + NL + "============================================================" + NL + "PRODUCTION NOTES FROM THE HANDOFF" + NL + NL + handoffNotes + NL;
 		}
 		noteKeys = List();
 		noteByKey = Map();
@@ -1892,8 +1899,9 @@ try
 		{
 			cn = noteByKey.get(nk);
 			cnTitle = ifnull(cn.get("Note_Title"),"");
-			// (Deluge has no break or continue: the app's own notes are left out by this if.)
-			if(!cnTitle.startsWith("IRONWOOD_DRAFT") && !cnTitle.startsWith("Zoho Project - ") && !cnTitle.startsWith("Handoff diagnostics") && !cnTitle.startsWith("[Handoff Feedback]") && !cnTitle.startsWith("Production Handoff Note"))
+			// (Deluge has no break or continue: the app's own notes are left out by these ifs.)
+			// The file keeps every note but the draft data and the project links, as before.
+			if(!cnTitle.startsWith("IRONWOOD_DRAFT") && !cnTitle.startsWith("Zoho Project - "))
 			{
 				cnBody = ifnull(cn.get("Note_Content"),"");
 				for each  mu in mentionUsers
@@ -1931,7 +1939,12 @@ try
 				{
 					cnMeta = if(cnMeta == "",cnWhen,cnMeta + ", " + cnWhen);
 				}
-				posts.add({"title":cnTitle,"meta":cnMeta,"body":cnBody.trim()});
+				notesText = notesText + NL + "------------------------------------------------------------" + NL + cnTitle + NL + cnWho + " - " + cnWhen + NL + NL + cnBody + NL;
+				// The Feed leaves out diagnostics, feedback and the Production Handoff Notes (in the description).
+				if(!cnTitle.startsWith("Handoff diagnostics") && !cnTitle.startsWith("[Handoff Feedback]") && !cnTitle.startsWith("Production Handoff Note"))
+				{
+					posts.add({"title":cnTitle,"meta":cnMeta,"body":cnBody});
+				}
 			}
 		}
 		for each  pst in posts
@@ -1985,7 +1998,6 @@ try
 					else
 					{
 						noteFail = noteFail + 1;
-						notPosted = notPosted + NL + "------------------------------------------------------------" + NL + pst.get("title") + NL + pst.get("meta") + NL + NL + pst.get("body") + NL;
 						if(noteFirstError == "")
 						{
 							noteFirstError = pst.get("title") + ": " + stResp.toString();
@@ -1995,7 +2007,6 @@ try
 				catch (eSt)
 				{
 					noteFail = noteFail + 1;
-					notPosted = notPosted + NL + "------------------------------------------------------------" + NL + pst.get("title") + NL + pst.get("meta") + NL + NL + pst.get("body") + NL;
 					if(noteFirstError == "")
 					{
 						noteFirstError = pst.get("title") + ": " + eSt.toString();
@@ -2004,28 +2015,40 @@ try
 			}
 		}
 	}
-	if(notPosted != "" && docFolder != "")
+	if(docFolder != "")
 	{
 		try
 		{
-			npFile = ("CRM NOTES - " + dealName + NL + "Not posted to the project Status at handoff." + NL + notPosted).toFile("CRM Notes.txt");
-			npParts = List();
-			npParts.add({"paramName":"content","content":npFile,"stringPart":"false"});
-			npParts.add({"paramName":"parent_id","content":docFolder,"stringPart":"true"});
-			npParts.add({"paramName":"filename","content":"CRM Notes.txt","stringPart":"true"});
-			npParts.add({"paramName":"override-name-exist","content":"true","stringPart":"true"});
-			npResp = invokeurl
+			notesFile = notesText.toFile("CRM Notes.txt");
+			nParts = List();
+			nParts.add({"paramName":"content","content":notesFile,"stringPart":"false"});
+			nParts.add({"paramName":"parent_id","content":docFolder,"stringPart":"true"});
+			nParts.add({"paramName":"filename","content":"CRM Notes.txt","stringPart":"true"});
+			nParts.add({"paramName":"override-name-exist","content":"true","stringPart":"true"});
+			nResp = invokeurl
 			[
 				url :"https://www.zohoapis.com/workdrive/api/v1/upload"
 				type :POST
-				files:npParts
+				files:nParts
 				connection:"zoho_projects_connection"
 			];
-			noteFirstError = noteFirstError + if(npResp.toString().contains("Permalink")," (saved to CRM Notes.txt)"," (CRM Notes.txt also failed)");
+			nText = nResp.toString();
+			if(nText.contains("Permalink"))
+			{
+				notesFileNote = " CRM Notes.txt saved.";
+			}
+			else
+			{
+				if(nText.length() > 200)
+				{
+					nText = nText.subString(0,200);
+				}
+				notesFileNote = " CRM Notes.txt FAILED: " + nText;
+			}
 		}
-		catch (eNp)
+		catch (eNf)
 		{
-			noteFirstError = noteFirstError + " (CRM Notes.txt also failed)";
+			notesFileNote = " CRM Notes.txt FAILED: " + eNf.toString();
 		}
 	}
 	docNote = docNote + " Notes: " + noteOk + " posted, " + noteFail + " failed" + if(noteSkip > 0," (" + noteSkip + " already on the project)","") + ".";
@@ -2037,6 +2060,7 @@ try
 		}
 		docNote = docNote + " First note error: " + noteFirstError;
 	}
+	docNote = docNote + notesFileNote;
 }
 catch (e)
 {
